@@ -21,8 +21,11 @@ export async function POST(
     if (!project) {
       return NextResponse.json({ error: "프로젝트를 찾을 수 없습니다." }, { status: 404 });
     }
-    const source = project.sources[0];
-    if (!source) {
+    const combined = project.sources
+      .map((s) => s.content)
+      .filter(Boolean)
+      .join("\n\n---\n\n");
+    if (!combined.trim()) {
       return NextResponse.json(
         { error: "컴파일할 업무 내용을 먼저 추가해 주세요." },
         { status: 422 },
@@ -31,7 +34,7 @@ export async function POST(
 
     const run = await createCompilationRun(projectId);
     runId = run.id;
-    const document = await compileSpecDocument(source.content);
+    const document = await compileSpecDocument(combined);
     const revision = await saveProjectDocument(
       projectId,
       project.revision,

@@ -1,10 +1,17 @@
 import type { SpecDocument } from "@/lib/spec/schema";
 
 export function MatrixView({ document }: { document: SpecDocument }) {
+  const unconfirmed = document.permissions.filter((p) => p.allowed === null).length;
+
   return (
     <div className="matrix-view">
       <h2>역할·권한 매트릭스</h2>
-      <table className="matrix-table">
+      {unconfirmed > 0 && (
+        <p className="matrix-warning" role="status">
+          확인 필요한 권한이 {unconfirmed}개 있습니다. 노란 행을 검토하세요.
+        </p>
+      )}
+      <table className="matrix-table" aria-label="역할·권한 매트릭스">
         <thead>
           <tr>
             <th>역할</th>
@@ -15,15 +22,17 @@ export function MatrixView({ document }: { document: SpecDocument }) {
         </thead>
         <tbody>
           {document.permissions.map((permission) => (
-            <tr key={permission.id}>
+            <tr key={permission.id} className={permission.allowed === null ? "matrix-row--pending" : ""}>
               <td>{document.roles.find((role) => role.id === permission.roleId)?.name}</td>
               <td>{permission.capability}</td>
               <td>
-                {permission.allowed === null
-                  ? "확인 필요"
-                  : permission.allowed
-                    ? "가능"
-                    : "불가"}
+                {permission.allowed === null ? (
+                  <span className="permission-pending">? 확인 필요</span>
+                ) : permission.allowed ? (
+                  "가능"
+                ) : (
+                  "불가"
+                )}
               </td>
               <td>{permission.note}</td>
             </tr>
@@ -31,7 +40,7 @@ export function MatrixView({ document }: { document: SpecDocument }) {
         </tbody>
       </table>
       <h2>상태·예외 매트릭스</h2>
-      <table className="matrix-table">
+      <table className="matrix-table" aria-label="상태·예외 매트릭스">
         <thead>
           <tr>
             <th>화면</th>

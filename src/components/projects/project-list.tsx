@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Plus } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { ArrowRight, Plus, Trash } from "@phosphor-icons/react";
 
 type ProjectSummary = {
   id: string;
@@ -11,6 +13,19 @@ type ProjectSummary = {
 };
 
 export function ProjectList({ projects }: { projects: ProjectSummary[] }) {
+  const router = useRouter();
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  async function handleDelete(e: React.MouseEvent, id: string, name: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!window.confirm(`"${name}" 프로젝트를 삭제할까요? 이 작업은 되돌릴 수 없습니다.`)) return;
+    setDeleting(id);
+    await fetch(`/api/projects/${id}`, { method: "DELETE" });
+    setDeleting(null);
+    router.refresh();
+  }
+
   return (
     <>
       <div className="projects-title-row">
@@ -26,14 +41,24 @@ export function ProjectList({ projects }: { projects: ProjectSummary[] }) {
       <div className="project-list">
         {projects.length ? (
           projects.map((project) => (
-            <Link className="project-row" href={`/projects/${project.id}`} key={project.id}>
-              <div>
-                <strong>{project.name}</strong>
-                <span>문서 revision {project.revision}</span>
-              </div>
-              <span>{new Date(project.updatedAt).toLocaleString("ko-KR")}</span>
-              <ArrowRight size={18} />
-            </Link>
+            <div className="project-row-wrapper" key={project.id}>
+              <Link className="project-row" href={`/projects/${project.id}`}>
+                <div>
+                  <strong>{project.name}</strong>
+                  <span>문서 revision {project.revision}</span>
+                </div>
+                <span>{new Date(project.updatedAt).toLocaleString("ko-KR")}</span>
+                <ArrowRight size={18} />
+              </Link>
+              <button
+                className="project-delete-button"
+                aria-label={`${project.name} 삭제`}
+                disabled={deleting === project.id}
+                onClick={(e) => handleDelete(e, project.id, project.name)}
+              >
+                <Trash size={16} />
+              </button>
+            </div>
           ))
         ) : (
           <div className="empty-projects">

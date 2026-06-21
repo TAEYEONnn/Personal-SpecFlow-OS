@@ -55,6 +55,12 @@ export type DocumentDiff = {
   removedStateIds: string[];
   addedCopyIds: string[];
   removedCopyIds: string[];
+  addedQuestionIds: string[];
+  removedQuestionIds: string[];
+  changedQuestionIds: string[];
+  addedRoleIds: string[];
+  removedRoleIds: string[];
+  briefChanged: boolean;
   taskStatusChanges: Array<{ id: string; from: string; to: string }>;
 };
 
@@ -81,6 +87,8 @@ export function diffDocuments(prev: SpecDocument, current: SpecDocument): Docume
   const requirements = diffEntities(prev.requirements, current.requirements);
   const states = diffEntities(prev.states, current.states);
   const copy = diffEntities(prev.uxCopy, current.uxCopy);
+  const questions = diffEntities(prev.questions, current.questions);
+  const roles = diffEntities(prev.roles, current.roles);
 
   const prevTaskMap = new Map(prev.tasks.map((t) => [t.id, t.status]));
   const taskStatusChanges = current.tasks
@@ -101,6 +109,12 @@ export function diffDocuments(prev: SpecDocument, current: SpecDocument): Docume
     removedStateIds: states.removed,
     addedCopyIds: copy.added,
     removedCopyIds: copy.removed,
+    addedQuestionIds: questions.added,
+    removedQuestionIds: questions.removed,
+    changedQuestionIds: questions.changed,
+    addedRoleIds: roles.added,
+    removedRoleIds: roles.removed,
+    briefChanged: JSON.stringify(prev.brief) !== JSON.stringify(current.brief),
     taskStatusChanges,
   };
 }

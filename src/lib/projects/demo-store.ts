@@ -114,6 +114,27 @@ export function finishDemoRun(
   return structuredClone(run);
 }
 
+export function renameDemoProject(projectId: string, name: string) {
+  const project = store().get(projectId);
+  if (!project) throw new Error("프로젝트를 찾을 수 없습니다.");
+  project.name = name;
+  project.updatedAt = new Date().toISOString();
+}
+
+export function deleteDemoProject(projectId: string) {
+  if (!store().has(projectId)) throw new Error("프로젝트를 찾을 수 없습니다.");
+  store().delete(projectId);
+}
+
+export function deleteDemoSource(projectId: string, sourceId: string) {
+  const project = store().get(projectId);
+  if (!project) throw new Error("프로젝트를 찾을 수 없습니다.");
+  const before = project.sources.length;
+  project.sources = project.sources.filter((s) => s.id !== sourceId);
+  if (project.sources.length === before) throw new Error("소스를 찾을 수 없습니다.");
+  project.updatedAt = new Date().toISOString();
+}
+
 export function saveDemoDocument(
   projectId: string,
   expectedRevision: number,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowClockwise,
@@ -62,16 +62,40 @@ export function WorkspaceShell({
   const [editing, setEditing] = useState(false);
   const [pending, setPending] = useState(false);
   const [note, setNote] = useState("");
+  const [noteIsError, setNoteIsError] = useState(false);
+  const [retryFn, setRetryFn] = useState<(() => void) | null>(null);
+  const [projectName, setProjectName] = useState(project.name);
+  const [nameEditing, setNameEditing] = useState(false);
   const [notionDialog, setNotionDialog] = useState(false);
   const [notionPageId, setNotionPageId] = useState("");
   const [notionPending, setNotionPending] = useState(false);
   const [notionResult, setNotionResult] = useState<{ url: string } | null>(null);
 
   useEffect(() => {
-    if (!note) return;
+    if (!note || noteIsError) return;
     const id = setTimeout(() => setNote(""), 3000);
     return () => clearTimeout(id);
-  }, [note]);
+  }, [note, noteIsError]);
+
+  // Warn before leaving with unsaved edits
+  useEffect(() => {
+    if (!editing) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [editing]);
+
+  function setError(message: string, retry?: () => void) {
+    setNote(message);
+    setNoteIsError(true);
+    setRetryFn(retry ? () => retry : null);
+  }
+
+  function clearNote() {
+    setNote("");
+    setNoteIsError(false);
+    setRetryFn(null);
+  }
 
   const selectedScreen =
     document.screens.find((screen) => screen.id === selectedId) ?? document.screens[0] ?? null;
@@ -108,9 +132,9 @@ export function WorkspaceShell({
     });
   }
 
-  async function saveDocument() {
+  const saveDocument = useCallback(async () => {
     setPending(true);
-    setNote("");
+    clearNote();
     const response = await fetch(`/api/projects/${project.id}/document`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
@@ -121,16 +145,20 @@ export function WorkspaceShell({
       setRevision(data.revision);
       setEditing(false);
       setNote("저장됨");
+      setNoteIsError(false);
     } else {
-      setNote(data.error ?? "저장하지 못했습니다.");
+      setError(data.error ?? "저장하지 못했습니다.", saveDocument);
     }
     setPending(false);
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project.id, revision, document]);
 
-  async function recompile() {
+  const recompile = useCallback(async () => {
     if (!window.confirm("현재 문서를 보존하고 최신 원문으로 다시 컴파일할까요?")) return;
     setPending(true);
     setNote("컴파일 중…");
+    setNoteIsError(false);
+    setRetryFn(null);
     const response = await fetch(`/api/projects/${project.id}/compile`, { method: "POST" });
     const data = await response.json();
     if (response.ok) {
@@ -138,10 +166,26 @@ export function WorkspaceShell({
       setRevision(data.revision);
       setSelectedId(data.document.screens[0]?.id ?? "");
       setNote("컴파일 완료");
+      setNoteIsError(false);
     } else {
-      setNote(data.error ?? "컴파일하지 못했습니다.");
+      setError(data.error ?? "컴파일하지 못했습니다.", recompile);
     }
     setPending(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project.id]);
+
+  async function handleRenameProject() {
+    if (projectName.trim() === project.name || !projectName.trim()) {
+      setNameEditing(false);
+      setProjectName(project.name);
+      return;
+    }
+    await fetch(`/api/projects/${project.id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: projectName.trim() }),
+    });
+    setNameEditing(false);
   }
 
   async function exportToNotion() {
@@ -171,7 +215,14 @@ export function WorkspaceShell({
     setNotionPending(false);
   }
 
+  function guardEditing(): boolean {
+    if (!editing) return true;
+    return window.confirm("저장하지 않은 변경사항이 있습니다. 계속할까요?");
+  }
+
   function chooseNav(id: string) {
+    if (!guardEditing()) return;
+    setEditing(false);
     setActiveNav(id);
     if (id === "screens") setView("flow");
     else if (id === "permissions" || id === "states") setView("matrix");
@@ -182,6 +233,8 @@ export function WorkspaceShell({
   }
 
   function chooseView(mode: ViewMode) {
+    if (!guardEditing()) return;
+    setEditing(false);
     setView(mode);
     if (mode === "flow") setActiveNav("screens");
     else if (mode === "matrix") {
@@ -209,7 +262,28 @@ export function WorkspaceShell({
         </div>
         <div className="sidebar-project">
           <div className="sidebar-eyebrow">프로젝트</div>
-          <div className="sidebar-project-name">{project.name}</div>
+          {nameEditing ? (
+            <input
+              className="sidebar-project-name-input"
+              value={projectName}
+              maxLength={120}
+              autoFocus
+              onBlur={handleRenameProject}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleRenameProject();
+                if (e.key === "Escape") { setNameEditing(false); setProjectName(project.name); }
+              }}
+              onChange={(e) => setProjectName(e.target.value)}
+            />
+          ) : (
+            <button
+              className="sidebar-project-name"
+              title="클릭하여 이름 변경"
+              onClick={() => setNameEditing(true)}
+            >
+              {projectName}
+            </button>
+          )}
         </div>
         <nav className="sidebar-nav" aria-label="산출물">
           {navItems.map((item) => {
@@ -257,9 +331,17 @@ export function WorkspaceShell({
           ))}
         </div>
         <div className="header-actions">
-          <span className="compile-status">
+          <span className={`compile-status${noteIsError ? " compile-status--error" : ""}`}>
             <span className={`status-dot${pending ? " status-dot--pending" : ""}`} />
             {note || `컴파일 완료 · revision ${revision}`}
+            {noteIsError && retryFn && (
+              <button className="retry-button" onClick={() => { clearNote(); retryFn(); }}>
+                다시 시도
+              </button>
+            )}
+            {noteIsError && (
+              <button className="dismiss-button" onClick={clearNote} aria-label="닫기">✕</button>
+            )}
           </span>
           <button className="button" disabled={pending} onClick={recompile}>
             <ArrowClockwise size={17} />

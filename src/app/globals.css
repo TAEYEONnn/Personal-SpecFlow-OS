@@ -1328,6 +1328,125 @@ textarea:focus-visible {
   margin: 0;
 }
 
+/* Error status in compile header */
+.compile-status--error {
+  color: var(--danger);
+}
+
+.retry-button {
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-size: 12px;
+  border: 1px solid var(--danger);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--danger);
+  cursor: pointer;
+}
+
+.retry-button:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+.dismiss-button {
+  margin-left: 4px;
+  padding: 0 6px;
+  font-size: 12px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+/* Sidebar project name inline edit */
+.sidebar-project-name {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-project-name:hover {
+  color: var(--accent);
+}
+
+.sidebar-project-name-input {
+  width: 100%;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 2px 6px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* Matrix permission pending row */
+.matrix-row--pending {
+  background: #fefce8;
+}
+
+.permission-pending {
+  color: #92400e;
+  font-weight: 600;
+}
+
+.matrix-warning {
+  font-size: 13px;
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+/* Project list delete button */
+.project-row-wrapper {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+}
+
+.project-row-wrapper .project-row {
+  flex: 1;
+  border-radius: 8px 0 0 8px;
+}
+
+.project-delete-button {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+
+.project-row-wrapper:hover .project-delete-button {
+  opacity: 1;
+}
+
+.project-delete-button:hover {
+  color: var(--danger);
+  background: #fef2f2;
+}
+
 @media (max-width: 1120px) {
   .workspace {
     grid-template-columns: 76px minmax(560px, 1fr) 286px;
@@ -1379,5 +1498,74 @@ textarea:focus-visible {
   .header-actions .compile-status,
   .header-actions .button:not(.button-primary) {
     display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .workspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .workspace-sidebar {
+    grid-row: 2;
+    grid-column: 1;
+    flex-direction: row;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+  }
+
+  .sidebar-brand,
+  .sidebar-project,
+  .sidebar-footer {
+    display: none;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    gap: 0;
+    overflow-x: auto;
+  }
+
+  .nav-item {
+    grid-template-columns: auto;
+    min-width: 48px;
+    padding: 8px;
+    flex-shrink: 0;
+    border-radius: 0;
+  }
+
+  .nav-count {
+    display: none;
+  }
+
+  .workspace-header {
+    grid-row: 1;
+    grid-column: 1;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  .workspace-main {
+    grid-row: 3;
+    grid-column: 1;
+  }
+
+  .view-switcher {
+    display: none;
+  }
+
+  .export-dropdown {
+    right: auto;
+    left: 0;
+  }
+
+  .project-delete-button {
+    opacity: 1;
   }
 }

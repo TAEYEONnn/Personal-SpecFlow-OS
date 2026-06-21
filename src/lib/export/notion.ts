@@ -138,14 +138,39 @@ export type NotionCreatePageParams = {
   token: string;
 };
 
+const NOTION_HEADERS = (token: string) => ({
+  Authorization: `Bearer ${token}`,
+  "Content-Type": "application/json",
+  "Notion-Version": "2022-06-28",
+});
+
+async function notionFetch(url: string, init: RequestInit): Promise<unknown> {
+  const response = await fetch(url, init);
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(
+      `Notion API 오류 (${response.status}): ${(error as { message?: string }).message ?? response.statusText}`,
+    );
+  }
+  return response.json();
+}
+
+async function appendNotionBlocks(pageId: string, blocks: NotionBlock[], token: string) {
+  await notionFetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+    method: "PATCH",
+    headers: NOTION_HEADERS(token),
+    body: JSON.stringify({ children: blocks }),
+  });
+}
+
 export async function createNotionPage(params: NotionCreatePageParams): Promise<{ pageId: string; url: string }> {
-  const response = await fetch("https://api.notion.com/v1/pages", {
+  // Notion API limit: max 100 children per request
+  const BATCH = 100;
+  const firstBatch = params.blocks.slice(0, BATCH);
+
+  const data = (await notionFetch("https://api.notion.com/v1/pages", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${params.token}`,
-      "Content-Type": "application/json",
-      "Notion-Version": "2022-06-28",
-    },
+    headers: NOTION_HEADERS(params.token),
     body: JSON.stringify({
       parent: { type: "page_id", page_id: params.parentPageId },
       properties: {
@@ -153,17 +178,14 @@ export async function createNotionPage(params: NotionCreatePageParams): Promise<
           title: [{ type: "text", text: { content: params.title } }],
         },
       },
-      children: params.blocks,
+      children: firstBatch,
     }),
-  });
+  })) as { id: string; url: string };
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(
-      `Notion API 오류 (${response.status}): ${(error as { message?: string }).message ?? response.statusText}`,
-    );
+  // Append remaining blocks in batches
+  for (let i = BATCH; i < params.blocks.length; i += BATCH) {
+    await appendNotionBlocks(data.id, params.blocks.slice(i, i + BATCH), params.token);
   }
 
-  const data = (await response.json()) as { id: string; url: string };
   return { pageId: data.id, url: data.url };
 }

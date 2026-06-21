@@ -174,19 +174,31 @@ async function compileSingleChunk(source: string): Promise<SpecDocument> {
   return specDocumentSchema.parse(response.output_parsed);
 }
 
+function dedupeById(arr: { id: string }[]): { id: string }[] {
+  const seen = new Set<string>();
+  return arr.filter((item) => (seen.has(item.id) ? false : seen.add(item.id) && true));
+}
+
 function mergeSpecDocuments(docs: SpecDocument[]): SpecDocument {
   const base = docs[0];
   const rest = docs.slice(1);
+  const concat = (key: keyof SpecDocument) =>
+    dedupeById(
+      rest.reduce(
+        (acc, d) => acc.concat(d[key] as { id: string }[]),
+        base[key] as { id: string }[]
+      )
+    );
   return {
     brief: base.brief,
-    requirements: rest.reduce((acc, d) => acc.concat(d.requirements), base.requirements),
-    questions: rest.reduce((acc, d) => acc.concat(d.questions), base.questions),
-    roles: rest.reduce((acc, d) => acc.concat(d.roles), base.roles),
-    permissions: rest.reduce((acc, d) => acc.concat(d.permissions), base.permissions),
-    screens: rest.reduce((acc, d) => acc.concat(d.screens), base.screens),
-    states: rest.reduce((acc, d) => acc.concat(d.states), base.states),
-    uxCopy: rest.reduce((acc, d) => acc.concat(d.uxCopy), base.uxCopy),
-    tasks: rest.reduce((acc, d) => acc.concat(d.tasks), base.tasks),
+    requirements: concat("requirements") as SpecDocument["requirements"],
+    questions: concat("questions") as SpecDocument["questions"],
+    roles: concat("roles") as SpecDocument["roles"],
+    permissions: concat("permissions") as SpecDocument["permissions"],
+    screens: concat("screens") as SpecDocument["screens"],
+    states: concat("states") as SpecDocument["states"],
+    uxCopy: concat("uxCopy") as SpecDocument["uxCopy"],
+    tasks: concat("tasks") as SpecDocument["tasks"],
     dailyReport: base.dailyReport,
   };
 }

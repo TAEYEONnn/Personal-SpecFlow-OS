@@ -4,9 +4,12 @@ import {
   addDemoSource,
   createDemoProject,
   createDemoRun,
+  deleteDemoProject,
+  deleteDemoSource,
   finishDemoRun,
   getDemoProject,
   listDemoProjects,
+  renameDemoProject,
   saveDemoDocument,
   type DemoRun,
 } from "@/lib/projects/demo-store";
@@ -240,6 +243,52 @@ export async function saveProjectDocument(
   });
   if (error) throw error;
   return data as number;
+}
+
+export async function deleteProject(projectId: string) {
+  const auth = await requireAuthContext();
+  if (auth.demo) {
+    deleteDemoProject(projectId);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("projects")
+    .delete()
+    .eq("id", projectId)
+    .eq("user_id", auth.userId);
+  if (error) throw error;
+}
+
+export async function deleteSource(projectId: string, sourceId: string) {
+  const auth = await requireAuthContext();
+  if (auth.demo) {
+    deleteDemoSource(projectId, sourceId);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("sources")
+    .delete()
+    .eq("id", sourceId)
+    .eq("project_id", projectId)
+    .eq("user_id", auth.userId);
+  if (error) throw error;
+}
+
+export async function renameProject(projectId: string, name: string) {
+  const auth = await requireAuthContext();
+  if (auth.demo) {
+    renameDemoProject(projectId, name);
+    return;
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("projects")
+    .update({ name, updated_at: new Date().toISOString() })
+    .eq("id", projectId)
+    .eq("user_id", auth.userId);
+  if (error) throw error;
 }
 
 export async function getCompilationRun(projectId: string, runId: string) {

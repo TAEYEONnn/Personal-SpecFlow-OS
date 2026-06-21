@@ -27,7 +27,7 @@ export function RunsView({ runs }: { runs: DemoRun[] }) {
   return (
     <div className="runs-view">
       <h2>컴파일 이력</h2>
-      <table className="matrix-table">
+      <table className="matrix-table" aria-label="컴파일 이력">
         <thead>
           <tr>
             <th>상태</th>
