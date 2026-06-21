@@ -14,8 +14,6 @@ import {
   PencilSimple,
   Question,
   SquaresFour,
-  TextT,
-  UsersThree,
   Warning,
 } from "@phosphor-icons/react";
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -23,28 +21,27 @@ import { DiffView } from "@/components/workspace/diff-view";
 import { DocumentView } from "@/components/workspace/document-view";
 import { EvidencePanel } from "@/components/workspace/evidence-panel";
 import { FigmaView } from "@/components/workspace/figma-view";
-import { FlowCanvas } from "@/components/workspace/flow-canvas";
+import { computeAutoLayout, FlowCanvas } from "@/components/workspace/flow-canvas";
 import { MatrixView } from "@/components/workspace/matrix-view";
 import { RunsView } from "@/components/workspace/runs-view";
 import { ScreenDetail } from "@/components/workspace/screen-detail";
 import { HelpOverlay } from "@/components/workspace/help-overlay";
 import { SourceViewer } from "@/components/workspace/source-viewer";
-import type { Evidence, Screen, SpecDocument } from "@/lib/spec/schema";
+import type { Evidence, Screen, SpecDocument, Task, UxCopy } from "@/lib/spec/schema";
 import type { ProjectView } from "@/lib/projects/service";
 
 type ViewMode = "document" | "flow" | "matrix" | "runs" | "diff" | "figma" | "sources";
 
 const navItems = [
-  { id: "brief",       label: "브리프",     icon: FileText,              countKey: "brief",       description: "목적, 성공 조건, 요구사항 요약" },
-  { id: "questions",   label: "확인 질문",   icon: Question,              countKey: "questions",   description: "AI가 발견한 미결·가정 사항" },
-  { id: "screens",     label: "화면 목록",   icon: SquaresFour,           countKey: "screens",     description: "화면 흐름도 및 선택 화면 상세" },
-  { id: "permissions", label: "역할과 권한", icon: UsersThree,            countKey: "permissions", description: "역할별 기능 권한 매트릭스" },
-  { id: "states",      label: "상태와 예외", icon: Warning,               countKey: "states",      description: "화면별 상태·예외 시나리오" },
-  { id: "copy",        label: "화면 문구",   icon: TextT,                 countKey: "uxCopy",      description: "버튼·레이블·안내 문구 목록" },
-  { id: "tasks",       label: "작업 목록",   icon: CheckSquare,           countKey: "tasks",       description: "개발 작업 및 진행 상태" },
-  { id: "diff",        label: "변경 내역",   icon: GitDiff,               countKey: "diff",        description: "버전 간 변경 사항 비교" },
-  { id: "runs",        label: "변환 이력",   icon: ClockCounterClockwise, countKey: "runs",        description: "AI 정리 실행 기록" },
-  { id: "sources",     label: "원문",        icon: Article,               countKey: "sources",     description: "업로드된 원본 문서 목록" },
+  { id: "overview",     label: "개요",    icon: FileText,               countKey: "brief",        description: "목적, 성공 조건, 요구사항 요약",   alwaysShow: true  },
+  { id: "sources",      label: "원문",    icon: Article,                countKey: "sources",      description: "업로드된 원본 문서 목록",           alwaysShow: true  },
+  { id: "requirements", label: "요구사항", icon: ListChecks,            countKey: "requirements", description: "도출된 기능 요구사항 목록",          alwaysShow: false },
+  { id: "questions",    label: "확인 질문", icon: Question,             countKey: "questions",    description: "AI가 발견한 미결·가정 사항",         alwaysShow: false },
+  { id: "screens",      label: "화면",    icon: SquaresFour,            countKey: "screens",      description: "화면 흐름도 및 선택 화면 상세",      alwaysShow: true  },
+  { id: "states",       label: "상태·예외", icon: Warning,              countKey: "states",       description: "화면별 상태·예외 시나리오",          alwaysShow: false },
+  { id: "tasks",        label: "작업",    icon: CheckSquare,            countKey: "tasks",        description: "개발 작업 및 진행 상태",             alwaysShow: false },
+  { id: "diff",         label: "변경 영향", icon: GitDiff,              countKey: "diff",         description: "버전 간 변경 사항 비교",             alwaysShow: true  },
+  { id: "runs",         label: "활동 기록", icon: ClockCounterClockwise, countKey: "runs",        description: "AI 정리 실행 기록",                  alwaysShow: true  },
 ] as const;
 
 export function WorkspaceShell({
@@ -74,12 +71,17 @@ export function WorkspaceShell({
   const [canvasCollapsed, setCanvasCollapsed] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(360);
+  const [evidencePanelCollapsed, setEvidencePanelCollapsed] = useState(false);
+  const [needsRecompile, setNeedsRecompile] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("specflow-canvas-height");
     if (saved) {
       const parsed = parseInt(saved, 10);
       if (!isNaN(parsed) && parsed > 0) setCanvasHeight(parsed);
+    }
+    if (localStorage.getItem("specflow-evidence-collapsed") === "true") {
+      setEvidencePanelCollapsed(true);
     }
   }, []);
 
@@ -111,18 +113,19 @@ export function WorkspaceShell({
   const selectedScreen =
     document.screens.find((screen) => screen.id === selectedId) ?? document.screens[0] ?? null;
 
+  const showEvidencePanel = view === "flow" && !!selectedScreen;
+
   const counts = useMemo(
     () => ({
       brief: 1,
+      sources: sourcesCount,
+      requirements: document.requirements.length,
       questions: document.questions.length,
       screens: document.screens.length,
-      permissions: document.permissions.length,
       states: document.states.length,
-      uxCopy: document.uxCopy.length,
       tasks: document.tasks.length,
-      runs: project.runs.length,
       diff: 0,
-      sources: sourcesCount,
+      runs: project.runs.length,
     }),
     [document, project.runs.length, sourcesCount],
   );
@@ -178,10 +181,42 @@ export function WorkspaceShell({
     doSave(revision, nextDoc);
   }
 
-  function updateTaskStatus(id: string, status: "todo" | "in-progress" | "done") {
+  function handleTaskCreate(task: Task) {
+    const nextDoc = { ...document, tasks: [...document.tasks, task] };
+    setDocument(nextDoc);
+    doSave(revision, nextDoc);
+  }
+
+  function handleTaskUpdate(id: string, patch: Partial<Task>) {
     const nextDoc = {
       ...document,
-      tasks: document.tasks.map((t) => (t.id === id ? { ...t, status } : t)),
+      tasks: document.tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+    };
+    setDocument(nextDoc);
+    doSave(revision, nextDoc);
+  }
+
+  function handleTaskDelete(id: string) {
+    const nextDoc = { ...document, tasks: document.tasks.filter((t) => t.id !== id) };
+    setDocument(nextDoc);
+    doSave(revision, nextDoc);
+  }
+
+  function handleUxCopyChange(items: UxCopy[]) {
+    if (!selectedScreen) return;
+    const others = document.uxCopy.filter((c) => c.screenId !== selectedScreen.id);
+    const nextDoc = { ...document, uxCopy: [...others, ...items] };
+    setDocument(nextDoc);
+    doSave(revision, nextDoc);
+  }
+
+  function handleAutoLayout() {
+    const positions = computeAutoLayout(document.screens, document.states);
+    const nextDoc = {
+      ...document,
+      screens: document.screens.map((s) =>
+        positions[s.id] ? { ...s, position: positions[s.id] } : s,
+      ),
     };
     setDocument(nextDoc);
     doSave(revision, nextDoc);
@@ -216,6 +251,14 @@ export function WorkspaceShell({
     window.addEventListener("mouseup", onUp);
   }
 
+  function toggleEvidenceCollapsed() {
+    setEvidencePanelCollapsed((v) => {
+      const next = !v;
+      localStorage.setItem("specflow-evidence-collapsed", String(next));
+      return next;
+    });
+  }
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement).tagName;
@@ -244,6 +287,7 @@ export function WorkspaceShell({
       setSelectedId(data.document.screens[0]?.id ?? "");
       setNote("정리 완료");
       setNoteIsError(false);
+      setNeedsRecompile(false);
     } else {
       setError(data.error ?? "정리하지 못했습니다.", recompile);
     }
@@ -298,15 +342,15 @@ export function WorkspaceShell({
   }
 
   const visibleNavItems = navItems.filter((item) => {
-    if (item.id === "screens" || item.id === "brief" || item.id === "sources") return true;
+    if (item.alwaysShow) return true;
     return (counts[item.countKey as keyof typeof counts] ?? 0) > 0;
   });
 
   const navToSection: Record<string, string> = {
-    brief: "section-brief",
+    overview: "section-brief",
+    requirements: "section-requirements",
     questions: "section-questions",
     tasks: "section-tasks",
-    permissions: "section-permissions",
     states: "section-states",
   };
 
@@ -327,28 +371,17 @@ export function WorkspaceShell({
     }
   }
 
-  function chooseView(mode: ViewMode) {
-    if (!guardEditing()) return;
-    setEditing(false);
-    setView(mode);
-    if (mode === "flow") setActiveNav("screens");
-    else if (mode === "matrix") {
-      if (activeNav !== "states") setActiveNav("permissions");
-    } else if (mode === "document") {
-      if (["screens", "runs", "diff", "sources", "figma", "permissions", "states"].includes(activeNav))
-        setActiveNav("brief");
-    } else if (mode === "runs") {
-      setActiveNav("runs");
-    } else if (mode === "diff") {
-      setActiveNav("diff");
-    } else if (mode === "sources") {
-      setActiveNav("sources");
-    }
-  }
+  const epClass = showEvidencePanel
+    ? evidencePanelCollapsed ? " workspace--ep-slim" : " workspace--ep-full"
+    : "";
+
+  const screenUxCopy = selectedScreen
+    ? document.uxCopy.filter((c) => c.screenId === selectedScreen.id)
+    : [];
 
   return (
     <>
-    <main className="workspace">
+    <main className={`workspace${epClass}`}>
       <aside className="workspace-sidebar">
         <div className="sidebar-brand">
           <Link className="brand" href="/projects">
@@ -412,22 +445,16 @@ export function WorkspaceShell({
           <span>프로젝트</span>
           <strong>{project.name}</strong>
         </div>
-        <div className="view-switcher" aria-label="보기 방식">
-          {[
-            ["document", "문서"],
-            ["flow", "플로우"],
-            ["matrix", "매트릭스"],
-          ].map(([id, label]) => (
-            <button
-              className={`view-button ${view === id ? "active" : ""}`}
-              key={id}
-              onClick={() => chooseView(id as ViewMode)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
         <div className="header-actions">
+          {needsRecompile && (
+            <span className="recompile-banner">
+              원문이 변경되었어요.
+              <button className="button button-primary button--sm" disabled={pending} onClick={recompile}>
+                <ArrowClockwise size={13} />
+                다시 정리하기
+              </button>
+            </span>
+          )}
           <span className={`compile-status${noteIsError ? " compile-status--error" : ""}`}>
             <span className={`status-dot${pending ? " status-dot--pending" : ""}`} />
             {note || `변환 완료 · 버전 ${revision}`}
@@ -488,7 +515,7 @@ export function WorkspaceShell({
               <button
                 className="export-option"
                 type="button"
-                onClick={() => chooseView("figma")}
+                onClick={() => setView("figma")}
               >
                 Figma 매핑 확인
               </button>
@@ -513,6 +540,7 @@ export function WorkspaceShell({
                 collapsed={canvasCollapsed}
                 onToggleCollapse={() => setCanvasCollapsed((c) => !c)}
                 onRecompile={recompile}
+                onAutoLayout={handleAutoLayout}
               />
             </div>
             {!canvasCollapsed && (
@@ -533,7 +561,6 @@ export function WorkspaceShell({
                   {note === "저장됨" ? <span className="save-note">✓ 저장됨</span> : null}
                   {editing ? (
                     <button className="button button-primary" disabled={pending} onClick={saveDocument}>
-                      <ListChecks size={17} />
                       저장
                     </button>
                   ) : (
@@ -544,7 +571,13 @@ export function WorkspaceShell({
                   )}
                 </div>
               </div>
-              <ScreenDetail screen={selectedScreen} editing={editing} onChange={replaceScreen} />
+              <ScreenDetail
+                screen={selectedScreen}
+                editing={editing}
+                onChange={replaceScreen}
+                uxCopy={screenUxCopy}
+                onUxCopyChange={handleUxCopyChange}
+              />
             </section>
           </>
           ) : (
@@ -556,7 +589,9 @@ export function WorkspaceShell({
           <DocumentView
             document={document}
             onToggleResolved={toggleQuestionResolved}
-            onUpdateTaskStatus={updateTaskStatus}
+            onTaskCreate={handleTaskCreate}
+            onTaskUpdate={handleTaskUpdate}
+            onTaskDelete={handleTaskDelete}
           />
         ) : view === "matrix" ? (
           <MatrixView document={document} />
@@ -570,20 +605,21 @@ export function WorkspaceShell({
             initialSources={project.sources}
             onSourceDelete={() => setSourcesCount((n) => Math.max(0, n - 1))}
             onSourceAdd={() => setSourcesCount((n) => n + 1)}
+            onSourceUpdate={() => setNeedsRecompile(true)}
           />
         ) : (
           <RunsView runs={project.runs} />
         )}
       </section>
 
-      {selectedScreen ? (
+      {showEvidencePanel && (
         <EvidencePanel
-          evidence={selectedScreen.evidence}
+          evidence={selectedScreen!.evidence}
           onStatusChange={replaceEvidence}
-          onNavigateDiff={() => chooseView("diff")}
+          onNavigateDiff={() => { setView("diff"); setActiveNav("diff"); }}
+          collapsed={evidencePanelCollapsed}
+          onToggleCollapse={toggleEvidenceCollapsed}
         />
-      ) : (
-        <aside className="evidence-panel" />
       )}
     </main>
 

@@ -135,6 +135,21 @@ export function deleteDemoSource(projectId: string, sourceId: string) {
   project.updatedAt = new Date().toISOString();
 }
 
+export function updateDemoSource(
+  projectId: string,
+  sourceId: string,
+  patch: { name?: string; content?: string },
+) {
+  const project = store().get(projectId);
+  if (!project) throw new Error("프로젝트를 찾을 수 없습니다.");
+  const source = project.sources.find((s) => s.id === sourceId);
+  if (!source) throw new Error("소스를 찾을 수 없습니다.");
+  if (patch.name !== undefined) source.name = patch.name;
+  if (patch.content !== undefined) source.content = patch.content;
+  project.updatedAt = new Date().toISOString();
+  return structuredClone(source);
+}
+
 export function saveDemoDocument(
   projectId: string,
   expectedRevision: number,

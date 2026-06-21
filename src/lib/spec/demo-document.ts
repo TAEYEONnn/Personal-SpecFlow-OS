@@ -219,6 +219,12 @@ export const demoSpecDocument: SpecDocument = {
       priority: "high",
       relatedIds: ["screen-login", "req-login"],
       evidence: original("로그인: 사용자명 + 비밀번호"),
+      source: "ai",
+      description: "",
+      dueDate: null,
+      blockerReason: null,
+      relatedScreenIds: [],
+      relatedRequirementIds: [],
     },
   ],
   dailyReport: {

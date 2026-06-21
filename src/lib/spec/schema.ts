@@ -90,10 +90,16 @@ const uxCopySchema = z.object({
 const taskSchema = z.object({
   id: z.string(),
   title: z.string(),
-  status: z.enum(["todo", "in-progress", "done"]),
+  status: z.enum(["inbox", "todo", "in-progress", "blocked", "done"]).catch("todo"),
   priority: z.enum(["high", "medium", "low"]),
   relatedIds: z.array(z.string()),
   evidence: evidenceSchema,
+  source: z.enum(["ai", "user"]).catch("ai"),
+  description: z.string().catch(""),
+  dueDate: z.string().nullable().catch(null),
+  blockerReason: z.string().nullable().catch(null),
+  relatedScreenIds: z.array(z.string()).catch([]),
+  relatedRequirementIds: z.array(z.string()).catch([]),
 });
 
 export const specDocumentSchema = z.object({
@@ -136,3 +142,4 @@ export type Question = SpecDocument["questions"][number];
 export type Role = SpecDocument["roles"][number];
 export type Permission = SpecDocument["permissions"][number];
 export type Task = SpecDocument["tasks"][number];
+export type UxCopy = SpecDocument["uxCopy"][number];

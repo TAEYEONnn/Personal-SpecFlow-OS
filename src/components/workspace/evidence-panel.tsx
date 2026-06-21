@@ -1,3 +1,4 @@
+import { CaretRight } from "@phosphor-icons/react";
 import type { Evidence } from "@/lib/spec/schema";
 
 const labels = {
@@ -10,13 +11,45 @@ export function EvidencePanel({
   evidence,
   onStatusChange,
   onNavigateDiff,
+  collapsed,
+  onToggleCollapse,
 }: {
   evidence: Evidence;
   onStatusChange: (status: Evidence["reviewStatus"]) => void;
   onNavigateDiff?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }) {
+  if (collapsed) {
+    return (
+      <aside className="evidence-panel evidence-panel--collapsed">
+        <button
+          className="evidence-collapse-btn"
+          onClick={onToggleCollapse}
+          aria-label="근거 패널 펼치기"
+          title="근거 패널 펼치기"
+        >
+          <CaretRight size={16} />
+        </button>
+      </aside>
+    );
+  }
+
   return (
     <aside className="evidence-panel">
+      <div className="evidence-panel-header">
+        <span className="evidence-panel-title">근거</span>
+        {onToggleCollapse && (
+          <button
+            className="evidence-collapse-btn evidence-collapse-btn--inline"
+            onClick={onToggleCollapse}
+            aria-label="근거 패널 접기"
+            title="근거 패널 접기"
+          >
+            <CaretRight size={14} style={{ transform: "rotate(180deg)" }} />
+          </button>
+        )}
+      </div>
       <div className="evidence-content">
         <section className="evidence-section">
           <h3>
@@ -43,7 +76,9 @@ export function EvidencePanel({
           <section className="evidence-section">
             <h3>
               추론 근거
-              <span className="tag tag-inference" title="AI가 문맥을 통해 추론한 내용">추론</span>
+              <span className="tag tag-inference" title="AI가 문맥을 통해 추론한 내용">
+                추론
+              </span>
             </h3>
             <div className="evidence-box">{evidence.rationale}</div>
           </section>

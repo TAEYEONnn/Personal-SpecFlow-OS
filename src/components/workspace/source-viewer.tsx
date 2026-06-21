@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ClipboardText, FileText, Plus, TextAlignLeft, Trash } from "@phosphor-icons/react";
+import { ClipboardText, FileText, PencilSimple, Plus, TextAlignLeft, Trash } from "@phosphor-icons/react";
 
 type Source = {
   id: string;
@@ -23,15 +23,22 @@ export function SourceViewer({
   initialSources,
   onSourceDelete,
   onSourceAdd,
+  onSourceUpdate,
 }: {
   projectId: string;
   initialSources: Source[];
   onSourceDelete?: () => void;
   onSourceAdd?: () => void;
+  onSourceUpdate?: () => void;
 }) {
   const [sources, setSources] = useState(initialSources);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [addMode, setAddMode] = useState<"paste" | "file" | null>(null);
   const [addText, setAddText] = useState("");
   const [addName, setAddName] = useState("");
@@ -46,6 +53,39 @@ export function SourceViewer({
     setSources((prev) => prev.filter((s) => s.id !== id));
     setDeleting(null);
     onSourceDelete?.();
+  }
+
+  function startEdit(source: Source) {
+    setEditingId(source.id);
+    setEditName(source.name);
+    setEditContent(source.content);
+    setExpanded(source.id);
+    setSaveError("");
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setSaveError("");
+  }
+
+  async function handleSaveEdit(id: string) {
+    setSaving(true);
+    setSaveError("");
+    const res = await fetch(`/api/projects/${projectId}/sources/${id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: editName.trim(), content: editContent }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setSources((prev) => prev.map((s) => (s.id === id ? { ...s, ...data.source } : s)));
+      setEditingId(null);
+      onSourceUpdate?.();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setSaveError(data.error ?? "저장하지 못했습니다.");
+    }
+    setSaving(false);
   }
 
   async function handleAddPaste() {
@@ -180,40 +220,86 @@ export function SourceViewer({
       ) : (
         <div className="source-list">
           {sources.map((source) => (
-            <div className="source-item" key={source.id}>
+            <div className={`source-item${editingId === source.id ? " source-item--editing" : ""}`} key={source.id}>
               <div className="source-item-header">
                 <FileText size={16} className="source-file-icon" />
-                <div className="source-meta">
-                  <span className="source-name">{source.name}</span>
-                  <span className="source-type">{typeLabel[source.type]}</span>
-                  <span className="source-date">
-                    {new Date(source.createdAt).toLocaleString("ko-KR")}
-                  </span>
-                </div>
+                {editingId === source.id ? (
+                  <input
+                    className="field source-name-edit"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    maxLength={200}
+                    autoFocus
+                  />
+                ) : (
+                  <div className="source-meta">
+                    <span className="source-name">{source.name}</span>
+                    <span className="source-type">{typeLabel[source.type]}</span>
+                    <span className="source-date">
+                      {new Date(source.createdAt).toLocaleString("ko-KR")}
+                    </span>
+                  </div>
+                )}
                 <div className="source-actions">
-                  <button
-                    className="button"
-                    onClick={() => setExpanded(expanded === source.id ? null : source.id)}
-                  >
-                    <TextAlignLeft size={15} />
-                    {expanded === source.id ? "접기" : "미리보기"}
-                  </button>
-                  <button
-                    className="source-delete-button"
-                    aria-label={`${source.name} 삭제`}
-                    disabled={deleting === source.id}
-                    onClick={() => handleDelete(source.id, source.name)}
-                  >
-                    <Trash size={15} />
-                  </button>
+                  {editingId === source.id ? (
+                    <>
+                      {saveError && <span className="source-save-error">{saveError}</span>}
+                      <button
+                        className="button"
+                        onClick={cancelEdit}
+                        disabled={saving}
+                      >
+                        취소
+                      </button>
+                      <button
+                        className="button button-primary"
+                        onClick={() => handleSaveEdit(source.id)}
+                        disabled={saving || !editName.trim()}
+                      >
+                        {saving ? "저장 중…" : "저장"}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {source.type !== "pdf" && (
+                        <button className="button" onClick={() => startEdit(source)}>
+                          <PencilSimple size={15} />
+                          편집
+                        </button>
+                      )}
+                      <button
+                        className="button"
+                        onClick={() => setExpanded(expanded === source.id ? null : source.id)}
+                      >
+                        <TextAlignLeft size={15} />
+                        {expanded === source.id ? "접기" : "미리보기"}
+                      </button>
+                      <button
+                        className="source-delete-button"
+                        aria-label={`${source.name} 삭제`}
+                        disabled={deleting === source.id}
+                        onClick={() => handleDelete(source.id, source.name)}
+                      >
+                        <Trash size={15} />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
-              {expanded === source.id && (
-                <textarea
-                  className="source-preview"
-                  value={source.type === "pdf" ? "[PDF — 텍스트 추출본]" : source.content}
-                  readOnly
-                />
+              {(expanded === source.id || editingId === source.id) && (
+                editingId === source.id ? (
+                  <textarea
+                    className="source-preview source-preview--edit"
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                  />
+                ) : (
+                  <textarea
+                    className="source-preview"
+                    value={source.type === "pdf" ? "[PDF — 텍스트 추출본]" : source.content}
+                    readOnly
+                  />
+                )
               )}
             </div>
           ))}

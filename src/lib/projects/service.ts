@@ -11,6 +11,7 @@ import {
   listDemoProjects,
   renameDemoProject,
   saveDemoDocument,
+  updateDemoSource,
   type DemoRun,
 } from "@/lib/projects/demo-store";
 import type { SpecDocument } from "@/lib/spec/schema";
@@ -274,6 +275,33 @@ export async function deleteSource(projectId: string, sourceId: string) {
     .eq("project_id", projectId)
     .eq("user_id", auth.userId);
   if (error) throw error;
+}
+
+export async function updateSource(
+  projectId: string,
+  sourceId: string,
+  patch: { name?: string; content?: string },
+) {
+  const auth = await requireAuthContext();
+  if (auth.demo) return updateDemoSource(projectId, sourceId, patch);
+
+  const supabase = await createClient();
+  const updates: Record<string, unknown> = {};
+  if (patch.name !== undefined) updates.name = patch.name;
+  if (patch.content !== undefined) {
+    updates.content = patch.content;
+    updates.size_bytes = new TextEncoder().encode(patch.content).length;
+  }
+  const { data, error } = await supabase
+    .from("sources")
+    .update(updates)
+    .eq("id", sourceId)
+    .eq("project_id", projectId)
+    .eq("user_id", auth.userId)
+    .select("id, name, source_type, content, created_at")
+    .single();
+  if (error) throw error;
+  return { id: data.id, name: data.name, type: data.source_type, content: data.content, createdAt: data.created_at };
 }
 
 export async function renameProject(projectId: string, name: string) {
