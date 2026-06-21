@@ -5,7 +5,7 @@ export const evidenceSchema = z.object({
   reviewStatus: z.enum(["confirmed", "needs-review", "conflict"]),
   sourceId: z.string().min(1),
   sourceExcerpt: z.string().min(1),
-  rationale: z.string().nullable().default(null),
+  rationale: z.string().nullable(),
 });
 
 const requirementSchema = z.object({
@@ -124,6 +124,9 @@ export const specDocumentSchema = z.object({
   }),
 });
 
+export const analysisSchema = z.object({
+  requirements: z.array(requirementSchema),
+});
 export type Evidence = z.infer<typeof evidenceSchema>;
 export type SpecDocument = z.infer<typeof specDocumentSchema>;
 export type Screen = SpecDocument["screens"][number];
