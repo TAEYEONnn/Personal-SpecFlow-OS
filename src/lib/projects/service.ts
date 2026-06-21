@@ -21,7 +21,7 @@ export type ProjectView = {
   sources: Array<{
     id: string;
     name: string;
-    type: "paste" | "txt" | "md";
+    type: "paste" | "txt" | "md" | "pdf";
     content: string;
     createdAt: string;
   }>;
@@ -140,7 +140,7 @@ export async function getProject(projectId: string): Promise<ProjectView | null>
 
 export async function addSource(
   projectId: string,
-  source: { name: string; type: "paste" | "txt" | "md"; content: string },
+  source: { name: string; type: "paste" | "txt" | "md" | "pdf"; content: string },
 ) {
   const auth = await requireAuthContext();
   if (auth.demo) return addDemoSource(projectId, source);
@@ -245,4 +245,57 @@ export async function saveProjectDocument(
 export async function getCompilationRun(projectId: string, runId: string) {
   const project = await getProject(projectId);
   return project?.runs.find((run) => run.id === runId) ?? null;
+}
+
+export async function getDocumentAtRevision(
+  projectId: string,
+  revision: number,
+): Promise<SpecDocument | null> {
+  const auth = await requireAuthContext();
+  if (auth.demo) {
+    const project = getDemoProject(projectId);
+    if (!project) return null;
+    return revision === project.revision ? project.document : null;
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("project_documents")
+    .select("document")
+    .eq("project_id", projectId)
+    .eq("revision", revision)
+    .maybeSingle();
+  if (error) throw error;
+  return (data?.document as SpecDocument | undefined) ?? null;
+}
+
+export type DocumentRevisionSummary = {
+  revision: number;
+  createdAt: string;
+  runId: string | null;
+};
+
+export async function listDocumentRevisions(
+  projectId: string,
+): Promise<DocumentRevisionSummary[]> {
+  const auth = await requireAuthContext();
+  if (auth.demo) {
+    const project = getDemoProject(projectId);
+    if (!project || project.revision === 0) return [];
+    return [{ revision: project.revision, createdAt: project.updatedAt, runId: null }];
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("project_documents")
+    .select("revision, created_at, source_run_id")
+    .eq("project_id", projectId)
+    .order("revision", { ascending: false })
+    .limit(20);
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    revision: row.revision,
+    createdAt: row.created_at,
+    runId: row.source_run_id ?? null,
+  }));
 }

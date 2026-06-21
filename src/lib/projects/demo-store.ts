@@ -5,7 +5,7 @@ import type { SpecDocument } from "@/lib/spec/schema";
 export type DemoSource = {
   id: string;
   name: string;
-  type: "paste" | "txt" | "md";
+  type: "paste" | "txt" | "md" | "pdf";
   content: string;
   createdAt: string;
 };

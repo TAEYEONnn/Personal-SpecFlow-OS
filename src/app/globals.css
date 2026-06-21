@@ -212,6 +212,31 @@ textarea:focus-visible {
   font-size: 13px;
 }
 
+.cost-estimate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.cost-estimate--warn {
+  background: #fff8e6;
+  color: #9a6700;
+}
+
+.pdf-notice {
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
 .demo-note {
   margin-top: 18px;
   color: #849096;
@@ -523,6 +548,16 @@ textarea:focus-visible {
   background: #18a66b;
 }
 
+.status-dot--pending {
+  background: var(--warning);
+  animation: pulse-dot 1s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 .workspace-main {
   min-width: 0;
   min-height: 0;
@@ -530,6 +565,13 @@ textarea:focus-visible {
   overflow: hidden;
   display: grid;
   grid-template-rows: minmax(430px, 52vh) minmax(280px, 1fr);
+}
+
+.empty-flow {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .flow-section {
@@ -867,6 +909,422 @@ textarea:focus-visible {
 .save-note {
   color: #319066;
   font-size: 12px;
+}
+
+.runs-view {
+  height: 100%;
+  overflow: auto;
+  padding: 28px 34px 52px;
+}
+
+.runs-view h2 {
+  margin: 0 0 18px;
+  font-size: 18px;
+  letter-spacing: -0.03em;
+}
+
+.runs-empty {
+  color: var(--muted);
+}
+
+.run-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 5px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.run-status--completed {
+  background: #e8f8ec;
+  color: #278246;
+}
+
+.run-status--failed {
+  background: #fff0f0;
+  color: #b03030;
+}
+
+.run-status--running {
+  background: #fff4e8;
+  color: #c06a1d;
+}
+
+.run-status--queued {
+  background: var(--surface-soft);
+  color: var(--muted);
+}
+
+.run-model,
+.run-version {
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: 12px;
+}
+
+.run-time {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.diff-view {
+  height: 100%;
+  overflow: auto;
+  padding: 28px 34px 52px;
+}
+
+.diff-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.diff-header h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.03em;
+}
+
+.diff-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.diff-current-label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.diff-hint {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
+}
+
+.diff-body {
+  display: grid;
+  gap: 24px;
+}
+
+.diff-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+.diff-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.diff-badge--added {
+  background: #e8f8ec;
+  color: #278246;
+}
+
+.diff-badge--removed {
+  background: #fff0f0;
+  color: #b03030;
+}
+
+.diff-badge--changed {
+  background: #eaf5ff;
+  color: #2779b4;
+}
+
+.diff-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.diff-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.diff-item:not(:last-child) {
+  border-bottom: 1px solid var(--line);
+}
+
+.diff-item--added {
+  background: #f4fcf6;
+}
+
+.diff-item--removed {
+  background: #fff6f6;
+}
+
+.diff-item--changed {
+  background: #f4f9ff;
+}
+
+.diff-marker {
+  flex-shrink: 0;
+  width: 16px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.diff-item--added .diff-marker { color: #278246; }
+.diff-item--removed .diff-marker { color: #b03030; }
+.diff-item--changed .diff-marker { color: #2779b4; }
+
+.diff-status-change {
+  color: var(--muted);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.export-menu {
+  position: relative;
+}
+
+.export-menu:hover .export-dropdown {
+  display: flex;
+}
+
+.export-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 50;
+  min-width: 160px;
+  flex-direction: column;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgb(18 36 43 / 10%);
+  padding: 4px;
+  gap: 0;
+}
+
+.export-option {
+  display: block;
+  border-radius: 5px;
+  padding: 9px 12px;
+  color: var(--ink);
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.export-option:hover {
+  background: var(--surface-soft);
+}
+
+.export-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--line);
+}
+
+.notion-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 40%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.notion-dialog {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 400px;
+  max-width: 90vw;
+  display: grid;
+  gap: 12px;
+}
+
+.notion-dialog-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.notion-dialog-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.notion-dialog-link {
+  font-size: 14px;
+  color: var(--accent);
+}
+
+.notion-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.figma-view {
+  padding: 28px 32px;
+  overflow-y: auto;
+  display: grid;
+  gap: 24px;
+  align-content: start;
+}
+
+.figma-header {
+  display: grid;
+  gap: 10px;
+}
+
+.figma-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.figma-desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.figma-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.figma-input-row .field {
+  flex: 1;
+}
+
+.figma-summary {
+  display: flex;
+  gap: 16px;
+}
+
+.figma-stat {
+  background: var(--surface-2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 80px;
+}
+
+.figma-stat-num {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.figma-stat-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.figma-results {
+  display: grid;
+  gap: 20px;
+}
+
+.figma-screen-section {
+  display: grid;
+  gap: 10px;
+}
+
+.figma-screen-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.figma-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.figma-table th {
+  text-align: left;
+  padding: 6px 10px;
+  background: var(--surface-2);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.figma-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.figma-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.figma-badge--existing { background: #d4f5e4; color: #1a6b3a; }
+.figma-badge--extend { background: #fef3c7; color: #92400e; }
+.figma-badge--new { background: #fee2e2; color: #991b1b; }
+.figma-badge--screen { background: var(--surface-2); color: var(--muted); }
+
+.figma-missing {
+  color: var(--danger);
+  font-size: 12px;
+}
+
+.figma-empty {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
+}
+
+.figma-placeholder {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.figma-placeholder p {
+  margin: 0;
 }
 
 @media (max-width: 1120px) {

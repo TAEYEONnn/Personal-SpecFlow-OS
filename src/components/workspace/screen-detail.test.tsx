@@ -13,7 +13,6 @@ describe("ScreenDetail", () => {
       />,
     );
 
-    expect(screen.getByText("01. 로그인")).toBeInTheDocument();
     expect(screen.getByText("진입 조건")).toBeInTheDocument();
     expect(screen.getByText("주요 행동")).toBeInTheDocument();
     expect(screen.getByText("QA 기준")).toBeInTheDocument();

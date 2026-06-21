@@ -56,6 +56,17 @@ export const demoSpecDocument: SpecDocument = {
   ],
   questions: [
     {
+      id: "question-auth-method",
+      question: "인증 방식이 username+password 단일인지, 소셜 로그인도 지원해야 하는지 확인이 필요합니다.",
+      priority: "blocking",
+      context: "인증 방식에 따라 화면 구조와 Supabase 설정이 달라집니다.",
+      evidence: inference(
+        "로그인하고 개인 작업공간에 로그인하세요.",
+        "현재 명세에는 username+password만 언급되어 있으나, 소셜 로그인 지원 여부가 명시되지 않았습니다.",
+      ),
+      resolved: true,
+    },
+    {
       id: "question-session",
       question: "세션 만료 후 작성 중인 내용은 어떻게 복구할까요?",
       priority: "should-decide",

@@ -1,15 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowClockwise,
   CalendarBlank,
   CheckSquare,
+  ClockCounterClockwise,
   DownloadSimple,
   FileText,
+  GitDiff,
   ListChecks,
   PencilSimple,
+  Polygon,
   Question,
   SquaresFour,
   TextT,
@@ -17,15 +20,18 @@ import {
   Warning,
 } from "@phosphor-icons/react";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { DiffView } from "@/components/workspace/diff-view";
 import { DocumentView } from "@/components/workspace/document-view";
 import { EvidencePanel } from "@/components/workspace/evidence-panel";
+import { FigmaView } from "@/components/workspace/figma-view";
 import { FlowCanvas } from "@/components/workspace/flow-canvas";
 import { MatrixView } from "@/components/workspace/matrix-view";
+import { RunsView } from "@/components/workspace/runs-view";
 import { ScreenDetail } from "@/components/workspace/screen-detail";
 import type { Evidence, Screen, SpecDocument } from "@/lib/spec/schema";
 import type { ProjectView } from "@/lib/projects/service";
 
-type ViewMode = "document" | "flow" | "matrix";
+type ViewMode = "document" | "flow" | "matrix" | "runs" | "diff" | "figma";
 
 const navItems = [
   { id: "brief", label: "브리프", icon: FileText, countKey: "brief" },
@@ -36,6 +42,9 @@ const navItems = [
   { id: "copy", label: "UX 문구", icon: TextT, countKey: "uxCopy" },
   { id: "tasks", label: "작업 목록", icon: CheckSquare, countKey: "tasks" },
   { id: "report", label: "일일보고", icon: CalendarBlank, countKey: "report" },
+  { id: "diff", label: "변경 내역", icon: GitDiff, countKey: "diff" },
+  { id: "runs", label: "컴파일 이력", icon: ClockCounterClockwise, countKey: "runs" },
+  { id: "figma", label: "Figma 매핑", icon: Polygon, countKey: "figma" },
 ] as const;
 
 export function WorkspaceShell({
@@ -53,8 +62,19 @@ export function WorkspaceShell({
   const [editing, setEditing] = useState(false);
   const [pending, setPending] = useState(false);
   const [note, setNote] = useState("");
+  const [notionDialog, setNotionDialog] = useState(false);
+  const [notionPageId, setNotionPageId] = useState("");
+  const [notionPending, setNotionPending] = useState(false);
+  const [notionResult, setNotionResult] = useState<{ url: string } | null>(null);
+
+  useEffect(() => {
+    if (!note) return;
+    const id = setTimeout(() => setNote(""), 3000);
+    return () => clearTimeout(id);
+  }, [note]);
+
   const selectedScreen =
-    document.screens.find((screen) => screen.id === selectedId) ?? document.screens[0];
+    document.screens.find((screen) => screen.id === selectedId) ?? document.screens[0] ?? null;
 
   const counts = useMemo(
     () => ({
@@ -66,8 +86,11 @@ export function WorkspaceShell({
       uxCopy: document.uxCopy.length,
       tasks: document.tasks.length,
       report: 1,
+      runs: project.runs.length,
+      diff: 0,
+      figma: 0,
     }),
-    [document],
+    [document, project.runs.length],
   );
 
   function replaceScreen(next: Screen) {
@@ -78,6 +101,7 @@ export function WorkspaceShell({
   }
 
   function replaceEvidence(status: Evidence["reviewStatus"]) {
+    if (!selectedScreen) return;
     replaceScreen({
       ...selectedScreen,
       evidence: { ...selectedScreen.evidence, reviewStatus: status },
@@ -120,14 +144,55 @@ export function WorkspaceShell({
     setPending(false);
   }
 
+  async function exportToNotion() {
+    if (!notionPageId.trim()) return;
+    setNotionPending(true);
+    setNotionResult(null);
+    const response = await fetch(`/api/projects/${project.id}/export/notion`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ parentPageId: notionPageId.trim() }),
+    });
+    const data = await response.json();
+    if (response.ok) {
+      setNotionResult({ url: data.url });
+    } else if (data.notionAuthRequired) {
+      window.location.href = `/api/notion/oauth?returnTo=/projects/${project.id}`;
+    } else {
+      setNote(data.error ?? "Notion 내보내기 실패");
+      setNotionDialog(false);
+    }
+    setNotionPending(false);
+  }
+
   function chooseNav(id: string) {
     setActiveNav(id);
     if (id === "screens") setView("flow");
     else if (id === "permissions" || id === "states") setView("matrix");
+    else if (id === "runs") setView("runs");
+    else if (id === "diff") setView("diff");
+    else if (id === "figma") setView("figma");
     else setView("document");
   }
 
+  function chooseView(mode: ViewMode) {
+    setView(mode);
+    if (mode === "flow") setActiveNav("screens");
+    else if (mode === "matrix") {
+      if (activeNav !== "states") setActiveNav("permissions");
+    } else if (mode === "document") {
+      if (activeNav === "screens" || activeNav === "runs" || activeNav === "diff" || activeNav === "figma") setActiveNav("brief");
+    } else if (mode === "runs") {
+      setActiveNav("runs");
+    } else if (mode === "diff") {
+      setActiveNav("diff");
+    } else if (mode === "figma") {
+      setActiveNav("figma");
+    }
+  }
+
   return (
+    <>
     <main className="workspace">
       <aside className="workspace-sidebar">
         <div className="sidebar-brand">
@@ -179,7 +244,7 @@ export function WorkspaceShell({
             <button
               className={`view-button ${view === id ? "active" : ""}`}
               key={id}
-              onClick={() => setView(id as ViewMode)}
+              onClick={() => chooseView(id as ViewMode)}
             >
               {label}
             </button>
@@ -187,26 +252,56 @@ export function WorkspaceShell({
         </div>
         <div className="header-actions">
           <span className="compile-status">
-            <span className="status-dot" />
+            <span className={`status-dot${pending ? " status-dot--pending" : ""}`} />
             {note || `컴파일 완료 · revision ${revision}`}
           </span>
           <button className="button" disabled={pending} onClick={recompile}>
             <ArrowClockwise size={17} />
             재컴파일
           </button>
-          <a className="button" href={`/api/projects/${project.id}/export?format=markdown`}>
-            <DownloadSimple size={17} />
-            Markdown
-          </a>
-          <a className="button" href={`/api/projects/${project.id}/export?format=json`}>
-            <DownloadSimple size={17} />
-            JSON
-          </a>
+          <div className="export-menu">
+            <button className="button">
+              <DownloadSimple size={17} />
+              내보내기
+            </button>
+            <div className="export-dropdown">
+              {[
+                ["full", "전체 명세"],
+                ["screen-spec", "화면 정의서"],
+                ["qa-checklist", "QA 체크리스트"],
+                ["daily-report", "일일보고"],
+              ].map(([tmpl, label]) => (
+                <a
+                  key={tmpl}
+                  className="export-option"
+                  href={`/api/projects/${project.id}/export?format=markdown&template=${tmpl}`}
+                >
+                  {label}
+                </a>
+              ))}
+              <div className="export-divider" />
+              <a
+                className="export-option"
+                href={`/api/projects/${project.id}/export?format=json`}
+              >
+                JSON (원본)
+              </a>
+              <div className="export-divider" />
+              <button
+                className="export-option"
+                type="button"
+                onClick={() => { setNotionDialog(true); setNotionResult(null); }}
+              >
+                Notion으로 내보내기
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
-      <section className="workspace-main">
+      <section className="workspace-main" style={view !== "flow" ? { gridTemplateRows: "1fr" } : undefined}>
         {view === "flow" ? (
+          selectedScreen ? (
           <>
             <FlowCanvas
               document={document}
@@ -215,7 +310,10 @@ export function WorkspaceShell({
             />
             <section className="detail-panel">
               <div className="detail-heading">
-                <div />
+                <h2>
+                  선택한 화면 상세
+                  <span className="detail-subtitle">{selectedScreen.name}</span>
+                </h2>
                 <div className="header-actions">
                   {note === "저장됨" ? <span className="save-note">✓ 저장됨</span> : null}
                   {editing ? (
@@ -234,14 +332,73 @@ export function WorkspaceShell({
               <ScreenDetail screen={selectedScreen} editing={editing} onChange={replaceScreen} />
             </section>
           </>
+          ) : (
+            <div className="empty-flow">
+              <p>컴파일 결과에 화면 정보가 없습니다. 재컴파일을 시도해 주세요.</p>
+            </div>
+          )
         ) : view === "document" ? (
           <DocumentView document={document} />
-        ) : (
+        ) : view === "matrix" ? (
           <MatrixView document={document} />
+        ) : view === "diff" ? (
+          <DiffView projectId={project.id} current={document} currentRevision={revision} />
+        ) : view === "figma" ? (
+          <FigmaView projectId={project.id} document={document} />
+        ) : (
+          <RunsView runs={project.runs} />
         )}
       </section>
 
-      <EvidencePanel evidence={selectedScreen.evidence} onStatusChange={replaceEvidence} />
+      {selectedScreen ? (
+        <EvidencePanel evidence={selectedScreen.evidence} onStatusChange={replaceEvidence} />
+      ) : (
+        <aside className="evidence-panel" />
+      )}
     </main>
+
+    {notionDialog && (
+      <div className="notion-dialog-backdrop" onClick={() => setNotionDialog(false)}>
+        <div className="notion-dialog" onClick={(e) => e.stopPropagation()}>
+          {notionResult ? (
+            <>
+              <p className="notion-dialog-title">Notion 내보내기 완료</p>
+              <a className="notion-dialog-link" href={notionResult.url} target="_blank" rel="noreferrer">
+                Notion에서 열기 →
+              </a>
+              <div className="notion-dialog-actions">
+                <button className="button button-primary" onClick={() => setNotionDialog(false)}>닫기</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="notion-dialog-title">Notion 페이지 ID 입력</p>
+              <p className="notion-dialog-hint">
+                상위 Notion 페이지의 URL에서 마지막 32자리 ID를 붙여 넣으세요.
+              </p>
+              <input
+                className="field"
+                placeholder="예: 1a2b3c4d5e6f..."
+                value={notionPageId}
+                onChange={(e) => setNotionPageId(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && exportToNotion()}
+                autoFocus
+              />
+              <div className="notion-dialog-actions">
+                <button className="button" onClick={() => setNotionDialog(false)}>취소</button>
+                <button
+                  className="button button-primary"
+                  disabled={notionPending || !notionPageId.trim()}
+                  onClick={exportToNotion}
+                >
+                  {notionPending ? "내보내는 중…" : "Notion으로 내보내기"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    )}
+    </>
   );
 }

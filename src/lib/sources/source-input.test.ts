@@ -24,23 +24,23 @@ describe("source input validation", () => {
     ).toThrow("100,000자");
   });
 
-  it("rejects files over one megabyte", () => {
+  it("rejects files over the size limit", () => {
     expect(() =>
       validateSourceInput({
         text: "valid",
         fileName: "brief.md",
         fileSize: MAX_FILE_BYTES + 1,
       }),
-    ).toThrow("1MB");
+    ).toThrow("10MB");
   });
 
   it("rejects unsupported extensions", () => {
     expect(() =>
       validateSourceInput({
         text: "valid",
-        fileName: "brief.pdf",
+        fileName: "brief.pptx",
         fileSize: 20,
       }),
-    ).toThrow("TXT 또는 MD");
+    ).toThrow("TXT, MD 또는 PDF");
   });
 });

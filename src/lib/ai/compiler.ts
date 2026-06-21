@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { demoSpecDocument } from "@/lib/spec/demo-document";
+import { splitIntoChunks } from "@/lib/ai/cost-estimate";
 import { specDocumentSchema, type SpecDocument } from "@/lib/spec/schema";
 
 export const COMPILER_PROMPT_VERSION = "2026-06-21.v1";
@@ -30,6 +31,17 @@ export async function compileSpecDocument(source: string): Promise<SpecDocument>
     return structuredClone(demoSpecDocument);
   }
 
+  const chunks = splitIntoChunks(source);
+  if (chunks.length === 1) {
+    return compileSingleChunk(chunks[0]);
+  }
+
+  // Multi-chunk: compile each chunk, then merge results
+  const docs = await Promise.all(chunks.map((chunk) => compileSingleChunk(chunk)));
+  return mergeSpecDocuments(docs);
+}
+
+async function compileSingleChunk(source: string): Promise<SpecDocument> {
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const response = await client.responses.parse({
     model: process.env.OPENAI_MODEL ?? "gpt-5.4",
@@ -50,4 +62,21 @@ export async function compileSpecDocument(source: string): Promise<SpecDocument>
     throw new Error("AI가 구조화된 명세를 반환하지 않았습니다.");
   }
   return specDocumentSchema.parse(response.output_parsed);
+}
+
+function mergeSpecDocuments(docs: SpecDocument[]): SpecDocument {
+  const base = docs[0];
+  const rest = docs.slice(1);
+  return {
+    brief: base.brief,
+    requirements: rest.reduce((acc, d) => acc.concat(d.requirements), base.requirements),
+    questions: rest.reduce((acc, d) => acc.concat(d.questions), base.questions),
+    roles: rest.reduce((acc, d) => acc.concat(d.roles), base.roles),
+    permissions: rest.reduce((acc, d) => acc.concat(d.permissions), base.permissions),
+    screens: rest.reduce((acc, d) => acc.concat(d.screens), base.screens),
+    states: rest.reduce((acc, d) => acc.concat(d.states), base.states),
+    uxCopy: rest.reduce((acc, d) => acc.concat(d.uxCopy), base.uxCopy),
+    tasks: rest.reduce((acc, d) => acc.concat(d.tasks), base.tasks),
+    dailyReport: base.dailyReport,
+  };
 }

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Evidence } from "@/lib/spec/schema";
 
 const labels = {
@@ -13,12 +14,33 @@ export function EvidencePanel({
   evidence: Evidence;
   onStatusChange: (status: Evidence["reviewStatus"]) => void;
 }) {
+  const [activeTab, setActiveTab] = useState<"evidence" | "history">("evidence");
+
   return (
     <aside className="evidence-panel">
       <div className="evidence-tabs">
-        <button className="evidence-tab active">근거</button>
-        <button className="evidence-tab">변경 이력</button>
+        <button
+          className={`evidence-tab ${activeTab === "evidence" ? "active" : ""}`}
+          onClick={() => setActiveTab("evidence")}
+        >
+          근거
+        </button>
+        <button
+          className={`evidence-tab ${activeTab === "history" ? "active" : ""}`}
+          onClick={() => setActiveTab("history")}
+        >
+          변경 이력
+        </button>
       </div>
+      {activeTab === "history" ? (
+        <div className="evidence-content">
+          <div className="evidence-section">
+            <div className="evidence-box" style={{ color: "var(--muted)", textAlign: "center", padding: "28px 16px" }}>
+              변경 이력 기능은 2주차에 추가됩니다.
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className="evidence-content">
         <section className="evidence-section">
           <h3>
@@ -75,6 +97,7 @@ export function EvidencePanel({
           </div>
         </section>
       </div>
+      )}
     </aside>
   );
 }
