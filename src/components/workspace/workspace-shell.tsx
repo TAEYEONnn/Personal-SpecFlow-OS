@@ -35,16 +35,16 @@ import type { ProjectView } from "@/lib/projects/service";
 type ViewMode = "document" | "flow" | "matrix" | "runs" | "diff" | "figma" | "sources";
 
 const navItems = [
-  { id: "brief", label: "브리프", icon: FileText, countKey: "brief" },
-  { id: "questions", label: "확인 질문", icon: Question, countKey: "questions" },
-  { id: "screens", label: "화면 목록", icon: SquaresFour, countKey: "screens" },
-  { id: "permissions", label: "역할과 권한", icon: UsersThree, countKey: "permissions" },
-  { id: "states", label: "상태와 예외", icon: Warning, countKey: "states" },
-  { id: "copy", label: "화면 문구", icon: TextT, countKey: "uxCopy" },
-  { id: "tasks", label: "작업 목록", icon: CheckSquare, countKey: "tasks" },
-  { id: "diff", label: "변경 내역", icon: GitDiff, countKey: "diff" },
-  { id: "runs", label: "변환 이력", icon: ClockCounterClockwise, countKey: "runs" },
-  { id: "sources", label: "원문", icon: Article, countKey: "sources" },
+  { id: "brief",       label: "브리프",     icon: FileText,              countKey: "brief",       description: "목적, 성공 조건, 요구사항 요약" },
+  { id: "questions",   label: "확인 질문",   icon: Question,              countKey: "questions",   description: "AI가 발견한 미결·가정 사항" },
+  { id: "screens",     label: "화면 목록",   icon: SquaresFour,           countKey: "screens",     description: "화면 흐름도 및 선택 화면 상세" },
+  { id: "permissions", label: "역할과 권한", icon: UsersThree,            countKey: "permissions", description: "역할별 기능 권한 매트릭스" },
+  { id: "states",      label: "상태와 예외", icon: Warning,               countKey: "states",      description: "화면별 상태·예외 시나리오" },
+  { id: "copy",        label: "화면 문구",   icon: TextT,                 countKey: "uxCopy",      description: "버튼·레이블·안내 문구 목록" },
+  { id: "tasks",       label: "작업 목록",   icon: CheckSquare,           countKey: "tasks",       description: "개발 작업 및 진행 상태" },
+  { id: "diff",        label: "변경 내역",   icon: GitDiff,               countKey: "diff",        description: "버전 간 변경 사항 비교" },
+  { id: "runs",        label: "변환 이력",   icon: ClockCounterClockwise, countKey: "runs",        description: "AI 정리 실행 기록" },
+  { id: "sources",     label: "원문",        icon: Article,               countKey: "sources",     description: "업로드된 원본 문서 목록" },
 ] as const;
 
 export function WorkspaceShell({
@@ -73,6 +73,15 @@ export function WorkspaceShell({
   const [sourcesCount, setSourcesCount] = useState(project.sources.length);
   const [canvasCollapsed, setCanvasCollapsed] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [canvasHeight, setCanvasHeight] = useState(360);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("specflow-canvas-height");
+    if (saved) {
+      const parsed = parseInt(saved, 10);
+      if (!isNaN(parsed) && parsed > 0) setCanvasHeight(parsed);
+    }
+  }, []);
 
   useEffect(() => {
     if (!note || noteIsError) return;
@@ -189,6 +198,24 @@ export function WorkspaceShell({
     doSave(revision, nextDoc);
   }
 
+  function startResize(e: React.MouseEvent) {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startH = canvasHeight;
+    function onMove(ev: MouseEvent) {
+      const next = Math.max(120, Math.min(startH + ev.clientY - startY, window.innerHeight - 200));
+      setCanvasHeight(next);
+    }
+    function onUp(ev: MouseEvent) {
+      const finalH = Math.max(120, Math.min(startH + ev.clientY - startY, window.innerHeight - 200));
+      localStorage.setItem("specflow-canvas-height", String(finalH));
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    }
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement).tagName;
@@ -270,10 +297,17 @@ export function WorkspaceShell({
     return window.confirm("저장하지 않은 내용이 있어요. 이동할까요?");
   }
 
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.id === "screens" || item.id === "brief" || item.id === "sources") return true;
+    return (counts[item.countKey as keyof typeof counts] ?? 0) > 0;
+  });
+
   const navToSection: Record<string, string> = {
     brief: "section-brief",
     questions: "section-questions",
     tasks: "section-tasks",
+    permissions: "section-permissions",
+    states: "section-states",
   };
 
   function chooseNav(id: string) {
@@ -281,7 +315,6 @@ export function WorkspaceShell({
     setEditing(false);
     setActiveNav(id);
     if (id === "screens") setView("flow");
-    else if (id === "permissions" || id === "states") setView("matrix");
     else if (id === "runs") setView("runs");
     else if (id === "diff") setView("diff");
     else if (id === "sources") setView("sources");
@@ -302,7 +335,7 @@ export function WorkspaceShell({
     else if (mode === "matrix") {
       if (activeNav !== "states") setActiveNav("permissions");
     } else if (mode === "document") {
-      if (["screens", "runs", "diff", "sources", "figma"].includes(activeNav))
+      if (["screens", "runs", "diff", "sources", "figma", "permissions", "states"].includes(activeNav))
         setActiveNav("brief");
     } else if (mode === "runs") {
       setActiveNav("runs");
@@ -349,17 +382,18 @@ export function WorkspaceShell({
           )}
         </div>
         <nav className="sidebar-nav" aria-label="산출물">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <button
                 className={`nav-item ${activeNav === item.id ? "active" : ""}`}
                 key={item.id}
+                title={item.description}
                 onClick={() => chooseNav(item.id)}
               >
                 <Icon size={18} />
                 <span className="nav-label">{item.label}</span>
-                <span className="nav-count">{counts[item.countKey]}</span>
+                <span className="nav-count">{counts[item.countKey as keyof typeof counts]}</span>
               </button>
             );
           })}
@@ -465,22 +499,31 @@ export function WorkspaceShell({
 
       <section
         className="workspace-main"
-        style={view !== "flow" ? { gridTemplateRows: "1fr" } : undefined}
-        data-canvas-collapsed={view === "flow" && canvasCollapsed ? "true" : undefined}
+        style={view === "flow" ? { display: "flex", flexDirection: "column" } : { gridTemplateRows: "1fr" }}
       >
         {view === "flow" ? (
           selectedScreen ? (
           <>
-            <FlowCanvas
-              document={document}
-              selectedScreenId={selectedScreen.id}
-              onSelect={setSelectedId}
-              onPositionUpdate={handlePositionUpdate}
-              collapsed={canvasCollapsed}
-              onToggleCollapse={() => setCanvasCollapsed((c) => !c)}
-              onRecompile={recompile}
-            />
-            <section className="detail-panel">
+            <div style={{ height: canvasCollapsed ? 50 : canvasHeight, minHeight: canvasCollapsed ? 50 : 120, overflow: "hidden", flexShrink: 0 }}>
+              <FlowCanvas
+                document={document}
+                selectedScreenId={selectedScreen.id}
+                onSelect={setSelectedId}
+                onPositionUpdate={handlePositionUpdate}
+                collapsed={canvasCollapsed}
+                onToggleCollapse={() => setCanvasCollapsed((c) => !c)}
+                onRecompile={recompile}
+              />
+            </div>
+            {!canvasCollapsed && (
+              <div
+                className="resize-divider"
+                onMouseDown={startResize}
+                role="separator"
+                aria-label="상세 패널 크기 조절"
+              />
+            )}
+            <section className="detail-panel" style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
               <div className="detail-heading">
                 <h2>
                   선택한 화면 상세
@@ -526,6 +569,7 @@ export function WorkspaceShell({
             projectId={project.id}
             initialSources={project.sources}
             onSourceDelete={() => setSourcesCount((n) => Math.max(0, n - 1))}
+            onSourceAdd={() => setSourcesCount((n) => n + 1)}
           />
         ) : (
           <RunsView runs={project.runs} />

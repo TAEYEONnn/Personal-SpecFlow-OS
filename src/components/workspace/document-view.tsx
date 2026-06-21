@@ -203,6 +203,78 @@ export function DocumentView({
             )}
           </>
         )}
+
+        {(document.roles.length > 0 || document.permissions.length > 0) && (
+          <>
+            <h2
+              id="section-permissions"
+              className="section-collapsible"
+              onClick={() => toggleSection("permissions")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && toggleSection("permissions")}
+            >
+              역할과 권한
+              <span className="section-meta">
+                {document.permissions.length}개
+                <span className={`section-chevron${collapsed.permissions ? " is-collapsed" : ""}`}>▾</span>
+              </span>
+            </h2>
+            {!collapsed.permissions && (
+              <div className="doc-table-wrap">
+                <table className="doc-table">
+                  <thead>
+                    <tr><th>역할</th><th>기능</th><th>허용</th><th>메모</th></tr>
+                  </thead>
+                  <tbody>
+                    {document.permissions.map((p) => (
+                      <tr key={p.id}>
+                        <td>{document.roles.find((r) => r.id === p.roleId)?.name ?? p.roleId}</td>
+                        <td>{p.capability}</td>
+                        <td>{p.allowed === true ? "✅" : p.allowed === false ? "❌" : "—"}</td>
+                        <td className="doc-table-note">{p.note}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+
+        {document.states.length > 0 && (
+          <>
+            <h2
+              id="section-states"
+              className="section-collapsible"
+              onClick={() => toggleSection("states")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && toggleSection("states")}
+            >
+              상태와 예외
+              <span className="section-meta">
+                {document.states.length}개
+                <span className={`section-chevron${collapsed.states ? " is-collapsed" : ""}`}>▾</span>
+              </span>
+            </h2>
+            {!collapsed.states && (
+              <ul className="state-list">
+                {document.states.map((s) => {
+                  const screen = document.screens.find((sc) => sc.id === s.screenId);
+                  return (
+                    <li key={s.id} className="state-item">
+                      <span className="state-screen-tag">{screen?.name ?? s.screenId}</span>
+                      <strong>{s.name}</strong>
+                      <span className={`tag tag-state-kind tag-state-${s.kind}`}>{s.kind}</span>
+                      {s.description && <p className="state-desc">{s.description}</p>}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </>
+        )}
       </article>
     </div>
   );
