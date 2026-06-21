@@ -1,0 +1,35 @@
+import { LoginForm } from "@/components/auth/login-form";
+import { isDevelopmentDemo } from "@/lib/env";
+
+export default function LoginPage() {
+  return (
+    <main className="login-page">
+      <section className="login-panel">
+        <div className="brand">
+          <span className="brand-mark" aria-hidden />
+          <span>SpecFlow OS</span>
+        </div>
+        <div className="login-copy">
+          <h1>업무 요청을<br />설계 명세로 컴파일하세요.</h1>
+          <p>
+            회의록과 기획 메모를 화면 구조, 상태·예외, UX 문구와 작업 목록으로
+            변환하고 근거까지 함께 검토합니다.
+          </p>
+        </div>
+        <small>Design work compiler for focused product teams.</small>
+      </section>
+      <section className="login-form-wrap">
+        <div className="login-card">
+          <h2>다시 만나서 반가워요</h2>
+          <p>개인 작업공간에 로그인하세요.</p>
+          <LoginForm />
+          {isDevelopmentDemo ? (
+            <p className="demo-note">
+              개발 데모 계정: <strong>designer</strong> / <strong>specflow</strong>
+            </p>
+          ) : null}
+        </div>
+      </section>
+    </main>
+  );
+}
