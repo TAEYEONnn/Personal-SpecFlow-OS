@@ -10,17 +10,17 @@ export default function LoginPage() {
           <span>SpecFlow OS</span>
         </div>
         <div className="login-copy">
-          <h1>업무 요청을<br />설계 명세로 컴파일하세요.</h1>
+          <h1>업무 요청을<br />화면 구조로 정리하세요.</h1>
           <p>
-            회의록과 기획 메모를 화면 구조, 상태·예외, UX 문구와 작업 목록으로
-            변환하고 근거까지 함께 검토합니다.
+            회의록과 기획 메모를 화면 구조, 상태와 예외, 화면 문구와 작업 목록으로
+            정리하고 근거까지 함께 검토해요.
           </p>
         </div>
         <small>Design work compiler for focused product teams.</small>
       </section>
       <section className="login-form-wrap">
         <div className="login-card">
-          <h2>다시 만나서 반가워요</h2>
+          <h2>반갑습니다</h2>
           <p>개인 작업공간에 로그인하세요.</p>
           <LoginForm />
           {isDevelopmentDemo ? (

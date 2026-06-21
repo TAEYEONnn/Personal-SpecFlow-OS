@@ -18,16 +18,16 @@ export function RunsView({ runs }: { runs: DemoRun[] }) {
   if (!runs.length) {
     return (
       <div className="runs-view">
-        <h2>컴파일 이력</h2>
-        <p className="runs-empty">아직 컴파일 기록이 없습니다.</p>
+        <h2>변환 이력</h2>
+        <p className="runs-empty">아직 변환 기록이 없어요.</p>
       </div>
     );
   }
 
   return (
     <div className="runs-view">
-      <h2>컴파일 이력</h2>
-      <table className="matrix-table" aria-label="컴파일 이력">
+      <h2>변환 이력</h2>
+      <table className="matrix-table" aria-label="변환 이력">
         <thead>
           <tr>
             <th>상태</th>

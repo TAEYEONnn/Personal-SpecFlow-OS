@@ -27,7 +27,7 @@ export async function POST(
       .join("\n\n---\n\n");
     if (!combined.trim()) {
       return NextResponse.json(
-        { error: "컴파일할 업무 내용을 먼저 추가해 주세요." },
+        { error: "원문을 먼저 올려 주세요." },
         { status: 422 },
       );
     }

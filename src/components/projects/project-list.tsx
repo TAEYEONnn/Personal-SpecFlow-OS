@@ -19,7 +19,7 @@ export function ProjectList({ projects }: { projects: ProjectSummary[] }) {
   async function handleDelete(e: React.MouseEvent, id: string, name: string) {
     e.preventDefault();
     e.stopPropagation();
-    if (!window.confirm(`"${name}" 프로젝트를 삭제할까요? 이 작업은 되돌릴 수 없습니다.`)) return;
+    if (!window.confirm(`"${name}" 프로젝트를 삭제할까요? 삭제하면 되돌릴 수 없어요.`)) return;
     setDeleting(id);
     await fetch(`/api/projects/${id}`, { method: "DELETE" });
     setDeleting(null);
@@ -31,7 +31,7 @@ export function ProjectList({ projects }: { projects: ProjectSummary[] }) {
       <div className="projects-title-row">
         <div>
           <h1>프로젝트</h1>
-          <p>컴파일한 업무 명세를 이어서 검토하세요.</p>
+          <p>정리된 명세를 이어서 검토하세요.</p>
         </div>
         <Link className="button button-primary" href="/projects/new">
           <Plus size={17} weight="bold" />
@@ -63,8 +63,8 @@ export function ProjectList({ projects }: { projects: ProjectSummary[] }) {
         ) : (
           <div className="empty-projects">
             <div>
-              <h2>첫 업무를 컴파일해 볼까요?</h2>
-              <p>회의록이나 요청 메시지를 넣으면 설계 명세로 정리해 드려요.</p>
+              <h2>첫 프로젝트를 만들어 볼까요?</h2>
+              <p>회의록이나 요청 메모를 올리면 화면 구조와 요구사항으로 정리해 드려요.</p>
             </div>
           </div>
         )}

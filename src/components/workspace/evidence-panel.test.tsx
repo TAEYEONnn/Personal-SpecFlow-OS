@@ -12,7 +12,6 @@ describe("EvidencePanel", () => {
       />,
     );
 
-    expect(screen.getByText("근거")).toBeInTheDocument();
     expect(screen.getByText("추론 근거")).toBeInTheDocument();
     expect(screen.getByText("검토 상태")).toBeInTheDocument();
   });

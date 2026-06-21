@@ -98,12 +98,12 @@ export function NewProjectForm() {
         <input className="field" value={name} maxLength={100} onChange={(event) => setName(event.target.value)} />
       </label>
       <label className="field-label">
-        업무 원문
+        원문
         <textarea
           className="field source-textarea"
           value={isPdf ? "" : content}
           onChange={(event) => { setContent(event.target.value); setIsPdf(false); }}
-          placeholder="회의록, 요청 메시지, 기획서 텍스트를 붙여 넣으세요."
+          placeholder="회의록, 요청 메모, 기획 내용을 붙여 넣어도 괜찮아요."
           required={!isPdf}
           disabled={isPdf}
         />
@@ -138,8 +138,8 @@ export function NewProjectForm() {
           <Sparkle size={18} weight="fill" />
           {step === "creating" ? "프로젝트 생성 중…"
            : step === "uploading" ? "원문 업로드 중…"
-           : step === "compiling" ? "AI 컴파일 중…"
-           : "프로젝트 만들고 컴파일"}
+           : step === "compiling" ? "AI가 정리 중이에요…"
+           : "프로젝트 만들고 정리하기"}
         </button>
       </div>
     </form>

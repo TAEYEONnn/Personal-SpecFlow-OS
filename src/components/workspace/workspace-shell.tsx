@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  Article,
   ArrowClockwise,
-  CalendarBlank,
   CheckSquare,
   ClockCounterClockwise,
   DownloadSimple,
@@ -12,7 +12,6 @@ import {
   GitDiff,
   ListChecks,
   PencilSimple,
-  Polygon,
   Question,
   SquaresFour,
   TextT,
@@ -28,23 +27,23 @@ import { FlowCanvas } from "@/components/workspace/flow-canvas";
 import { MatrixView } from "@/components/workspace/matrix-view";
 import { RunsView } from "@/components/workspace/runs-view";
 import { ScreenDetail } from "@/components/workspace/screen-detail";
+import { SourceViewer } from "@/components/workspace/source-viewer";
 import type { Evidence, Screen, SpecDocument } from "@/lib/spec/schema";
 import type { ProjectView } from "@/lib/projects/service";
 
-type ViewMode = "document" | "flow" | "matrix" | "runs" | "diff" | "figma";
+type ViewMode = "document" | "flow" | "matrix" | "runs" | "diff" | "figma" | "sources";
 
 const navItems = [
   { id: "brief", label: "브리프", icon: FileText, countKey: "brief" },
   { id: "questions", label: "확인 질문", icon: Question, countKey: "questions" },
   { id: "screens", label: "화면 목록", icon: SquaresFour, countKey: "screens" },
-  { id: "permissions", label: "역할·권한", icon: UsersThree, countKey: "permissions" },
-  { id: "states", label: "상태·예외", icon: Warning, countKey: "states" },
-  { id: "copy", label: "UX 문구", icon: TextT, countKey: "uxCopy" },
+  { id: "permissions", label: "역할과 권한", icon: UsersThree, countKey: "permissions" },
+  { id: "states", label: "상태와 예외", icon: Warning, countKey: "states" },
+  { id: "copy", label: "화면 문구", icon: TextT, countKey: "uxCopy" },
   { id: "tasks", label: "작업 목록", icon: CheckSquare, countKey: "tasks" },
-  { id: "report", label: "일일보고", icon: CalendarBlank, countKey: "report" },
   { id: "diff", label: "변경 내역", icon: GitDiff, countKey: "diff" },
-  { id: "runs", label: "컴파일 이력", icon: ClockCounterClockwise, countKey: "runs" },
-  { id: "figma", label: "Figma 매핑", icon: Polygon, countKey: "figma" },
+  { id: "runs", label: "변환 이력", icon: ClockCounterClockwise, countKey: "runs" },
+  { id: "sources", label: "원문", icon: Article, countKey: "sources" },
 ] as const;
 
 export function WorkspaceShell({
@@ -70,6 +69,7 @@ export function WorkspaceShell({
   const [notionPageId, setNotionPageId] = useState("");
   const [notionPending, setNotionPending] = useState(false);
   const [notionResult, setNotionResult] = useState<{ url: string } | null>(null);
+  const [sourcesCount, setSourcesCount] = useState(project.sources.length);
 
   useEffect(() => {
     if (!note || noteIsError) return;
@@ -77,7 +77,6 @@ export function WorkspaceShell({
     return () => clearTimeout(id);
   }, [note, noteIsError]);
 
-  // Warn before leaving with unsaved edits
   useEffect(() => {
     if (!editing) return;
     const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
@@ -109,12 +108,11 @@ export function WorkspaceShell({
       states: document.states.length,
       uxCopy: document.uxCopy.length,
       tasks: document.tasks.length,
-      report: 1,
       runs: project.runs.length,
       diff: 0,
-      figma: 0,
+      sources: sourcesCount,
     }),
-    [document, project.runs.length],
+    [document, project.runs.length, sourcesCount],
   );
 
   function replaceScreen(next: Screen) {
@@ -132,13 +130,13 @@ export function WorkspaceShell({
     });
   }
 
-  const saveDocument = useCallback(async () => {
+  async function doSave(rev: number, doc: SpecDocument) {
     setPending(true);
     clearNote();
     const response = await fetch(`/api/projects/${project.id}/document`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ revision, document }),
+      body: JSON.stringify({ revision: rev, document: doc }),
     });
     const data = await response.json();
     if (response.ok) {
@@ -147,16 +145,40 @@ export function WorkspaceShell({
       setNote("저장됨");
       setNoteIsError(false);
     } else {
-      setError(data.error ?? "저장하지 못했습니다.", saveDocument);
+      setError(data.error ?? "저장하지 못했습니다.", () => doSave(rev, doc));
     }
     setPending(false);
+  }
+
+  const saveDocument = useCallback(async () => {
+    await doSave(revision, document);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project.id, revision, document]);
 
+  function toggleQuestionResolved(id: string) {
+    const nextDoc = {
+      ...document,
+      questions: document.questions.map((q) =>
+        q.id === id ? { ...q, resolved: !q.resolved } : q,
+      ),
+    };
+    setDocument(nextDoc);
+    doSave(revision, nextDoc);
+  }
+
+  function updateTaskStatus(id: string, status: "todo" | "in-progress" | "done") {
+    const nextDoc = {
+      ...document,
+      tasks: document.tasks.map((t) => (t.id === id ? { ...t, status } : t)),
+    };
+    setDocument(nextDoc);
+    doSave(revision, nextDoc);
+  }
+
   const recompile = useCallback(async () => {
-    if (!window.confirm("현재 문서를 보존하고 최신 원문으로 다시 컴파일할까요?")) return;
+    if (!window.confirm("원문으로 처음부터 다시 정리할까요? 현재 문서는 저장됩니다.")) return;
     setPending(true);
-    setNote("컴파일 중…");
+    setNote("정리 중…");
     setNoteIsError(false);
     setRetryFn(null);
     const response = await fetch(`/api/projects/${project.id}/compile`, { method: "POST" });
@@ -165,10 +187,10 @@ export function WorkspaceShell({
       setDocument(data.document);
       setRevision(data.revision);
       setSelectedId(data.document.screens[0]?.id ?? "");
-      setNote("컴파일 완료");
+      setNote("정리 완료");
       setNoteIsError(false);
     } else {
-      setError(data.error ?? "컴파일하지 못했습니다.", recompile);
+      setError(data.error ?? "정리하지 못했습니다.", recompile);
     }
     setPending(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -217,7 +239,7 @@ export function WorkspaceShell({
 
   function guardEditing(): boolean {
     if (!editing) return true;
-    return window.confirm("저장하지 않은 변경사항이 있습니다. 계속할까요?");
+    return window.confirm("저장하지 않은 내용이 있어요. 이동할까요?");
   }
 
   function chooseNav(id: string) {
@@ -228,7 +250,7 @@ export function WorkspaceShell({
     else if (id === "permissions" || id === "states") setView("matrix");
     else if (id === "runs") setView("runs");
     else if (id === "diff") setView("diff");
-    else if (id === "figma") setView("figma");
+    else if (id === "sources") setView("sources");
     else setView("document");
   }
 
@@ -240,13 +262,14 @@ export function WorkspaceShell({
     else if (mode === "matrix") {
       if (activeNav !== "states") setActiveNav("permissions");
     } else if (mode === "document") {
-      if (activeNav === "screens" || activeNav === "runs" || activeNav === "diff" || activeNav === "figma") setActiveNav("brief");
+      if (["screens", "runs", "diff", "sources", "figma"].includes(activeNav))
+        setActiveNav("brief");
     } else if (mode === "runs") {
       setActiveNav("runs");
     } else if (mode === "diff") {
       setActiveNav("diff");
-    } else if (mode === "figma") {
-      setActiveNav("figma");
+    } else if (mode === "sources") {
+      setActiveNav("sources");
     }
   }
 
@@ -333,7 +356,7 @@ export function WorkspaceShell({
         <div className="header-actions">
           <span className={`compile-status${noteIsError ? " compile-status--error" : ""}`}>
             <span className={`status-dot${pending ? " status-dot--pending" : ""}`} />
-            {note || `컴파일 완료 · revision ${revision}`}
+            {note || `변환 완료 · 버전 ${revision}`}
             {noteIsError && retryFn && (
               <button className="retry-button" onClick={() => { clearNote(); retryFn(); }}>
                 다시 시도
@@ -345,7 +368,7 @@ export function WorkspaceShell({
           </span>
           <button className="button" disabled={pending} onClick={recompile}>
             <ArrowClockwise size={17} />
-            재컴파일
+            다시 정리하기
           </button>
           <div className="export-menu">
             <button className="button">
@@ -353,6 +376,7 @@ export function WorkspaceShell({
               내보내기
             </button>
             <div className="export-dropdown">
+              <div className="export-group-label">Markdown</div>
               {[
                 ["full", "전체 명세"],
                 ["screen-spec", "화면 정의서"],
@@ -368,6 +392,7 @@ export function WorkspaceShell({
                 </a>
               ))}
               <div className="export-divider" />
+              <div className="export-group-label">데이터</div>
               <a
                 className="export-option"
                 href={`/api/projects/${project.id}/export?format=json`}
@@ -375,12 +400,20 @@ export function WorkspaceShell({
                 JSON (원본)
               </a>
               <div className="export-divider" />
+              <div className="export-group-label">연동</div>
               <button
                 className="export-option"
                 type="button"
                 onClick={() => { setNotionDialog(true); setNotionResult(null); }}
               >
                 Notion으로 내보내기
+              </button>
+              <button
+                className="export-option"
+                type="button"
+                onClick={() => chooseView("figma")}
+              >
+                Figma 매핑 확인
               </button>
             </div>
           </div>
@@ -422,17 +455,27 @@ export function WorkspaceShell({
           </>
           ) : (
             <div className="empty-flow">
-              <p>컴파일 결과에 화면 정보가 없습니다. 재컴파일을 시도해 주세요.</p>
+              <p>정리 결과에 화면 정보가 없어요. 다시 정리하기를 시도해 보세요.</p>
             </div>
           )
         ) : view === "document" ? (
-          <DocumentView document={document} />
+          <DocumentView
+            document={document}
+            onToggleResolved={toggleQuestionResolved}
+            onUpdateTaskStatus={updateTaskStatus}
+          />
         ) : view === "matrix" ? (
           <MatrixView document={document} />
         ) : view === "diff" ? (
           <DiffView projectId={project.id} current={document} currentRevision={revision} />
         ) : view === "figma" ? (
           <FigmaView projectId={project.id} document={document} />
+        ) : view === "sources" ? (
+          <SourceViewer
+            projectId={project.id}
+            initialSources={project.sources}
+            onSourceDelete={() => setSourcesCount((n) => Math.max(0, n - 1))}
+          />
         ) : (
           <RunsView runs={project.runs} />
         )}
@@ -471,7 +514,7 @@ export function WorkspaceShell({
             <>
               <p className="notion-dialog-title">Notion 페이지 ID 입력</p>
               <p className="notion-dialog-hint">
-                상위 Notion 페이지의 URL에서 마지막 32자리 ID를 붙여 넣으세요.
+                Notion 페이지 URL의 마지막 32자리를 붙여 넣으세요.
               </p>
               <input
                 className="field"

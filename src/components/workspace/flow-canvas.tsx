@@ -104,7 +104,12 @@ function FlowBoard({
           </button>
         </div>
       </div>
-      <div className="flow-canvas">
+      {nodes.length === 0 ? (
+        <div className="canvas-empty">
+          <p>화면이 없어요. 다시 정리하기를 시도해 보세요.</p>
+        </div>
+      ) : null}
+      <div className={`flow-canvas${nodes.length === 0 ? " flow-canvas--hidden" : ""}`}>
         <ReactFlow
           nodes={nodes}
           edges={edges}

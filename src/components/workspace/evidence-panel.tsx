@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { Evidence } from "@/lib/spec/schema";
 
 const labels = {
@@ -16,40 +15,8 @@ export function EvidencePanel({
   onStatusChange: (status: Evidence["reviewStatus"]) => void;
   onNavigateDiff?: () => void;
 }) {
-  const [activeTab, setActiveTab] = useState<"evidence" | "history">("evidence");
-
   return (
     <aside className="evidence-panel">
-      <div className="evidence-tabs">
-        <button
-          className={`evidence-tab ${activeTab === "evidence" ? "active" : ""}`}
-          onClick={() => setActiveTab("evidence")}
-        >
-          근거
-        </button>
-        <button
-          className={`evidence-tab ${activeTab === "history" ? "active" : ""}`}
-          onClick={() => setActiveTab("history")}
-        >
-          변경 이력
-        </button>
-      </div>
-      {activeTab === "history" ? (
-        <div className="evidence-content">
-          <div className="evidence-section">
-            <div className="evidence-box" style={{ textAlign: "center", padding: "20px 16px" }}>
-              <p style={{ color: "var(--muted)", fontSize: "13px", marginBottom: "10px" }}>
-                이 화면의 변경 이력을 확인하려면 변경 내역 탭을 이용하세요.
-              </p>
-              {onNavigateDiff && (
-                <button className="button" onClick={onNavigateDiff} style={{ fontSize: "12px" }}>
-                  변경 내역 보기
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : (
       <div className="evidence-content">
         <section className="evidence-section">
           <h3>
@@ -105,8 +72,14 @@ export function EvidencePanel({
             <div>형식 · 업무 원문</div>
           </div>
         </section>
+        {onNavigateDiff && (
+          <div className="evidence-diff-link">
+            <button className="button" onClick={onNavigateDiff}>
+              변경 내역 보기 →
+            </button>
+          </div>
+        )}
       </div>
-      )}
     </aside>
   );
 }
