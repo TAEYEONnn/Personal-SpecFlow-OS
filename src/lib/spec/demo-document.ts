@@ -8,6 +8,7 @@ const original = (
   reviewStatus,
   sourceId: "src-req-001",
   sourceExcerpt: excerpt,
+  rationale: null,
 });
 
 const inference = (excerpt: string, rationale: string): Evidence => ({

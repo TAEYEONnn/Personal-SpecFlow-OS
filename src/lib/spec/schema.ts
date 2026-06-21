@@ -5,7 +5,7 @@ export const evidenceSchema = z.object({
   reviewStatus: z.enum(["confirmed", "needs-review", "conflict"]),
   sourceId: z.string().min(1),
   sourceExcerpt: z.string().min(1),
-  rationale: z.string().optional(),
+  rationale: z.string().nullable().default(null),
 });
 
 const requirementSchema = z.object({
