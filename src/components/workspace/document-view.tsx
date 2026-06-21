@@ -50,7 +50,7 @@ export function DocumentView({
 
   return (
     <div className="document-view">
-      <article>
+      <article id="section-brief">
         <h1>{document.brief.title}</h1>
         <p>{document.brief.purpose}</p>
 
@@ -75,6 +75,7 @@ export function DocumentView({
         {document.questions.length > 0 && (
           <>
             <h2
+              id="section-questions"
               className="section-collapsible"
               onClick={() => toggleSection("questions")}
               role="button"
@@ -120,6 +121,7 @@ export function DocumentView({
         {document.requirements.length > 0 && (
           <>
             <h2
+              id="section-requirements"
               className="section-collapsible"
               onClick={() => toggleSection("requirements")}
               role="button"
@@ -152,6 +154,7 @@ export function DocumentView({
         {document.tasks.length > 0 && (
           <>
             <h2
+              id="section-tasks"
               className="section-collapsible"
               onClick={() => toggleSection("tasks")}
               role="button"

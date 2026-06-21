@@ -44,7 +44,7 @@ export function SourceViewer({
     return (
       <div className="source-viewer">
         <h2>원문</h2>
-        <p className="source-empty">올려진 원문이 없어요. 다시 정리하기를 눌러 원문을 추가해 보세요.</p>
+        <p className="source-empty">올려진 원문이 없어요. 프로젝트를 만들 때 추가한 원문이 여기에 표시돼요.</p>
       </div>
     );
   }

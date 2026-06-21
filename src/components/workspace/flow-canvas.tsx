@@ -10,17 +10,25 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { Briefcase, Minus, Plus } from "@phosphor-icons/react";
+import { Briefcase, CaretDown, CaretUp, Minus, Plus } from "@phosphor-icons/react";
 import type { Screen, ScreenState, SpecDocument } from "@/lib/spec/schema";
 
 function FlowBoard({
   document,
   selectedScreenId,
   onSelect,
+  onPositionUpdate,
+  collapsed,
+  onToggleCollapse,
+  onRecompile,
 }: {
   document: SpecDocument;
   selectedScreenId: string;
   onSelect: (id: string) => void;
+  onPositionUpdate?: (screenId: string, pos: { x: number; y: number }) => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+  onRecompile?: () => void;
 }) {
   const flow = useReactFlow();
   const { nodes, edges } = useMemo(() => {
@@ -94,19 +102,35 @@ function FlowBoard({
     <div className="flow-section">
       <div className="flow-toolbar">
         <h2>화면 흐름도</h2>
-        <div className="zoom-pill" aria-label="캔버스 확대 축소">
-          <button aria-label="축소" onClick={() => flow.zoomOut()}>
-            <Minus size={14} />
-          </button>
-          <span>{Math.round(flow.getZoom() * 100)}%</span>
-          <button aria-label="확대" onClick={() => flow.zoomIn()}>
-            <Plus size={14} />
-          </button>
+        <div className="flow-toolbar-right">
+          {!collapsed && (
+            <div className="zoom-pill" aria-label="캔버스 확대 축소">
+              <button aria-label="축소" onClick={() => flow.zoomOut()}>
+                <Minus size={14} />
+              </button>
+              <span>{Math.round(flow.getZoom() * 100)}%</span>
+              <button aria-label="확대" onClick={() => flow.zoomIn()}>
+                <Plus size={14} />
+              </button>
+            </div>
+          )}
+          {onToggleCollapse && (
+            <button
+              className="canvas-toggle-btn"
+              aria-label={collapsed ? "캔버스 펼치기" : "캔버스 접기"}
+              onClick={onToggleCollapse}
+            >
+              {collapsed ? <CaretDown size={14} /> : <CaretUp size={14} />}
+            </button>
+          )}
         </div>
       </div>
       {nodes.length === 0 ? (
         <div className="canvas-empty">
-          <p>화면이 없어요. 다시 정리하기를 시도해 보세요.</p>
+          <p>화면이 없어요.</p>
+          {onRecompile && (
+            <button className="button" onClick={onRecompile}>다시 정리하기</button>
+          )}
         </div>
       ) : null}
       <div className={`flow-canvas${nodes.length === 0 ? " flow-canvas--hidden" : ""}`}>
@@ -123,6 +147,12 @@ function FlowBoard({
           onNodeClick={(_, node) => {
             const screenId = node.data.screenId;
             if (typeof screenId === "string") onSelect(screenId);
+          }}
+          onNodeDragStop={(_, node) => {
+            const screenId = node.data.screenId;
+            if (typeof screenId === "string") {
+              onPositionUpdate?.(screenId, node.position);
+            }
           }}
           proOptions={{ hideAttribution: true }}
         >

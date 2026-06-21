@@ -27,6 +27,7 @@ import { FlowCanvas } from "@/components/workspace/flow-canvas";
 import { MatrixView } from "@/components/workspace/matrix-view";
 import { RunsView } from "@/components/workspace/runs-view";
 import { ScreenDetail } from "@/components/workspace/screen-detail";
+import { HelpOverlay } from "@/components/workspace/help-overlay";
 import { SourceViewer } from "@/components/workspace/source-viewer";
 import type { Evidence, Screen, SpecDocument } from "@/lib/spec/schema";
 import type { ProjectView } from "@/lib/projects/service";
@@ -70,6 +71,8 @@ export function WorkspaceShell({
   const [notionPending, setNotionPending] = useState(false);
   const [notionResult, setNotionResult] = useState<{ url: string } | null>(null);
   const [sourcesCount, setSourcesCount] = useState(project.sources.length);
+  const [canvasCollapsed, setCanvasCollapsed] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   useEffect(() => {
     if (!note || noteIsError) return;
@@ -175,6 +178,31 @@ export function WorkspaceShell({
     doSave(revision, nextDoc);
   }
 
+  function handlePositionUpdate(screenId: string, pos: { x: number; y: number }) {
+    const nextDoc = {
+      ...document,
+      screens: document.screens.map((s) =>
+        s.id === screenId ? { ...s, position: pos } : s,
+      ),
+    };
+    setDocument(nextDoc);
+    doSave(revision, nextDoc);
+  }
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName;
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(tag)) return;
+      if (e.key === "?") { setHelpOpen(true); return; }
+      if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        saveDocument();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [saveDocument]);
+
   const recompile = useCallback(async () => {
     if (!window.confirm("원문으로 처음부터 다시 정리할까요? 현재 문서는 저장됩니다.")) return;
     setPending(true);
@@ -242,6 +270,12 @@ export function WorkspaceShell({
     return window.confirm("저장하지 않은 내용이 있어요. 이동할까요?");
   }
 
+  const navToSection: Record<string, string> = {
+    brief: "section-brief",
+    questions: "section-questions",
+    tasks: "section-tasks",
+  };
+
   function chooseNav(id: string) {
     if (!guardEditing()) return;
     setEditing(false);
@@ -252,6 +286,12 @@ export function WorkspaceShell({
     else if (id === "diff") setView("diff");
     else if (id === "sources") setView("sources");
     else setView("document");
+    if (navToSection[id]) {
+      const sectionId = navToSection[id];
+      setTimeout(() => {
+        window.document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+      }, 80);
+    }
   }
 
   function chooseView(mode: ViewMode) {
@@ -366,6 +406,9 @@ export function WorkspaceShell({
               <button className="dismiss-button" onClick={clearNote} aria-label="닫기">✕</button>
             )}
           </span>
+          <button className="button button--icon" onClick={() => setHelpOpen(true)} aria-label="도움말 (?)">
+            <Question size={17} />
+          </button>
           <button className="button" disabled={pending} onClick={recompile}>
             <ArrowClockwise size={17} />
             다시 정리하기
@@ -420,7 +463,11 @@ export function WorkspaceShell({
         </div>
       </header>
 
-      <section className="workspace-main" style={view !== "flow" ? { gridTemplateRows: "1fr" } : undefined}>
+      <section
+        className="workspace-main"
+        style={view !== "flow" ? { gridTemplateRows: "1fr" } : undefined}
+        data-canvas-collapsed={view === "flow" && canvasCollapsed ? "true" : undefined}
+      >
         {view === "flow" ? (
           selectedScreen ? (
           <>
@@ -428,6 +475,10 @@ export function WorkspaceShell({
               document={document}
               selectedScreenId={selectedScreen.id}
               onSelect={setSelectedId}
+              onPositionUpdate={handlePositionUpdate}
+              collapsed={canvasCollapsed}
+              onToggleCollapse={() => setCanvasCollapsed((c) => !c)}
+              onRecompile={recompile}
             />
             <section className="detail-panel">
               <div className="detail-heading">
@@ -491,6 +542,8 @@ export function WorkspaceShell({
         <aside className="evidence-panel" />
       )}
     </main>
+
+    <HelpOverlay open={helpOpen} onClose={() => setHelpOpen(false)} />
 
     {notionDialog && (
       <div

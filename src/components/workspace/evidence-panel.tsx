@@ -21,7 +21,16 @@ export function EvidencePanel({
         <section className="evidence-section">
           <h3>
             원문 발췌
-            <span className={`tag tag-${evidence.type === "original" ? "original" : "inference"}`}>
+            <span
+              className={`tag tag-${evidence.type === "original" ? "original" : "inference"}`}
+              title={
+                evidence.type === "original"
+                  ? "AI가 원문에서 직접 인용한 내용"
+                  : evidence.type === "inference"
+                    ? "AI가 문맥을 통해 추론한 내용"
+                    : "AI가 가정을 통해 도출한 내용"
+              }
+            >
               {labels[evidence.type]}
             </span>
           </h3>
@@ -34,7 +43,7 @@ export function EvidencePanel({
           <section className="evidence-section">
             <h3>
               추론 근거
-              <span className="tag tag-inference">추론</span>
+              <span className="tag tag-inference" title="AI가 문맥을 통해 추론한 내용">추론</span>
             </h3>
             <div className="evidence-box">{evidence.rationale}</div>
           </section>

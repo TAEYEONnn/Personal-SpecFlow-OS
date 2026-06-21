@@ -565,7 +565,7 @@ textarea:focus-visible {
   height: 100%;
   overflow: hidden;
   display: grid;
-  grid-template-rows: minmax(430px, 52vh) minmax(280px, 1fr);
+  grid-template-rows: minmax(180px, 36vh) minmax(0, 1fr);
 }
 
 .empty-flow {
@@ -580,6 +580,10 @@ textarea:focus-visible {
   border-bottom: 1px solid var(--line);
 }
 
+.workspace-main[data-canvas-collapsed="true"] {
+  grid-template-rows: 50px 1fr;
+}
+
 .flow-toolbar {
   height: 50px;
   display: flex;
@@ -587,6 +591,27 @@ textarea:focus-visible {
   justify-content: space-between;
   padding: 0 18px 0 24px;
 }
+
+.flow-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.canvas-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 120ms, background 120ms;
+}
+.canvas-toggle-btn:hover { background: var(--surface-soft); color: var(--ink); }
 
 .flow-toolbar h2 {
   margin: 0;
@@ -1727,26 +1752,18 @@ textarea:focus-visible {
 }
 .source-empty { font-size: 14px; color: var(--muted); padding: 24px 0; }
 
-/* ── export dropdown group labels ── */
-.export-group-label {
-  padding: 6px 14px 3px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
 /* ── flow canvas empty state ── */
 .canvas-empty {
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   height: 100%;
   color: var(--muted);
   font-size: 14px;
   position: absolute;
   inset: 0;
-  pointer-events: none;
 }
 .flow-canvas--hidden { visibility: hidden; }
 
@@ -1756,3 +1773,130 @@ textarea:focus-visible {
   text-align: center;
 }
 .evidence-diff-link .button { font-size: 12px; color: var(--muted); }
+
+/* ── button--icon ── */
+.button--icon {
+  padding: 0 10px;
+  min-width: 36px;
+}
+
+/* ── export dropdown group labels ── */
+.export-group-label {
+  padding: 6px 14px 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── help overlay ── */
+.help-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.help-dialog {
+  background: #fff;
+  border-radius: 12px;
+  width: 480px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  padding: 32px 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.help-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 750;
+}
+
+.help-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.help-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.help-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.help-step strong { display: block; font-size: 14px; font-weight: 650; margin-bottom: 3px; }
+.help-step p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.55; }
+
+.help-nav-guide {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.help-nav-guide strong { display: block; font-size: 13px; font-weight: 650; margin-bottom: 8px; }
+
+.help-nav-guide ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.help-nav-guide li strong { display: inline; font-weight: 600; color: var(--ink); }
+
+.help-shortcuts {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.help-shortcuts strong { display: block; font-size: 13px; font-weight: 650; margin-bottom: 8px; }
+
+.help-shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.help-shortcut-row kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface-soft);
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--ink);
+}
