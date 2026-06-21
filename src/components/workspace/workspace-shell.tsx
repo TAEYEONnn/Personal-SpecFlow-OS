@@ -146,6 +146,12 @@ export function WorkspaceShell({
 
   async function exportToNotion() {
     if (!notionPageId.trim()) return;
+    const cleaned = notionPageId.replace(/-/g, "").trim();
+    if (!/^[a-f0-9]{32}$/i.test(cleaned)) {
+      setNote("유효한 Notion 페이지 ID를 입력해 주세요 (32자리 hex).");
+      setNotionDialog(false);
+      return;
+    }
     setNotionPending(true);
     setNotionResult(null);
     const response = await fetch(`/api/projects/${project.id}/export/notion`, {
@@ -351,14 +357,23 @@ export function WorkspaceShell({
       </section>
 
       {selectedScreen ? (
-        <EvidencePanel evidence={selectedScreen.evidence} onStatusChange={replaceEvidence} />
+        <EvidencePanel
+          evidence={selectedScreen.evidence}
+          onStatusChange={replaceEvidence}
+          onNavigateDiff={() => chooseView("diff")}
+        />
       ) : (
         <aside className="evidence-panel" />
       )}
     </main>
 
     {notionDialog && (
-      <div className="notion-dialog-backdrop" onClick={() => setNotionDialog(false)}>
+      <div
+        className="notion-dialog-backdrop"
+        onClick={() => setNotionDialog(false)}
+        onKeyDown={(e) => e.key === "Escape" && setNotionDialog(false)}
+        tabIndex={-1}
+      >
         <div className="notion-dialog" onClick={(e) => e.stopPropagation()}>
           {notionResult ? (
             <>

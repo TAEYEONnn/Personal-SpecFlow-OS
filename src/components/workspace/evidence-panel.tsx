@@ -10,9 +10,11 @@ const labels = {
 export function EvidencePanel({
   evidence,
   onStatusChange,
+  onNavigateDiff,
 }: {
   evidence: Evidence;
   onStatusChange: (status: Evidence["reviewStatus"]) => void;
+  onNavigateDiff?: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<"evidence" | "history">("evidence");
 
@@ -35,8 +37,15 @@ export function EvidencePanel({
       {activeTab === "history" ? (
         <div className="evidence-content">
           <div className="evidence-section">
-            <div className="evidence-box" style={{ color: "var(--muted)", textAlign: "center", padding: "28px 16px" }}>
-              변경 이력 기능은 2주차에 추가됩니다.
+            <div className="evidence-box" style={{ textAlign: "center", padding: "20px 16px" }}>
+              <p style={{ color: "var(--muted)", fontSize: "13px", marginBottom: "10px" }}>
+                이 화면의 변경 이력을 확인하려면 변경 내역 탭을 이용하세요.
+              </p>
+              {onNavigateDiff && (
+                <button className="button" onClick={onNavigateDiff} style={{ fontSize: "12px" }}>
+                  변경 내역 보기
+                </button>
+              )}
             </div>
           </div>
         </div>

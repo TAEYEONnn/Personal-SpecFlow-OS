@@ -132,7 +132,7 @@ export function FigmaView({ projectId, document }: Props) {
                   </thead>
                   <tbody>
                     {screenResult.recommendations.map((rec, i) => (
-                      <tr key={i}>
+                      <tr key={`${screenResult.screenId}-${rec.element}-${rec.pattern}-${i}`}>
                         <td>{rec.element}</td>
                         <td>
                           <span className={`figma-badge ${patternClass[rec.pattern]}`}>

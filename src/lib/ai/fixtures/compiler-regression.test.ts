@@ -6,7 +6,7 @@ import { sampleSources } from "./sample-sources";
 
 describe("컴파일러 프롬프트 회귀 테스트", () => {
   it("프롬프트 버전이 고정됩니다 — 변경 시 의도적으로 갱신해야 합니다", () => {
-    expect(COMPILER_PROMPT_VERSION).toBe("2026-06-21.v1");
+    expect(COMPILER_PROMPT_VERSION).toBe("2026-06-21.v2");
   });
 
   it("10개 샘플 원문이 모두 프롬프트에 포함됩니다", () => {
@@ -36,14 +36,17 @@ describe("컴파일러 프롬프트 회귀 테스트", () => {
     }
   });
 
-  it("모든 샘플 프롬프트가 필수 산출물 7가지를 모두 요구합니다", () => {
+  it("모든 샘플 프롬프트가 필수 산출물 10가지를 모두 요구합니다", () => {
     const required = [
       "brief",
       "requirements",
       "questions",
+      "roles",
+      "permissions",
       "screens",
       "states",
       "uxCopy",
+      "tasks",
       "dailyReport",
     ];
     for (const sample of sampleSources) {
@@ -52,6 +55,11 @@ describe("컴파일러 프롬프트 회귀 테스트", () => {
         expect(prompt, `${sample.name}: ${field} 누락`).toContain(field);
       }
     }
+  });
+
+  it("프롬프트 크기가 8000자 미만입니다 (최소 원문 입력 기준)", () => {
+    const prompt = buildCompilerPrompt("test");
+    expect(prompt.length).toBeLessThan(8000);
   });
 
   it("프롬프트가 화면 position 지침을 포함합니다", () => {
@@ -115,6 +123,14 @@ describe("데모 문서 품질 기준 회귀 테스트", () => {
   it("blocking 질문이 최소 1개 있습니다", () => {
     const blocking = demoSpecDocument.questions.filter((q) => q.priority === "blocking");
     expect(blocking.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("데모 문서에 역할(roles)이 최소 1개 있습니다", () => {
+    expect(demoSpecDocument.roles.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("데모 문서에 권한(permissions)이 최소 1개 있습니다", () => {
+    expect(demoSpecDocument.permissions.length).toBeGreaterThanOrEqual(1);
   });
 
   it("tasks 배열에 작업 목록이 있습니다", () => {

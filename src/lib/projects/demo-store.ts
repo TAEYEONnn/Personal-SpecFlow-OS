@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { COMPILER_PROMPT_VERSION } from "@/lib/ai/compiler";
 import { assertRevision } from "@/lib/projects/revision";
 import type { SpecDocument } from "@/lib/spec/schema";
 
@@ -94,7 +95,7 @@ export function createDemoRun(projectId: string) {
     id: randomUUID(),
     status: "running",
     model: process.env.OPENAI_MODEL ?? "gpt-5.4",
-    promptVersion: "2026-06-21.v1",
+    promptVersion: COMPILER_PROMPT_VERSION,
     createdAt: new Date().toISOString(),
   };
   project.runs.unshift(run);

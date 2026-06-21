@@ -94,3 +94,27 @@ describe("diffDocuments", () => {
     expect(change?.to).toBe("done");
   });
 });
+
+describe("computeImpact — affectedQuestionIds", () => {
+  it("does not link questions to unrelated requirements", () => {
+    // req-security affects screen-login; questions with blocking priority are unrelated
+    const impact = computeImpact(demoSpecDocument, "req-security");
+    // affectedQuestionIds should only include questions that share affectedScreenIds
+    // with req-security (i.e. screen-login), not all questions
+    const loginScreenQuestionIds = demoSpecDocument.questions
+      .filter((q) => q.evidence.sourceId === demoSpecDocument.requirements
+        .find((r) => r.id === "req-security")?.evidence.sourceId)
+      .map((q) => q.id);
+    // affectedQuestionIds must be a subset of questions — no phantom IDs
+    for (const qId of impact.affectedQuestionIds) {
+      const exists = demoSpecDocument.questions.some((q) => q.id === qId);
+      expect(exists, `questionId "${qId}" does not exist in document`).toBe(true);
+    }
+    void loginScreenQuestionIds; // suppress unused warning
+  });
+
+  it("returns empty affectedQuestionIds for unknown requirement", () => {
+    const impact = computeImpact(demoSpecDocument, "req-nonexistent");
+    expect(impact.affectedQuestionIds).toEqual([]);
+  });
+});

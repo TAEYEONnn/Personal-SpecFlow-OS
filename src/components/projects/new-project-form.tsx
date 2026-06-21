@@ -22,7 +22,7 @@ export function NewProjectForm() {
   const [fileSize, setFileSize] = useState<number | undefined>();
   const [isPdf, setIsPdf] = useState(false);
   const [error, setError] = useState("");
-  const [pending, setPending] = useState(false);
+  const [step, setStep] = useState<"idle" | "creating" | "uploading" | "compiling">("idle");
 
   const costEstimate = useMemo(
     () => (content.trim() ? estimateCompilationCost(content) : null),
@@ -51,7 +51,7 @@ export function NewProjectForm() {
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    setPending(true);
+    setStep("creating");
     setError("");
     try {
       const projectResponse = await fetch("/api/projects", {
@@ -62,6 +62,7 @@ export function NewProjectForm() {
       const projectData = await projectResponse.json();
       if (!projectResponse.ok) throw new Error(projectData.error);
       const projectId = projectData.project.id;
+      setStep("uploading");
       const type = fileName ? sourceType(fileName) : "paste";
       const sourceResponse = await fetch(`/api/projects/${projectId}/sources`, {
         method: "POST",
@@ -76,6 +77,7 @@ export function NewProjectForm() {
       });
       const sourceData = await sourceResponse.json();
       if (!sourceResponse.ok) throw new Error(sourceData.error);
+      setStep("compiling");
       const compileResponse = await fetch(`/api/projects/${projectId}/compile`, {
         method: "POST",
       });
@@ -85,7 +87,7 @@ export function NewProjectForm() {
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "프로젝트를 만들지 못했습니다.");
     } finally {
-      setPending(false);
+      setStep("idle");
     }
   }
 
@@ -93,7 +95,7 @@ export function NewProjectForm() {
     <form className="source-form" onSubmit={handleSubmit}>
       <label className="field-label">
         프로젝트 이름
-        <input className="field" value={name} onChange={(event) => setName(event.target.value)} />
+        <input className="field" value={name} maxLength={100} onChange={(event) => setName(event.target.value)} />
       </label>
       <label className="field-label">
         업무 원문
@@ -132,9 +134,12 @@ export function NewProjectForm() {
       {error ? <p className="form-error">{error}</p> : null}
       <div className="form-actions">
         <Link className="button button-ghost" href="/projects">취소</Link>
-        <button className="button button-primary" disabled={pending || (!content.trim() && !isPdf)}>
+        <button className="button button-primary" disabled={step !== "idle" || (!content.trim() && !isPdf)}>
           <Sparkle size={18} weight="fill" />
-          {pending ? "업무 컴파일 중…" : "프로젝트 만들고 컴파일"}
+          {step === "creating" ? "프로젝트 생성 중…"
+           : step === "uploading" ? "원문 업로드 중…"
+           : step === "compiling" ? "AI 컴파일 중…"
+           : "프로젝트 만들고 컴파일"}
         </button>
       </div>
     </form>

@@ -18,6 +18,11 @@ export async function GET(request: Request) {
     // ignore malformed state
   }
 
+  // Block open redirect: only allow same-origin relative paths
+  if (!returnTo.startsWith("/") || returnTo.startsWith("//")) {
+    returnTo = "/projects";
+  }
+
   const clientId = process.env.NOTION_CLIENT_ID;
   const clientSecret = process.env.NOTION_CLIENT_SECRET;
   if (!clientId || !clientSecret) {
@@ -27,24 +32,29 @@ export async function GET(request: Request) {
   const redirectUri = `${url.origin}/api/notion/callback`;
   const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
 
-  const tokenResponse = await fetch("https://api.notion.com/v1/oauth/token", {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${credentials}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      grant_type: "authorization_code",
-      code,
-      redirect_uri: redirectUri,
-    }),
-  });
+  let tokenData: { access_token: string };
+  try {
+    const tokenResponse = await fetch("https://api.notion.com/v1/oauth/token", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${credentials}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: redirectUri,
+      }),
+    });
 
-  if (!tokenResponse.ok) {
-    return NextResponse.redirect(`${url.origin}/projects?notion_error=token_failed`);
+    if (!tokenResponse.ok) {
+      return NextResponse.redirect(`${url.origin}/projects?notion_error=token_failed`);
+    }
+
+    tokenData = (await tokenResponse.json()) as { access_token: string };
+  } catch {
+    return NextResponse.redirect(`${url.origin}/projects?notion_error=network`);
   }
-
-  const tokenData = (await tokenResponse.json()) as { access_token: string };
   const redirectUrl = new URL(returnTo, url.origin);
   redirectUrl.searchParams.set("notion_connected", "1");
 

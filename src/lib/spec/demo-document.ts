@@ -6,7 +6,7 @@ const original = (
 ): Evidence => ({
   type: "original",
   reviewStatus,
-  sourceId: "src-req-001",
+  sourceId: "source-1",
   sourceExcerpt: excerpt,
   rationale: null,
 });
@@ -14,7 +14,7 @@ const original = (
 const inference = (excerpt: string, rationale: string): Evidence => ({
   type: "inference",
   reviewStatus: "needs-review",
-  sourceId: "src-req-001",
+  sourceId: "source-1",
   sourceExcerpt: excerpt,
   rationale,
 });
