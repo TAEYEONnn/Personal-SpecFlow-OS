@@ -191,6 +191,7 @@ export function FigmaView({ projectId, document, mapping, onMappingChange }: Pro
               {screenResult.recommendations.length === 0 ? (
                 <p className="figma-empty">추천 결과 없음</p>
               ) : (
+                <div className="figma-table-wrap">
                 <table className="figma-table">
                   <thead>
                     <tr>
@@ -222,6 +223,7 @@ export function FigmaView({ projectId, document, mapping, onMappingChange }: Pro
                     ))}
                   </tbody>
                 </table>
+                </div>
               )}
             </div>
           ))}

@@ -88,7 +88,7 @@ export function CompileProgress({
         ))}
       </ol>
       {elapsed >= 10 && (
-        <p className="compile-progress-slow">시간이 조금 걸리고 있어요. 잠시만 기다려 주세요.</p>
+        <p className="compile-progress-slow">좀 걸리고 있어요. 조금만 기다려줘요.</p>
       )}
     </div>
   );

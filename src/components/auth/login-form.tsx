@@ -75,7 +75,7 @@ export function LoginForm() {
           type="password"
           autoComplete="current-password"
           required
-          placeholder="비밀번호를 입력하세요"
+          placeholder=""
           disabled={pending}
         />
       </label>

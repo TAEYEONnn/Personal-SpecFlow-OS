@@ -1176,6 +1176,11 @@ textarea:focus-visible {
   padding: 16px 18px;
 }
 
+.matrix-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .matrix-table {
   width: 100%;
   border-collapse: collapse;
@@ -1556,6 +1561,11 @@ textarea:focus-visible {
   font-weight: 600;
 }
 
+.figma-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .figma-table {
   width: 100%;
   border-collapse: collapse;
@@ -1686,6 +1696,13 @@ textarea:focus-visible {
   padding: 2px 6px;
   background: var(--surface);
   color: var(--ink);
+}
+
+.sidebar-name-saved {
+  display: block;
+  font-size: 11px;
+  color: #319066;
+  padding: 2px 0 0;
 }
 
 /* Matrix permission pending row */
@@ -2273,7 +2290,7 @@ textarea:focus-visible {
 .source-name { font-size: 13px; font-weight: 600; color: var(--ink); }
 .source-type { font-size: 11px; color: var(--muted); }
 .source-date { font-size: 11px; color: var(--muted); }
-.source-actions { display: flex; align-items: center; gap: 6px; }
+.source-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .source-delete-button {
   display: flex;
   align-items: center;
@@ -2306,6 +2323,7 @@ textarea:focus-visible {
   outline: none;
 }
 .source-empty { font-size: 14px; color: var(--muted); padding: 24px 0; }
+.source-save-done { font-size: 13px; color: #319066; padding: 4px 0; }
 
 /* ── flow canvas empty state ── */
 .canvas-empty {

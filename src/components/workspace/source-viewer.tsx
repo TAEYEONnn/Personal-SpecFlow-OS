@@ -40,6 +40,8 @@ export function SourceViewer({
   const [editContent, setEditContent] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [saveDone, setSaveDone] = useState(false);
+  const saveDoneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [addMode, setAddMode] = useState<"paste" | "file" | null>(null);
   const [addText, setAddText] = useState("");
   const [addName, setAddName] = useState("");
@@ -104,12 +106,15 @@ export function SourceViewer({
         );
         setEditingId(null);
         onSourceChange?.();
+        setSaveDone(true);
+        if (saveDoneTimerRef.current) clearTimeout(saveDoneTimerRef.current);
+        saveDoneTimerRef.current = setTimeout(() => setSaveDone(false), 2000);
       } else {
         const data = await res.json().catch(() => ({}));
-        setSaveError(data.error ?? "저장하지 못했습니다.");
+        setSaveError(data.error ?? "저장하지 못했어요.");
       }
     } catch {
-      setSaveError("저장하지 못했습니다.");
+      setSaveError("저장하지 못했어요.");
     } finally {
       setSaving(false);
       onBusyChange?.(false);
@@ -136,10 +141,10 @@ export function SourceViewer({
         setAddName("");
       } else {
         const data = await res.json().catch(() => ({}));
-        setAddError(data.error ?? "추가하지 못했습니다.");
+        setAddError(data.error ?? "추가하지 못했어요.");
       }
     } catch {
-      setAddError("추가하지 못했습니다.");
+      setAddError("추가하지 못했어요.");
     } finally {
       setAdding(false);
       onBusyChange?.(false);
@@ -182,10 +187,10 @@ export function SourceViewer({
         setAddMode(null);
       } else {
         const data = await res.json().catch(() => ({}));
-        setAddError(data.error ?? "추가하지 못했습니다.");
+        setAddError(data.error ?? "추가하지 못했어요.");
       }
     } catch {
-      setAddError("추가하지 못했습니다.");
+      setAddError("추가하지 못했어요.");
     } finally {
       setAdding(false);
       onBusyChange?.(false);
@@ -276,8 +281,11 @@ export function SourceViewer({
         <p className="source-add-error" role="alert">{saveError}</p>
       )}
 
+      {saveDone && (
+        <p className="source-save-done" role="status" aria-live="polite">저장했어요.</p>
+      )}
       {!sources.length ? (
-        <p className="source-empty">올려진 원문이 없어요. 원문을 추가하면 AI가 다시 정리할 때 반영돼요.</p>
+        <p className="source-empty">아직 원문을 추가하지 않았어요. 원문을 추가하면 AI가 다시 정리할 때 반영돼요.</p>
       ) : (
         <div className="source-list">
           {sources.map((source) => (

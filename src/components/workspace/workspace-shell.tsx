@@ -101,6 +101,8 @@ export function WorkspaceShell({
   const [retryFn, setRetryFn] = useState<(() => void) | null>(null);
   const [projectName, setProjectName] = useState(project.name);
   const [nameEditing, setNameEditing] = useState(false);
+  const [nameSaved, setNameSaved] = useState(false);
+  const nameSavedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [notionDialog, setNotionDialog] = useState(false);
   const [notionPageId, setNotionPageId] = useState("");
   const [notionPending, setNotionPending] = useState(false);
@@ -536,6 +538,9 @@ export function WorkspaceShell({
       body: JSON.stringify({ name: projectName.trim() }),
     });
     setNameEditing(false);
+    setNameSaved(true);
+    if (nameSavedTimerRef.current) clearTimeout(nameSavedTimerRef.current);
+    nameSavedTimerRef.current = setTimeout(() => setNameSaved(false), 2000);
   }
 
   async function exportToNotion() {
@@ -640,13 +645,18 @@ export function WorkspaceShell({
                 onChange={(e) => setProjectName(e.target.value)}
               />
             ) : (
-              <button
-                className="sidebar-project-name"
-                title="클릭하여 이름 변경"
-                onClick={() => setNameEditing(true)}
-              >
-                {projectName}
-              </button>
+              <>
+                <button
+                  className="sidebar-project-name"
+                  title="클릭하여 이름 변경"
+                  onClick={() => setNameEditing(true)}
+                >
+                  {projectName}
+                </button>
+                {nameSaved && (
+                  <span className="sidebar-name-saved" role="status" aria-live="polite">저장됐어요</span>
+                )}
+              </>
             )}
           </div>
           <nav className="sidebar-nav" aria-label="프로젝트 문서">
@@ -848,7 +858,7 @@ export function WorkspaceShell({
               </>
             ) : (
               <div className="empty-flow">
-                <p>정리 결과에 화면 정보가 없어요. 다시 정리하기를 시도해 보세요.</p>
+                <p>화면 정보가 없어요. 원문을 확인하고 다시 정리해봐요.</p>
               </div>
             )
           ) : view === "document" ? (

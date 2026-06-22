@@ -85,7 +85,7 @@ export function NewProjectForm() {
       if (!compileResponse.ok) throw new Error(compileData.error);
       router.push(`/projects/${projectId}`);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "프로젝트를 만들지 못했습니다.");
+      setError(caught instanceof Error ? caught.message : "프로젝트를 만들지 못했어요.");
     } finally {
       setStep("idle");
     }

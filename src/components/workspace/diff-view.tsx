@@ -208,7 +208,7 @@ export function DiffView({
         <p className="diff-hint">이전 버전을 입력하면 달라진 항목을 볼 수 있어요.</p>
       )}
 
-      {loading && <p className="diff-hint">불러오는 중…</p>}
+      {loading && <p className="diff-hint">버전 불러오는 중…</p>}
       {error && <p className="form-error">{error}</p>}
 
       {diff && !hasDiff && (

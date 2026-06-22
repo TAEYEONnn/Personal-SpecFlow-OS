@@ -10,10 +10,10 @@ export default function LoginPage() {
           <span>SpecFlow OS</span>
         </div>
         <div className="login-copy">
-          <h1>업무 요청을<br />문서로 정리하세요.</h1>
+          <h1>회의록이나 메모,<br />그대로 넣으면 돼요.</h1>
           <p>
-            회의록과 기획 메모를 화면 플로우와 작업 목록으로
-            정리하고 근거까지 함께 검토해요.
+            AI가 화면 구조, 요구사항, 할 일로 나눠서 정리해요.
+            근거도 같이 잡아줘요.
           </p>
         </div>
         <small>기획부터 작업 정리까지 한곳에서 이어가요.</small>
@@ -21,7 +21,7 @@ export default function LoginPage() {
       <section className="login-form-wrap">
         <div className="login-card">
           <h2>로그인</h2>
-          <p>내 작업공간으로 이동해요.</p>
+          <p>작업공간 바로 가기</p>
           <LoginForm />
           {isDevelopmentDemo ? (
             <p className="demo-note">

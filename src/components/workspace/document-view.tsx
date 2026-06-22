@@ -588,16 +588,16 @@ export function DocumentView({
           </section>
         )}
 
-        {document.requirements.length > 0 && (
-          <section>
-            <SectionHeading
-              id="section-requirements"
-              title="요구사항"
-              meta={`${document.requirements.length}개`}
-              collapsed={!!collapsed.requirements}
-              onToggle={() => toggleSection("requirements")}
-            />
-            {!collapsed.requirements && (
+        <section>
+          <SectionHeading
+            id="section-requirements"
+            title="요구사항"
+            meta={document.requirements.length > 0 ? `${document.requirements.length}개` : ""}
+            collapsed={!!collapsed.requirements}
+            onToggle={() => toggleSection("requirements")}
+          />
+          {!collapsed.requirements && (
+            document.requirements.length > 0 ? (
               <div className="requirement-groups">
                 {requirementGroups.map(([category, requirements]) => (
                   <section className="requirement-group" key={category}>
@@ -631,20 +631,22 @@ export function DocumentView({
                   </section>
                 ))}
               </div>
-            )}
-          </section>
-        )}
+            ) : (
+              <p className="section-empty">정리된 요구사항이 아직 없어요. 다시 정리하기를 눌러 원문을 분석해봐요.</p>
+            )
+          )}
+        </section>
 
-        {document.questions.length > 0 && (
-          <section>
-            <SectionHeading
-              id="section-questions"
-              title="확인 질문"
-              meta={unresolvedCount > 0 ? `${unresolvedCount}개 남음` : "모두 확인"}
-              collapsed={!!collapsed.questions}
-              onToggle={() => toggleSection("questions")}
-            />
-            {!collapsed.questions && (
+        <section>
+          <SectionHeading
+            id="section-questions"
+            title="확인 질문"
+            meta={document.questions.length > 0 ? (unresolvedCount > 0 ? `${unresolvedCount}개 남음` : "모두 확인") : ""}
+            collapsed={!!collapsed.questions}
+            onToggle={() => toggleSection("questions")}
+          />
+          {!collapsed.questions && (
+            document.questions.length > 0 ? (
               <div className="question-list">
                 {document.questions.map((item) => (
                   <QuestionCard
@@ -656,20 +658,22 @@ export function DocumentView({
                   />
                 ))}
               </div>
-            )}
-          </section>
-        )}
+            ) : (
+              <p className="section-empty">확인이 필요한 질문이 없어요. 원문이 충분히 구체적이에요.</p>
+            )
+          )}
+        </section>
 
-        {document.states.length > 0 && (
-          <section>
-            <SectionHeading
-              id="section-states"
-              title="상태와 예외"
-              meta={`${document.states.length}개`}
-              collapsed={!!collapsed.states}
-              onToggle={() => toggleSection("states")}
-            />
-            {!collapsed.states && (
+        <section>
+          <SectionHeading
+            id="section-states"
+            title="상태와 예외"
+            meta={document.states.length > 0 ? `${document.states.length}개` : ""}
+            collapsed={!!collapsed.states}
+            onToggle={() => toggleSection("states")}
+          />
+          {!collapsed.states && (
+            document.states.length > 0 ? (
               <div className="state-groups">
                 {stateGroups.map(({ screen, states }) => (
                   <section className="state-group" key={screen.id}>
@@ -690,20 +694,22 @@ export function DocumentView({
                   </section>
                 ))}
               </div>
-            )}
-          </section>
-        )}
+            ) : (
+              <p className="section-empty">등록된 상태·예외 케이스가 없어요.</p>
+            )
+          )}
+        </section>
 
-        {(document.roles.length > 0 || document.permissions.length > 0) && (
-          <section>
-            <SectionHeading
-              id="section-permissions"
-              title="역할과 권한"
-              meta={`${document.roles.length}개 역할`}
-              collapsed={!!collapsed.permissions}
-              onToggle={() => toggleSection("permissions")}
-            />
-            {!collapsed.permissions && (
+        <section>
+          <SectionHeading
+            id="section-permissions"
+            title="역할과 권한"
+            meta={document.roles.length > 0 ? `${document.roles.length}개 역할` : ""}
+            collapsed={!!collapsed.permissions}
+            onToggle={() => toggleSection("permissions")}
+          />
+          {!collapsed.permissions && (
+            document.roles.length > 0 || document.permissions.length > 0 ? (
               <div className="permission-cards">
                 {document.roles.map((role) => {
                   const permissions = document.permissions.filter(
@@ -740,9 +746,11 @@ export function DocumentView({
                   );
                 })}
               </div>
-            )}
-          </section>
-        )}
+            ) : (
+              <p className="section-empty">역할과 권한 정보가 없어요.</p>
+            )
+          )}
+        </section>
 
         <section>
           <SectionHeading

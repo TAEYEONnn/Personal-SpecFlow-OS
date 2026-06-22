@@ -32,7 +32,7 @@ export function ProjectList({ projects }: { projects: ProjectSummary[] }) {
       <div className="projects-title-row">
         <div>
           <h1>프로젝트</h1>
-          <p>정리된 명세를 이어서 검토하세요.</p>
+          <p>이어서 작업할 프로젝트를 골라요.</p>
         </div>
         <Link className="button button-primary" href="/projects/new">
           <Plus size={17} weight="bold" />
