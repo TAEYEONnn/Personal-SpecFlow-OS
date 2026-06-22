@@ -10,9 +10,9 @@ export default function LoginPage() {
           <span>SpecFlow OS</span>
         </div>
         <div className="login-copy">
-          <h1>업무 요청을<br />화면 구조로 정리하세요.</h1>
+          <h1>업무 요청을<br />문서로 정리하세요.</h1>
           <p>
-            회의록과 기획 메모를 화면 구조, 상태와 예외, 화면 문구와 작업 목록으로
+            회의록과 기획 메모를 화면 플로우와 작업 목록으로
             정리하고 근거까지 함께 검토해요.
           </p>
         </div>

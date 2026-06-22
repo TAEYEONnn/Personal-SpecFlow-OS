@@ -36,7 +36,7 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
             <span className="help-step-num">2</span>
             <div>
               <strong>AI가 정리</strong>
-              <p>화면 구조, 요구사항, 확인 질문으로 나눠서 정리해요. 원문을 바꾼 뒤 다시 정리할 수도 있어요.</p>
+              <p>화면, 요구사항, 확인 질문으로 나눠서 정리해요. 원문을 바꾼 뒤 다시 정리할 수도 있어요.</p>
             </div>
           </div>
           <div className="help-step">
