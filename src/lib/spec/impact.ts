@@ -27,7 +27,7 @@ export function computeImpact(doc: SpecDocument, requirementId: string): ImpactR
     .map((c) => c.id);
 
   const affectedTaskIds = doc.tasks
-    .filter((t) => t.relatedIds.includes(requirementId))
+    .filter((t) => !t.deletedAt && t.relatedIds.includes(requirementId))
     .map((t) => t.id);
 
   const affectedQuestionIds = doc.questions
@@ -90,8 +90,13 @@ export function diffDocuments(prev: SpecDocument, current: SpecDocument): Docume
   const questions = diffEntities(prev.questions, current.questions);
   const roles = diffEntities(prev.roles, current.roles);
 
-  const prevTaskMap = new Map(prev.tasks.map((t) => [t.id, t.status]));
+  const prevTaskMap = new Map(
+    prev.tasks
+      .filter((task) => !task.deletedAt)
+      .map((task) => [task.id, task.status]),
+  );
   const taskStatusChanges = current.tasks
+    .filter((task) => !task.deletedAt)
     .filter((t) => {
       const prevStatus = prevTaskMap.get(t.id);
       return prevStatus !== undefined && prevStatus !== t.status;

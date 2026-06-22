@@ -5,7 +5,17 @@ import { specDocumentSchema } from "@/lib/spec/schema";
 
 describe("SpecDocument schema", () => {
   it("accepts the canonical demo document", () => {
-    expect(specDocumentSchema.parse(demoSpecDocument)).toEqual(demoSpecDocument);
+    expect(specDocumentSchema.parse(demoSpecDocument)).toEqual({
+      ...demoSpecDocument,
+      states: demoSpecDocument.states.map((state) => ({
+        ...state,
+        position: state.position ?? null,
+      })),
+      tasks: demoSpecDocument.tasks.map((task) => ({
+        ...task,
+        deletedAt: null,
+      })),
+    });
   });
 
   it("requires evidence on generated requirements", () => {
@@ -79,5 +89,26 @@ describe("SpecDocument schema", () => {
   it("defaults omitted rationale to null for existing saved documents", () => {
     const parsed = specDocumentSchema.parse(demoSpecDocument);
     expect(parsed.requirements[0].evidence.rationale).toBeNull();
+  });
+
+  it("defaults omitted task deletedAt to null for existing saved documents", () => {
+    const legacy = structuredClone(demoSpecDocument);
+    Reflect.deleteProperty(legacy.tasks[0], "deletedAt");
+
+    const parsed = specDocumentSchema.parse(legacy);
+
+    expect(parsed.tasks[0].deletedAt).toBeNull();
+  });
+
+  it("accepts a nullable task deletedAt timestamp", () => {
+    const document = structuredClone(demoSpecDocument);
+    document.tasks[0] = {
+      ...document.tasks[0],
+      deletedAt: "2026-06-22T00:00:00.000Z",
+    };
+
+    expect(specDocumentSchema.parse(document).tasks[0].deletedAt).toBe(
+      "2026-06-22T00:00:00.000Z",
+    );
   });
 });

@@ -98,7 +98,7 @@ export function DiffView({
           setComparison({
             revision,
             document: null,
-            error: data.error ?? "이전 revision을 불러오지 못했습니다.",
+            error: data.error ?? "이전 버전을 불러오지 못했어요.",
           });
           return;
         }
@@ -119,7 +119,7 @@ export function DiffView({
         setComparison({
           revision,
           document: null,
-          error: "이전 revision을 불러오지 못했습니다.",
+          error: "이전 버전을 불러오지 못했어요.",
         });
       }
     }
@@ -186,7 +186,7 @@ export function DiffView({
         <h2>변경 내역 비교</h2>
         <div className="diff-controls">
           <label className="field-label" style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            비교 대상 revision
+            비교할 버전
             <input
               className="field"
               type="number"
@@ -200,19 +200,19 @@ export function DiffView({
               }}
             />
           </label>
-          <span className="diff-current-label">현재: revision {currentRevision}</span>
+          <span className="diff-current-label">현재 버전: {currentRevision}</span>
         </div>
       </div>
 
       {!compareRevision && (
-        <p className="diff-hint">이전 revision 번호를 입력하면 변경된 항목이 표시됩니다.</p>
+        <p className="diff-hint">이전 버전을 입력하면 달라진 항목을 볼 수 있어요.</p>
       )}
 
       {loading && <p className="diff-hint">불러오는 중…</p>}
       {error && <p className="form-error">{error}</p>}
 
       {diff && !hasDiff && (
-        <p className="diff-hint">두 revision 사이에 구조적 변경이 없습니다.</p>
+        <p className="diff-hint">두 버전 사이에 달라진 구조가 없어요.</p>
       )}
 
       {diff && hasDiff && (

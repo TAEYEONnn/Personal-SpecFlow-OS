@@ -29,32 +29,33 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
             <span className="help-step-num">1</span>
             <div>
               <strong>원문 업로드</strong>
-              <p>회의록, 요청 메모, 기획 문서를 올려주세요. 여러 파일을 올릴수록 정리 품질이 높아집니다.</p>
+              <p>회의록, 요청 메모, 기획 문서를 올려 주세요. TXT, Markdown, PDF를 지원해요.</p>
             </div>
           </div>
           <div className="help-step">
             <span className="help-step-num">2</span>
             <div>
               <strong>AI가 정리</strong>
-              <p>화면 구조, 요구사항, 확인 질문으로 자동 정리됩니다. &quot;다시 정리하기&quot;로 언제든 재실행할 수 있어요.</p>
+              <p>화면 구조, 요구사항, 확인 질문으로 나눠서 정리해요. 원문을 바꾼 뒤 다시 정리할 수도 있어요.</p>
             </div>
           </div>
           <div className="help-step">
             <span className="help-step-num">3</span>
             <div>
               <strong>검토하고 공유</strong>
-              <p>확인 질문을 해결하고 작업 상태를 업데이트하세요. Notion으로 내보내거나 Markdown으로 저장할 수 있어요.</p>
+              <p>질문과 작업 상태를 확인한 뒤 Notion이나 Markdown으로 내보내세요.</p>
             </div>
           </div>
         </div>
         <div className="help-nav-guide">
           <strong>좌측 탭 안내</strong>
           <ul>
-            <li><strong>브리프</strong> — 목적, 성공 조건 요약</li>
-            <li><strong>확인 질문</strong> — AI가 원문에서 발견한 불확실한 사항</li>
-            <li><strong>화면 목록</strong> — 화면 흐름도 + 선택한 화면 상세</li>
-            <li><strong>역할과 권한 / 상태와 예외</strong> — 매트릭스 뷰</li>
-            <li><strong>원문</strong> — 업로드한 원본 문서 확인 및 삭제</li>
+            <li><strong>개요·요구사항</strong> — 프로젝트 목적과 필요한 기능</li>
+            <li><strong>확인 질문·결정 기록</strong> — 더 확인할 내용과 확정된 내용</li>
+            <li><strong>화면 흐름</strong> — 화면 연결과 선택한 화면의 상세</li>
+            <li><strong>상태·예외·역할·권한</strong> — 화면 상태와 역할별 가능 범위</li>
+            <li><strong>작업 목록</strong> — 해야 할 일과 휴지통</li>
+            <li><strong>참고</strong> — 원문, 변경 영향, 활동 기록</li>
           </ul>
         </div>
         <div className="help-shortcuts">

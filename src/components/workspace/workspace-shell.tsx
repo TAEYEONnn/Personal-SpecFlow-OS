@@ -15,6 +15,7 @@ import {
   PencilSimple,
   Question,
   SquaresFour,
+  UsersThree,
   Warning,
 } from "@phosphor-icons/react";
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -22,29 +23,41 @@ import { DiffView } from "@/components/workspace/diff-view";
 import { DocumentView } from "@/components/workspace/document-view";
 import { EvidencePanel } from "@/components/workspace/evidence-panel";
 import { FigmaView } from "@/components/workspace/figma-view";
-import { computeAutoLayout, FlowCanvas } from "@/components/workspace/flow-canvas";
+import { FlowCanvas } from "@/components/workspace/flow-canvas";
 import { MatrixView } from "@/components/workspace/matrix-view";
 import { RunsView } from "@/components/workspace/runs-view";
 import { ScreenDetail } from "@/components/workspace/screen-detail";
 import { DecisionsView } from "@/components/workspace/decisions-view";
 import { HelpOverlay } from "@/components/workspace/help-overlay";
-import { SourceViewer } from "@/components/workspace/source-viewer";
-import type { Evidence, Screen, SpecDocument, Task, UxCopy } from "@/lib/spec/schema";
+import { SourceViewer, type ProjectSource } from "@/components/workspace/source-viewer";
+import { createDocumentSaveQueue } from "@/lib/projects/document-save-queue";
+import type {
+  Evidence,
+  Question as SpecQuestion,
+  Screen,
+  SpecDocument,
+  Task,
+  UxCopy,
+} from "@/lib/spec/schema";
 import type { ProjectView } from "@/lib/projects/service";
 
 type ViewMode = "document" | "flow" | "matrix" | "runs" | "diff" | "figma" | "sources" | "decisions";
 
-const navItems = [
-  { id: "overview", label: "개요", icon: FileText, countKey: "brief", description: "목적, 성공 조건, 요구사항 요약", alwaysShow: true },
-  { id: "sources", label: "원문", icon: Article, countKey: "sources", description: "업로드된 원본 문서 목록", alwaysShow: true },
+const primaryNavItems = [
+  { id: "overview", label: "개요", icon: FileText, countKey: "brief", description: "목적과 성공 조건", alwaysShow: true },
   { id: "requirements", label: "요구사항", icon: ListChecks, countKey: "requirements", description: "도출된 기능 요구사항 목록", alwaysShow: false },
-  { id: "questions", label: "확인 질문", icon: Question, countKey: "questions", description: "AI가 발견한 미결·가정 사항", alwaysShow: false },
-  { id: "decisions", label: "결정 기록", icon: Notepad, countKey: "decisions", description: "확정된 요구사항 및 해결된 질문", alwaysShow: false },
-  { id: "screens", label: "화면", icon: SquaresFour, countKey: "screens", description: "화면 흐름도 및 선택 화면 상세", alwaysShow: true },
-  { id: "states", label: "상태·예외", icon: Warning, countKey: "states", description: "화면별 상태·예외 시나리오", alwaysShow: false },
-  { id: "tasks", label: "작업", icon: CheckSquare, countKey: "tasks", description: "개발 작업 및 진행 상태", alwaysShow: false },
+  { id: "questions", label: "확인 질문", icon: Question, countKey: "questions", description: "결정이 필요한 내용", alwaysShow: false },
+  { id: "decisions", label: "결정 기록", icon: Notepad, countKey: "decisions", description: "확정된 내용", alwaysShow: false },
+  { id: "screens", label: "화면 흐름", icon: SquaresFour, countKey: "screens", description: "화면 흐름과 상세", alwaysShow: true },
+  { id: "states", label: "상태·예외", icon: Warning, countKey: "states", description: "화면별 상태와 예외", alwaysShow: false },
+  { id: "permissions", label: "역할·권한", icon: UsersThree, countKey: "roles", description: "역할별 가능 범위", alwaysShow: false },
+  { id: "tasks", label: "작업 목록", icon: CheckSquare, countKey: "tasks", description: "진행할 작업", alwaysShow: true },
+] as const;
+
+const referenceNavItems = [
+  { id: "sources", label: "원문", icon: Article, countKey: "sources", description: "추가한 원문", alwaysShow: true },
   { id: "diff", label: "변경 영향", icon: GitDiff, countKey: "diff", description: "버전 간 변경 사항 비교", alwaysShow: true },
-  { id: "runs", label: "활동 기록", icon: ClockCounterClockwise, countKey: "runs", description: "AI 정리 실행 기록", alwaysShow: true },
+  { id: "runs", label: "활동 기록", icon: ClockCounterClockwise, countKey: "runs", description: "정리 실행 기록", alwaysShow: true },
 ] as const;
 
 export function WorkspaceShell({
@@ -70,28 +83,43 @@ export function WorkspaceShell({
   const [notionPageId, setNotionPageId] = useState("");
   const [notionPending, setNotionPending] = useState(false);
   const [notionResult, setNotionResult] = useState<{ url: string } | null>(null);
-  const [sourcesCount, setSourcesCount] = useState(project.sources.length);
+  const [sources, setSources] = useState<ProjectSource[]>(() =>
+    structuredClone(project.sources),
+  );
+  const [lastDeletedTaskId, setLastDeletedTaskId] = useState<string | null>(null);
   const [canvasCollapsed, setCanvasCollapsed] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
-  const [canvasHeight, setCanvasHeight] = useState(() => {
-    if (typeof window === "undefined") return 360;
-
-    const saved = window.localStorage.getItem("specflow-canvas-height");
-    const parsed = saved ? Number.parseInt(saved, 10) : Number.NaN;
-
-    return Number.isNaN(parsed) || parsed <= 0 ? 360 : parsed;
-  });
-
-  const [evidencePanelCollapsed, setEvidencePanelCollapsed] = useState(() => {
-    if (typeof window === "undefined") return false;
-
-    return (
-      window.localStorage.getItem("specflow-evidence-collapsed") === "true"
-    );
-  });
+  const [canvasHeight, setCanvasHeight] = useState(360);
+  const [evidencePanelCollapsed, setEvidencePanelCollapsed] = useState(false);
   const [needsRecompile, setNeedsRecompile] = useState(project.needsRecompile ?? false);
+  const [sourceOperationCount, setSourceOperationCount] = useState(0);
   const prevPositions = useRef<Record<string, { x: number; y: number }> | null>(null);
+  const documentRef = useRef(document);
+  const pendingSaveCount = useRef(0);
+  const recompilingRef = useRef(false);
+  const sourceChangeVersionRef = useRef(0);
+  const saveQueue = useRef<ReturnType<typeof createDocumentSaveQueue> | null>(null);
+  const sourcePending = sourceOperationCount > 0;
 
+  if (!saveQueue.current) {
+    saveQueue.current = createDocumentSaveQueue(project.revision, sendDocument);
+  }
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      const savedHeight = window.localStorage.getItem("specflow-canvas-height");
+      const parsedHeight = savedHeight
+        ? Number.parseInt(savedHeight, 10)
+        : Number.NaN;
+      if (!Number.isNaN(parsedHeight) && parsedHeight > 0) {
+        setCanvasHeight(parsedHeight);
+      }
+      setEvidencePanelCollapsed(
+        window.localStorage.getItem("specflow-evidence-collapsed") === "true",
+      );
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   useEffect(() => {
     if (!note || noteIsError) return;
@@ -100,11 +128,30 @@ export function WorkspaceShell({
   }, [note, noteIsError]);
 
   useEffect(() => {
+    if (!lastDeletedTaskId) return;
+    const id = window.setTimeout(() => setLastDeletedTaskId(null), 6000);
+    return () => window.clearTimeout(id);
+  }, [lastDeletedTaskId]);
+
+  useEffect(() => {
     if (!editing) return;
     const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [editing]);
+
+  useEffect(() => {
+    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const nextTasks = documentRef.current.tasks.filter((task) => {
+      if (!task.deletedAt) return true;
+      return new Date(task.deletedAt).getTime() >= cutoff;
+    });
+    if (nextTasks.length !== documentRef.current.tasks.length) {
+      commitDocument({ ...documentRef.current, tasks: nextTasks });
+    }
+    // Expired trash is normalized once when the workspace opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function setError(message: string, retry?: () => void) {
     setNote(message);
@@ -126,7 +173,7 @@ export function WorkspaceShell({
   const counts = useMemo(
     () => ({
       brief: 1,
-      sources: sourcesCount,
+      sources: sources.length,
       requirements: document.requirements.length,
       questions: document.questions.length,
       decisions:
@@ -134,131 +181,198 @@ export function WorkspaceShell({
         document.questions.filter((q) => q.resolved).length,
       screens: document.screens.length,
       states: document.states.length,
-      tasks: document.tasks.length,
+      roles: document.roles.length,
+      tasks: document.tasks.filter((task) => !task.deletedAt).length,
       diff: 0,
       runs: project.runs.length,
     }),
-    [document, project.runs.length, sourcesCount],
+    [document, project.runs.length, sources.length],
   );
 
   function replaceScreen(next: Screen) {
-    setDocument((current) => ({
-      ...current,
-      screens: current.screens.map((screen) => (screen.id === next.id ? next : screen)),
-    }));
+    if (recompilingRef.current) return;
+    const nextDocument = {
+      ...documentRef.current,
+      screens: documentRef.current.screens.map((screen) =>
+        screen.id === next.id ? next : screen,
+      ),
+    };
+    documentRef.current = nextDocument;
+    setDocument(nextDocument);
   }
 
   function replaceEvidence(status: Evidence["reviewStatus"]) {
     if (!selectedScreen) return;
-    replaceScreen({
-      ...selectedScreen,
-      evidence: { ...selectedScreen.evidence, reviewStatus: status },
+    const current = documentRef.current;
+    commitDocument({
+      ...current,
+      screens: current.screens.map((screen) =>
+        screen.id === selectedScreen.id
+          ? { ...screen, evidence: { ...screen.evidence, reviewStatus: status } }
+          : screen,
+      ),
     });
   }
 
-  async function doSave(rev: number, doc: SpecDocument) {
-    setPending(true);
-    clearNote();
+  async function sendDocument(rev: number, doc: SpecDocument) {
     const response = await fetch(`/api/projects/${project.id}/document`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ revision: rev, document: doc }),
     });
     const data = await response.json();
-    if (response.ok) {
-      setRevision(data.revision);
-      setEditing(false);
-      setNote("저장됨");
-      setNoteIsError(false);
-    } else {
-      setError(data.error ?? "저장하지 못했습니다.", () => doSave(rev, doc));
-    }
-    setPending(false);
+    if (!response.ok) throw new Error(data.error ?? "저장하지 못했어요.");
+    return data.revision as number;
+  }
+
+  function queueDocumentSave(doc: SpecDocument) {
+    pendingSaveCount.current += 1;
+    setPending(true);
+    clearNote();
+    return saveQueue.current!.enqueue(structuredClone(doc))
+      .then((nextRevision) => {
+        setRevision(nextRevision);
+        setNote("저장했어요");
+        setNoteIsError(false);
+        return nextRevision;
+      })
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : "저장하지 못했어요.";
+        setError(message, () => queueDocumentSave(doc));
+        throw error;
+      })
+      .finally(() => {
+        pendingSaveCount.current -= 1;
+        if (pendingSaveCount.current === 0) setPending(false);
+      });
+  }
+
+  function commitDocument(next: SpecDocument, save = true) {
+    if (recompilingRef.current) return;
+    documentRef.current = next;
+    setDocument(next);
+    if (save) void queueDocumentSave(next).catch(() => undefined);
   }
 
   const saveDocument = useCallback(async () => {
-    await doSave(revision, document);
+    if (recompilingRef.current) return;
+    await queueDocumentSave(documentRef.current);
+    setEditing(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [project.id, revision, document]);
+  }, []);
 
   function toggleQuestionResolved(id: string) {
+    const current = documentRef.current;
     const nextDoc = {
-      ...document,
-      questions: document.questions.map((q) =>
+      ...current,
+      questions: current.questions.map((q) =>
         q.id === id ? { ...q, resolved: !q.resolved } : q,
       ),
     };
-    setDocument(nextDoc);
-    doSave(revision, nextDoc);
+    commitDocument(nextDoc);
+  }
+
+  function handleQuestionUpdate(id: string, patch: Partial<SpecQuestion>) {
+    const current = documentRef.current;
+    commitDocument({
+      ...current,
+      questions: current.questions.map((question) =>
+        question.id === id ? { ...question, ...patch } : question,
+      ),
+    });
   }
 
   function handleTaskCreate(task: Task) {
-    const nextDoc = { ...document, tasks: [...document.tasks, task] };
-    setDocument(nextDoc);
-    doSave(revision, nextDoc);
+    const current = documentRef.current;
+    commitDocument({ ...current, tasks: [...current.tasks, task] });
   }
 
   function handleTaskUpdate(id: string, patch: Partial<Task>) {
+    const current = documentRef.current;
     const nextDoc = {
-      ...document,
-      tasks: document.tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+      ...current,
+      tasks: current.tasks.map((task) =>
+        task.id === id ? { ...task, ...patch } : task,
+      ),
     };
-    setDocument(nextDoc);
-    doSave(revision, nextDoc);
+    commitDocument(nextDoc);
   }
 
   function handleTaskDelete(id: string) {
-    const nextDoc = { ...document, tasks: document.tasks.filter((t) => t.id !== id) };
-    setDocument(nextDoc);
-    doSave(revision, nextDoc);
+    handleTaskUpdate(id, { deletedAt: new Date().toISOString() });
+    setLastDeletedTaskId(id);
+  }
+
+  function handleTaskRestore(id: string) {
+    handleTaskUpdate(id, { deletedAt: null });
+    if (lastDeletedTaskId === id) setLastDeletedTaskId(null);
+  }
+
+  function handleTaskPurge(id: string) {
+    const current = documentRef.current;
+    commitDocument({
+      ...current,
+      tasks: current.tasks.filter((task) => task.id !== id),
+    });
   }
 
   function handleUxCopyChange(items: UxCopy[]) {
     if (!selectedScreen) return;
-    const others = document.uxCopy.filter((c) => c.screenId !== selectedScreen.id);
-    const nextDoc = { ...document, uxCopy: [...others, ...items] };
-    setDocument(nextDoc);
-    doSave(revision, nextDoc);
+    const current = documentRef.current;
+    const others = current.uxCopy.filter((c) => c.screenId !== selectedScreen.id);
+    commitDocument({ ...current, uxCopy: [...others, ...items] });
   }
 
-  function handleAutoLayout() {
+  function handleAutoLayout(positions: Record<string, { x: number; y: number }>) {
+    const current = documentRef.current;
     prevPositions.current = Object.fromEntries(
-      document.screens.map((s) => [s.id, { ...s.position }]),
+      [
+        ...current.screens.map((screen) => [screen.id, { ...screen.position }] as const),
+        ...current.states
+          .filter((state) => state.position)
+          .map((state) => [state.id, { ...state.position! }] as const),
+      ],
     );
-    const positions = computeAutoLayout(document.screens);
     const nextDoc = {
-      ...document,
-      screens: document.screens.map((s) =>
+      ...current,
+      screens: current.screens.map((s) =>
         positions[s.id] ? { ...s, position: positions[s.id] } : s,
       ),
+      states: current.states.map((state) =>
+        positions[state.id] ? { ...state, position: positions[state.id] } : state,
+      ),
     };
-    setDocument(nextDoc);
-    doSave(revision, nextDoc);
+    commitDocument(nextDoc);
   }
 
   function handleUndoLayout() {
     if (!prevPositions.current) return;
     const saved = prevPositions.current;
     prevPositions.current = null;
+    const current = documentRef.current;
     const nextDoc = {
-      ...document,
-      screens: document.screens.map((s) =>
+      ...current,
+      screens: current.screens.map((s) =>
         saved[s.id] ? { ...s, position: saved[s.id] } : s,
       ),
+      states: current.states.map((state) =>
+        saved[state.id]
+          ? { ...state, position: saved[state.id] }
+          : { ...state, position: undefined },
+      ),
     };
-    setDocument(nextDoc);
-    doSave(revision, nextDoc);
+    commitDocument(nextDoc);
   }
 
   function handlePositionUpdate(screenId: string, pos: { x: number; y: number }) {
+    const current = documentRef.current;
     const nextDoc = {
-      ...document,
-      screens: document.screens.map((s) =>
+      ...current,
+      screens: current.screens.map((s) =>
         s.id === screenId ? { ...s, position: pos } : s,
       ),
     };
-    setDocument(nextDoc);
-    doSave(revision, nextDoc);
+    commitDocument(nextDoc);
   }
 
   function startResize(e: React.MouseEvent) {
@@ -294,6 +408,7 @@ export function WorkspaceShell({
       if (e.key === "?") { setHelpOpen(true); return; }
       if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
+        if (recompilingRef.current) return;
         saveDocument();
         return;
       }
@@ -307,27 +422,60 @@ export function WorkspaceShell({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saveDocument]);
 
-  const recompile = useCallback(async () => {
+  async function recompile() {
+    if (sourcePending) {
+      setError("원문 저장이 끝난 뒤 다시 정리해 주세요.");
+      return;
+    }
     if (!window.confirm("원문으로 처음부터 다시 정리할까요? 현재 문서는 저장됩니다.")) return;
+    try {
+      await queueDocumentSave(documentRef.current);
+    } catch {
+      return;
+    }
+
+    setEditing(false);
     setPending(true);
     setNote("정리 중…");
     setNoteIsError(false);
     setRetryFn(null);
-    const response = await fetch(`/api/projects/${project.id}/compile`, { method: "POST" });
-    const data = await response.json();
-    if (response.ok) {
-      setDocument(data.document);
-      setRevision(data.revision);
-      setSelectedId(data.document.screens[0]?.id ?? "");
+    const sourceVersionAtStart = sourceChangeVersionRef.current;
+    recompilingRef.current = true;
+    try {
+      const result = await saveQueue.current!.runExclusive(async () => {
+        const response = await fetch(`/api/projects/${project.id}/compile`, {
+          method: "POST",
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error ?? "정리하지 못했습니다.");
+        }
+        return {
+          revision: data.revision as number,
+          value: data.document as SpecDocument,
+        };
+      });
+      const compiledDocument = result.value;
+      documentRef.current = compiledDocument;
+      setDocument(compiledDocument);
+      setRevision(result.revision);
+      setSelectedId(compiledDocument.screens[0]?.id ?? "");
       setNote("정리 완료");
       setNoteIsError(false);
-      setNeedsRecompile(false);
-    } else {
-      setError(data.error ?? "정리하지 못했습니다.", recompile);
+      setNeedsRecompile(
+        sourceChangeVersionRef.current !== sourceVersionAtStart,
+      );
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "정리하지 못했습니다.",
+        recompile,
+      );
+    } finally {
+      recompilingRef.current = false;
+      if (pendingSaveCount.current === 0) setPending(false);
     }
-    setPending(false);
 
-  }, [project.id]);
+  }
 
   async function handleRenameProject() {
     if (projectName.trim() === project.name || !projectName.trim()) {
@@ -375,7 +523,11 @@ export function WorkspaceShell({
     return window.confirm("저장하지 않은 내용이 있어요. 이동할까요?");
   }
 
-  const visibleNavItems = navItems.filter((item) => {
+  const visiblePrimaryNavItems = primaryNavItems.filter((item) => {
+    if (item.alwaysShow) return true;
+    return (counts[item.countKey as keyof typeof counts] ?? 0) > 0;
+  });
+  const visibleReferenceNavItems = referenceNavItems.filter((item) => {
     if (item.alwaysShow) return true;
     return (counts[item.countKey as keyof typeof counts] ?? 0) > 0;
   });
@@ -386,6 +538,7 @@ export function WorkspaceShell({
     questions: "section-questions",
     tasks: "section-tasks",
     states: "section-states",
+    permissions: "section-permissions",
   };
 
   function chooseNav(id: string) {
@@ -449,8 +602,10 @@ export function WorkspaceShell({
               </button>
             )}
           </div>
-          <nav className="sidebar-nav" aria-label="산출물">
-            {visibleNavItems.map((item) => {
+          <nav className="sidebar-nav" aria-label="프로젝트 문서">
+            <div className="sidebar-nav-group">
+              <span className="sidebar-nav-label">작업 흐름</span>
+            {visiblePrimaryNavItems.map((item) => {
               const Icon = item.icon;
               return (
                 <button
@@ -465,6 +620,27 @@ export function WorkspaceShell({
                 </button>
               );
             })}
+            </div>
+            <div className="sidebar-nav-group sidebar-nav-group--reference">
+              <span className="sidebar-nav-label">참고</span>
+              {visibleReferenceNavItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    className={`nav-item ${activeNav === item.id ? "active" : ""}`}
+                    key={item.id}
+                    title={item.description}
+                    onClick={() => chooseNav(item.id)}
+                  >
+                    <Icon size={18} />
+                    <span className="nav-label">{item.label}</span>
+                    <span className="nav-count">
+                      {counts[item.countKey as keyof typeof counts]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </nav>
           <div className="sidebar-footer">
             <div className="profile-chip">
@@ -478,13 +654,13 @@ export function WorkspaceShell({
         <header className="workspace-header">
           <div className="workspace-title">
             <span>프로젝트</span>
-            <strong>{project.name}</strong>
+            <strong>{projectName}</strong>
           </div>
           <div className="header-actions">
             {needsRecompile && (
               <span className="recompile-banner">
                 원문이 변경되었어요.
-                <button className="button button-primary button--sm" disabled={pending} onClick={recompile}>
+                <button className="button button-primary button--sm" disabled={pending || sourcePending} onClick={recompile}>
                   <ArrowClockwise size={13} />
                   다시 정리하기
                 </button>
@@ -492,7 +668,7 @@ export function WorkspaceShell({
             )}
             <span className={`compile-status${noteIsError ? " compile-status--error" : ""}`}>
               <span className={`status-dot${pending ? " status-dot--pending" : ""}`} />
-              {note || `변환 완료 · 버전 ${revision}`}
+              {note || `정리 완료 · 버전 ${revision}`}
               {noteIsError && retryFn && (
                 <button className="retry-button" onClick={() => { clearNote(); retryFn(); }}>
                   다시 시도
@@ -505,7 +681,7 @@ export function WorkspaceShell({
             <button className="button button--icon" onClick={() => setHelpOpen(true)} aria-label="도움말 (?)">
               <Question size={17} />
             </button>
-            <button className="button" disabled={pending} onClick={recompile}>
+            <button className="button" disabled={pending || sourcePending} onClick={recompile}>
               <ArrowClockwise size={17} />
               다시 정리하기
             </button>
@@ -560,7 +736,8 @@ export function WorkspaceShell({
         </header>
 
         <section
-          className="workspace-main"
+          className={`workspace-main${recompilingRef.current ? " workspace-main--busy" : ""}`}
+          aria-busy={recompilingRef.current}
           style={view === "flow" ? { display: "flex", flexDirection: "column" } : { gridTemplateRows: "1fr" }}
         >
           {view === "flow" ? (
@@ -576,6 +753,7 @@ export function WorkspaceShell({
                     onToggleCollapse={() => setCanvasCollapsed((c) => !c)}
                     onRecompile={recompile}
                     onAutoLayout={handleAutoLayout}
+                    onUndoLayout={prevPositions.current ? handleUndoLayout : undefined}
                   />
                 </div>
                 {!canvasCollapsed && (
@@ -593,7 +771,7 @@ export function WorkspaceShell({
                       <span className="detail-subtitle">{selectedScreen.name}</span>
                     </h2>
                     <div className="header-actions">
-                      {note === "저장됨" ? <span className="save-note">✓ 저장됨</span> : null}
+                      {note === "저장했어요" ? <span className="save-note">✓ 저장했어요</span> : null}
                       {editing ? (
                         <button className="button button-primary" disabled={pending} onClick={saveDocument}>
                           저장
@@ -624,9 +802,12 @@ export function WorkspaceShell({
             <DocumentView
               document={document}
               onToggleResolved={toggleQuestionResolved}
+              onQuestionUpdate={handleQuestionUpdate}
               onTaskCreate={handleTaskCreate}
               onTaskUpdate={handleTaskUpdate}
               onTaskDelete={handleTaskDelete}
+              onTaskRestore={handleTaskRestore}
+              onTaskPurge={handleTaskPurge}
             />
           ) : view === "decisions" ? (
             <DecisionsView document={document} />
@@ -639,10 +820,17 @@ export function WorkspaceShell({
           ) : view === "sources" ? (
             <SourceViewer
               projectId={project.id}
-              initialSources={project.sources}
-              onSourceDelete={() => setSourcesCount((n) => Math.max(0, n - 1))}
-              onSourceAdd={() => setSourcesCount((n) => n + 1)}
-              onSourceUpdate={() => setNeedsRecompile(true)}
+              sources={sources}
+              onSourcesChange={setSources}
+              onSourceChange={() => {
+                sourceChangeVersionRef.current += 1;
+                setNeedsRecompile(true);
+              }}
+              onBusyChange={(busy) =>
+                setSourceOperationCount((count) =>
+                  Math.max(0, count + (busy ? 1 : -1)),
+                )
+              }
             />
           ) : (
             <RunsView runs={project.runs} />
@@ -661,6 +849,25 @@ export function WorkspaceShell({
       </main>
 
       <HelpOverlay open={helpOpen} onClose={() => setHelpOpen(false)} />
+
+      {lastDeletedTaskId && (
+        <div className="undo-toast" role="status">
+          <span>작업을 휴지통으로 옮겼어요.</span>
+          <button
+            type="button"
+            onClick={() => handleTaskRestore(lastDeletedTaskId)}
+          >
+            되돌리기
+          </button>
+          <button
+            type="button"
+            aria-label="알림 닫기"
+            onClick={() => setLastDeletedTaskId(null)}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {notionDialog && (
         <div

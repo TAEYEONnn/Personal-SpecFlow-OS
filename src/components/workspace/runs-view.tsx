@@ -18,16 +18,16 @@ export function RunsView({ runs }: { runs: DemoRun[] }) {
   if (!runs.length) {
     return (
       <div className="runs-view">
-        <h2>변환 이력</h2>
-        <p className="runs-empty">아직 변환 기록이 없어요.</p>
+        <h2>활동 기록</h2>
+        <p className="runs-empty">아직 정리 기록이 없어요.</p>
       </div>
     );
   }
 
   return (
     <div className="runs-view">
-      <h2>변환 이력</h2>
-      <table className="matrix-table" aria-label="변환 이력">
+      <h2>활동 기록</h2>
+      <table className="matrix-table" aria-label="활동 기록">
         <thead>
           <tr>
             <th>상태</th>

@@ -1,5 +1,8 @@
-import { cookies } from "next/headers";
-import { isDevelopmentDemo } from "@/lib/env";
+import {
+  getSupabaseEnvState,
+  isDevelopmentDemo,
+  supabaseConfigurationError,
+} from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthContext = {
@@ -9,15 +12,20 @@ export type AuthContext = {
 };
 
 export async function getAuthContext(): Promise<AuthContext | null> {
+  const envState = getSupabaseEnvState();
+  if (envState === "partial" || (envState === "none" && !isDevelopmentDemo)) {
+    throw supabaseConfigurationError();
+  }
+
   if (isDevelopmentDemo) {
-    const session = (await cookies()).get("specflow-demo-session");
-    return session
-      ? {
-          userId: "00000000-0000-0000-0000-000000000001",
-          username: session.value,
-          demo: true,
-        }
-      : null;
+    // The proxy already requires the HTTP-only demo session cookie for every
+    // protected page and API route. Avoid reading request-bound cookies again
+    // in service functions, which can run after request parsing in Next.js.
+    return {
+      userId: "00000000-0000-0000-0000-000000000001",
+      username: "designer",
+      demo: true,
+    };
   }
 
   const supabase = await createClient();

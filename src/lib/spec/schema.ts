@@ -76,6 +76,7 @@ const screenStateSchema = z.object({
   ]),
   description: z.string(),
   evidence: evidenceSchema,
+  position: z.object({ x: z.number(), y: z.number() }).nullable().catch(null),
 });
 
 const uxCopySchema = z.object({
@@ -100,6 +101,7 @@ const taskSchema = z.object({
   blockerReason: z.string().nullable().catch(null),
   relatedScreenIds: z.array(z.string()).catch([]),
   relatedRequirementIds: z.array(z.string()).catch([]),
+  deletedAt: z.string().nullable().catch(null),
 });
 
 export const specDocumentSchema = z.object({
@@ -133,8 +135,19 @@ export const specDocumentSchema = z.object({
 export const analysisSchema = z.object({
   requirements: z.array(requirementSchema),
 });
+type ParsedSpecDocument = z.infer<typeof specDocumentSchema>;
+type ParsedTask = ParsedSpecDocument["tasks"][number];
+type ParsedState = ParsedSpecDocument["states"][number];
+
 export type Evidence = z.infer<typeof evidenceSchema>;
-export type SpecDocument = z.infer<typeof specDocumentSchema>;
+export type SpecDocument = Omit<ParsedSpecDocument, "states" | "tasks"> & {
+  states: Array<
+    Omit<ParsedState, "position"> & {
+      position?: { x: number; y: number } | null;
+    }
+  >;
+  tasks: Array<Omit<ParsedTask, "deletedAt"> & { deletedAt?: string | null }>;
+};
 export type Screen = SpecDocument["screens"][number];
 export type ScreenState = SpecDocument["states"][number];
 export type Requirement = SpecDocument["requirements"][number];

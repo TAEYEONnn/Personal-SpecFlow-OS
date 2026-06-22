@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { ClipboardText, FileText, PencilSimple, Plus, TextAlignLeft, Trash } from "@phosphor-icons/react";
 
-type Source = {
+export type ProjectSource = {
   id: string;
   name: string;
   type: "paste" | "txt" | "md" | "pdf";
@@ -12,7 +12,7 @@ type Source = {
   updatedAt?: string;
 };
 
-const typeLabel: Record<Source["type"], string> = {
+const typeLabel: Record<ProjectSource["type"], string> = {
   paste: "직접 입력",
   txt: "TXT",
   md: "Markdown",
@@ -21,18 +21,17 @@ const typeLabel: Record<Source["type"], string> = {
 
 export function SourceViewer({
   projectId,
-  initialSources,
-  onSourceDelete,
-  onSourceAdd,
-  onSourceUpdate,
+  sources,
+  onSourcesChange,
+  onSourceChange,
+  onBusyChange,
 }: {
   projectId: string;
-  initialSources: Source[];
-  onSourceDelete?: () => void;
-  onSourceAdd?: () => void;
-  onSourceUpdate?: () => void;
+  sources: ProjectSource[];
+  onSourcesChange: (sources: ProjectSource[]) => void;
+  onSourceChange?: () => void;
+  onBusyChange?: (busy: boolean) => void;
 }) {
-  const [sources, setSources] = useState(initialSources);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -50,13 +49,29 @@ export function SourceViewer({
   async function handleDelete(id: string, name: string) {
     if (!window.confirm(`"${name}" 원문을 삭제할까요? 삭제하면 되돌릴 수 없어요.`)) return;
     setDeleting(id);
-    await fetch(`/api/projects/${projectId}/sources/${id}`, { method: "DELETE" });
-    setSources((prev) => prev.filter((s) => s.id !== id));
-    setDeleting(null);
-    onSourceDelete?.();
+    onBusyChange?.(true);
+    setSaveError("");
+    try {
+      const response = await fetch(`/api/projects/${projectId}/sources/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error ?? "원문을 삭제하지 못했어요.");
+      }
+      onSourcesChange(sources.filter((source) => source.id !== id));
+      onSourceChange?.();
+    } catch (error) {
+      setSaveError(
+        error instanceof Error ? error.message : "원문을 삭제하지 못했어요.",
+      );
+    } finally {
+      setDeleting(null);
+      onBusyChange?.(false);
+    }
   }
 
-  function startEdit(source: Source) {
+  function startEdit(source: ProjectSource) {
     setEditingId(source.id);
     setEditName(source.name);
     setEditContent(source.content);
@@ -71,68 +86,109 @@ export function SourceViewer({
 
   async function handleSaveEdit(id: string) {
     setSaving(true);
+    onBusyChange?.(true);
     setSaveError("");
-    const res = await fetch(`/api/projects/${projectId}/sources/${id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: editName.trim(), content: editContent }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setSources((prev) => prev.map((s) => (s.id === id ? { ...s, ...data.source } : s)));
-      setEditingId(null);
-      onSourceUpdate?.();
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setSaveError(data.error ?? "저장하지 못했습니다.");
+    try {
+      const res = await fetch(`/api/projects/${projectId}/sources/${id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: editName.trim(), content: editContent }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        onSourcesChange(
+          sources.map((source) =>
+            source.id === id ? { ...source, ...data.source } : source,
+          ),
+        );
+        setEditingId(null);
+        onSourceChange?.();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setSaveError(data.error ?? "저장하지 못했습니다.");
+      }
+    } catch {
+      setSaveError("저장하지 못했습니다.");
+    } finally {
+      setSaving(false);
+      onBusyChange?.(false);
     }
-    setSaving(false);
   }
 
   async function handleAddPaste() {
     if (!addText.trim()) { setAddError("내용을 입력해 주세요."); return; }
     setAdding(true);
+    onBusyChange?.(true);
     setAddError("");
-    const res = await fetch(`/api/projects/${projectId}/sources`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: addName.trim() || "직접 입력", type: "paste", content: addText }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setSources((prev) => [...prev, data.source]);
-      onSourceAdd?.();
-      setAddMode(null);
-      setAddText("");
-      setAddName("");
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setAddError(data.error ?? "추가하지 못했습니다.");
+    try {
+      const res = await fetch(`/api/projects/${projectId}/sources`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: addName.trim() || "직접 입력", type: "paste", content: addText }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        onSourcesChange([...sources, data.source]);
+        onSourceChange?.();
+        setAddMode(null);
+        setAddText("");
+        setAddName("");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setAddError(data.error ?? "추가하지 못했습니다.");
+      }
+    } catch {
+      setAddError("추가하지 못했습니다.");
+    } finally {
+      setAdding(false);
+      onBusyChange?.(false);
     }
-    setAdding(false);
   }
 
   async function handleAddFile(file: File) {
     setAdding(true);
+    onBusyChange?.(true);
     setAddError("");
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-    const type = (["txt", "md"].includes(ext) ? ext : "txt") as "txt" | "md";
-    const content = await file.text().catch(() => "");
-    const res = await fetch(`/api/projects/${projectId}/sources`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: file.name, type, content }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setSources((prev) => [...prev, data.source]);
-      onSourceAdd?.();
-      setAddMode(null);
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setAddError(data.error ?? "추가하지 못했습니다.");
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+      const type = (["txt", "md", "pdf"].includes(ext) ? ext : "txt") as
+        | "txt"
+        | "md"
+        | "pdf";
+      const isPdf = type === "pdf";
+      const content = isPdf
+        ? btoa(
+            Array.from(new Uint8Array(await file.arrayBuffer()))
+              .map((byte) => String.fromCharCode(byte))
+              .join(""),
+          )
+        : await file.text().catch(() => "");
+      const res = await fetch(`/api/projects/${projectId}/sources`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: file.name,
+          type,
+          content,
+          fileSize: file.size,
+          isPdfBase64: isPdf,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        onSourcesChange([...sources, data.source]);
+        onSourceChange?.();
+        setAddMode(null);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setAddError(data.error ?? "추가하지 못했습니다.");
+      }
+    } catch {
+      setAddError("추가하지 못했습니다.");
+    } finally {
+      setAdding(false);
+      onBusyChange?.(false);
     }
-    setAdding(false);
   }
 
   function cancelAdd() {
@@ -165,7 +221,7 @@ export function SourceViewer({
           <input
             ref={fileInputRef}
             type="file"
-            accept=".txt,.md"
+            accept=".txt,.md,.pdf"
             style={{ display: "none" }}
             onChange={(e) => {
               const file = e.target.files?.[0];
@@ -214,6 +270,9 @@ export function SourceViewer({
 
       {addError && addMode === "file" && !adding && (
         <p className="source-add-error">{addError}</p>
+      )}
+      {saveError && !editingId && (
+        <p className="source-add-error" role="alert">{saveError}</p>
       )}
 
       {!sources.length ? (

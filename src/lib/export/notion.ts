@@ -119,7 +119,9 @@ export function specDocumentToNotionBlocks(document: SpecDocument): NotionBlock[
   blocks.push(divider);
 
   blocks.push(h2("작업 목록"));
-  document.tasks.forEach((t) => blocks.push(todo(t.title, t.status === "done")));
+  document.tasks
+    .filter((task) => !task.deletedAt)
+    .forEach((task) => blocks.push(todo(task.title, task.status === "done")));
   blocks.push(divider);
 
   blocks.push(h2("일일보고"));

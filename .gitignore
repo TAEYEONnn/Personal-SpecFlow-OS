@@ -35,6 +35,17 @@ yarn-error.log*
 .env*
 !.env.example
 
+# local agent context and private work notes
+/.planning/
+/.private-journal/
+/.claude/
+/.codex/
+/.agents/
+/CLAUDE.md
+/design-qa.md
+/docs/next-implementation-plan.md
+/pace.yaml
+
 # vercel
 .vercel
 

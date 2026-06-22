@@ -1,27 +1,49 @@
 "use client";
 
-import { useState } from "react";
-import { PencilSimple, Plus, Trash } from "@phosphor-icons/react";
-import type { Evidence, SpecDocument, Task } from "@/lib/spec/schema";
+import { useMemo, useState } from "react";
+import {
+  ArrowCounterClockwise,
+  CaretDown,
+  PencilSimple,
+  Plus,
+  Trash,
+} from "@phosphor-icons/react";
+import type { Evidence, Question, SpecDocument, Task } from "@/lib/spec/schema";
 
-const questionPriorityLabel: Record<string, string> = {
-  blocking: "차단",
+const questionPriorityLabel: Record<Question["priority"], string> = {
+  blocking: "먼저 확인",
   "should-decide": "결정 필요",
-  assumable: "가정 가능",
+  assumable: "나중에 확인",
 };
 
-const taskStatusLabel: Record<string, string> = {
-  inbox: "수신함",
-  todo: "대기",
+const taskStatusLabel: Record<Task["status"], string> = {
+  inbox: "새 작업",
+  todo: "할 일",
   "in-progress": "진행 중",
-  blocked: "차단됨",
+  blocked: "막힘",
   done: "완료",
 };
 
-const taskPriorityLabel: Record<string, string> = {
+const taskPriorityLabel: Record<Task["priority"], string> = {
   high: "높음",
   medium: "보통",
   low: "낮음",
+};
+
+const stateKindLabel: Record<SpecDocument["states"][number]["kind"], string> = {
+  default: "기본",
+  loading: "불러오는 중",
+  empty: "내용 없음",
+  error: "오류",
+  disabled: "사용할 수 없음",
+  "permission-denied": "권한 없음",
+  "network-failure": "연결 실패",
+  timeout: "시간 초과",
+  "validation-error": "입력 오류",
+  "partial-completion": "일부 완료",
+  "duplicate-action": "중복 실행",
+  "session-expiration": "로그인 만료",
+  "unsaved-changes": "저장 안 됨",
 };
 
 const ALL_STATUSES = ["inbox", "todo", "in-progress", "blocked", "done"] as const;
@@ -34,6 +56,139 @@ function placeholderEvidence(title: string): Evidence {
     sourceExcerpt: title.slice(0, 80) || "사용자 입력",
     rationale: null,
   };
+}
+
+function editedQuestionEvidence(item: Question, question: string): Evidence {
+  const previousRationale = [
+    `기존 근거 (${item.evidence.sourceId}): ${item.evidence.sourceExcerpt}`,
+    item.evidence.rationale,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return {
+    type: "assumption",
+    reviewStatus: "needs-review",
+    sourceId: "user-input",
+    sourceExcerpt: question.slice(0, 80),
+    rationale: previousRationale || null,
+  };
+}
+
+function QuestionCard({
+  item,
+  onToggleResolved,
+  onUpdate,
+}: {
+  item: Question;
+  onToggleResolved?: (id: string) => void;
+  onUpdate?: (id: string, patch: Partial<Question>) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [question, setQuestion] = useState(item.question);
+  const [context, setContext] = useState(item.context);
+  const [priority, setPriority] = useState(item.priority);
+
+  function cancel() {
+    setQuestion(item.question);
+    setContext(item.context);
+    setPriority(item.priority);
+    setEditing(false);
+  }
+
+  function save() {
+    const nextQuestion = question.trim();
+    if (!nextQuestion) return;
+    onUpdate?.(item.id, {
+      question: nextQuestion,
+      context: context.trim(),
+      priority,
+      resolved: false,
+      evidence: editedQuestionEvidence(item, nextQuestion),
+    });
+    setEditing(false);
+  }
+
+  return (
+    <div className={`question-callout${item.resolved ? " question-resolved" : ""}`}>
+      {editing ? (
+        <div className="question-edit-form">
+          <label>
+            질문
+            <textarea
+              className="field"
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              autoFocus
+            />
+          </label>
+          <label>
+            왜 확인해야 하나요?
+            <textarea
+              className="field"
+              value={context}
+              onChange={(event) => setContext(event.target.value)}
+            />
+          </label>
+          <label>
+            우선순위
+            <select
+              className="field"
+              value={priority}
+              onChange={(event) =>
+                setPriority(event.target.value as Question["priority"])
+              }
+            >
+              {Object.entries(questionPriorityLabel).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+          <div className="question-edit-actions">
+            <button className="button" type="button" onClick={cancel}>취소</button>
+            <button
+              className="button button-primary"
+              type="button"
+              onClick={save}
+              disabled={!question.trim()}
+            >
+              질문 저장
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="question-header">
+            <span className={`tag tag-priority-${item.priority}`}>
+              {questionPriorityLabel[item.priority]}
+            </span>
+            {onUpdate && (
+              <button
+                className="icon-action"
+                type="button"
+                aria-label={`${item.question} 수정`}
+                onClick={() => setEditing(true)}
+              >
+                <PencilSimple size={15} />
+              </button>
+            )}
+            {onToggleResolved && (
+              <label className="question-resolve-toggle">
+                <input
+                  type="checkbox"
+                  checked={item.resolved}
+                  onChange={() => onToggleResolved(item.id)}
+                />
+                확인 완료
+              </label>
+            )}
+          </div>
+          <strong>{item.question}</strong>
+          {item.context && <p>{item.context}</p>}
+        </>
+      )}
+    </div>
+  );
 }
 
 function TaskRow({
@@ -51,8 +206,8 @@ function TaskRow({
 
   function commitTitle() {
     setEditingTitle(false);
-    const t = titleDraft.trim();
-    if (t && t !== task.title) onUpdate?.(task.id, { title: t });
+    const title = titleDraft.trim();
+    if (title && title !== task.title) onUpdate?.(task.id, { title });
     else setTitleDraft(task.title);
   }
 
@@ -64,26 +219,27 @@ function TaskRow({
             className="field task-title-input"
             value={titleDraft}
             autoFocus
-            onChange={(e) => setTitleDraft(e.target.value)}
+            onChange={(event) => setTitleDraft(event.target.value)}
             onBlur={commitTitle}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commitTitle();
-              if (e.key === "Escape") { setEditingTitle(false); setTitleDraft(task.title); }
+            onKeyDown={(event) => {
+              if (event.key === "Enter") commitTitle();
+              if (event.key === "Escape") {
+                setEditingTitle(false);
+                setTitleDraft(task.title);
+              }
             }}
           />
         ) : (
-          <span
+          <button
             className="task-title"
             onClick={() => setEditingTitle(true)}
-            title="클릭하여 제목 편집"
+            type="button"
           >
             {task.title}
-          </span>
+          </button>
         )}
         <div className="task-badges">
-          {task.source === "user" && (
-            <span className="task-source-badge">사용자</span>
-          )}
+          {task.source === "user" && <span className="task-source-badge">직접 추가</span>}
           <span className={`task-priority task-priority-${task.priority}`}>
             {taskPriorityLabel[task.priority]}
           </span>
@@ -93,31 +249,34 @@ function TaskRow({
             <select
               className="task-status-select"
               value={task.status}
-              onChange={(e) => onUpdate(task.id, { status: e.target.value as Task["status"] })}
+              aria-label={`${task.title} 상태`}
+              onChange={(event) =>
+                onUpdate(task.id, { status: event.target.value as Task["status"] })
+              }
             >
-              {ALL_STATUSES.map((s) => (
-                <option key={s} value={s}>{taskStatusLabel[s]}</option>
+              {ALL_STATUSES.map((status) => (
+                <option key={status} value={status}>{taskStatusLabel[status]}</option>
               ))}
             </select>
           )}
           {onUpdate && (
             <button
-              className="button button--sm"
-              onClick={() => setExpanded((v) => !v)}
-              title={expanded ? "접기" : "세부 정보"}
+              className="icon-action"
+              onClick={() => setExpanded((value) => !value)}
+              aria-label={`${task.title} 세부 정보`}
+              type="button"
             >
-              <PencilSimple size={13} />
+              <PencilSimple size={15} />
             </button>
           )}
           {onDelete && (
             <button
-              className="task-delete-btn"
+              className="icon-action icon-action--danger"
               aria-label="작업 삭제"
-              onClick={() => {
-                if (window.confirm(`"${task.title}" 작업을 삭제할까요?`)) onDelete(task.id);
-              }}
+              type="button"
+              onClick={() => onDelete(task.id)}
             >
-              <Trash size={14} />
+              <Trash size={15} />
             </button>
           )}
         </div>
@@ -128,9 +287,9 @@ function TaskRow({
             설명
             <textarea
               className="field task-detail-textarea"
-              placeholder="작업 설명 (선택)"
+              placeholder="필요한 내용을 적어 주세요."
               defaultValue={task.description ?? ""}
-              onBlur={(e) => onUpdate(task.id, { description: e.target.value })}
+              onBlur={(event) => onUpdate(task.id, { description: event.target.value })}
             />
           </label>
           <label className="task-detail-label">
@@ -139,65 +298,133 @@ function TaskRow({
               type="date"
               className="field"
               defaultValue={task.dueDate ?? ""}
-              onBlur={(e) => onUpdate(task.id, { dueDate: e.target.value || null })}
+              onBlur={(event) => onUpdate(task.id, { dueDate: event.target.value || null })}
             />
           </label>
           {task.status === "blocked" && (
             <label className="task-detail-label">
-              차단 사유
+              막힌 이유
               <input
                 className="field"
-                placeholder="무엇이 이 작업을 막고 있나요?"
+                placeholder="진행을 막고 있는 내용을 적어 주세요."
                 defaultValue={task.blockerReason ?? ""}
-                onBlur={(e) => onUpdate(task.id, { blockerReason: e.target.value || null })}
+                onBlur={(event) =>
+                  onUpdate(task.id, { blockerReason: event.target.value || null })
+                }
               />
             </label>
           )}
-          <select
-            className="field task-priority-select"
-            value={task.priority}
-            onChange={(e) => onUpdate(task.id, { priority: e.target.value as Task["priority"] })}
-          >
-            {(["high", "medium", "low"] as const).map((p) => (
-              <option key={p} value={p}>{taskPriorityLabel[p]}</option>
-            ))}
-          </select>
+          <label className="task-detail-label">
+            우선순위
+            <select
+              className="field task-priority-select"
+              value={task.priority}
+              onChange={(event) =>
+                onUpdate(task.id, { priority: event.target.value as Task["priority"] })
+              }
+            >
+              {(["high", "medium", "low"] as const).map((priority) => (
+                <option key={priority} value={priority}>
+                  {taskPriorityLabel[priority]}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       )}
       {task.status === "blocked" && task.blockerReason && !expanded && (
-        <p className="task-blocker-text">🚧 {task.blockerReason}</p>
+        <p className="task-blocker-text">막힌 이유: {task.blockerReason}</p>
       )}
       {task.dueDate && !expanded && (
-        <span className="task-due-date">📅 {task.dueDate}</span>
+        <span className="task-due-date">마감 {task.dueDate}</span>
       )}
     </li>
+  );
+}
+
+function SectionHeading({
+  id,
+  title,
+  meta,
+  collapsed,
+  onToggle,
+}: {
+  id: string;
+  title: string;
+  meta?: React.ReactNode;
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <h2 id={id} className="section-heading">
+      <button type="button" onClick={onToggle} aria-expanded={!collapsed}>
+        <span>{title}</span>
+        <span className="section-meta">
+          {meta}
+          <CaretDown
+            className={`section-chevron${collapsed ? " is-collapsed" : ""}`}
+            size={17}
+          />
+        </span>
+      </button>
+    </h2>
   );
 }
 
 export function DocumentView({
   document,
   onToggleResolved,
+  onQuestionUpdate,
   onTaskCreate,
   onTaskUpdate,
   onTaskDelete,
+  onTaskRestore,
+  onTaskPurge,
 }: {
   document: SpecDocument;
   onToggleResolved?: (id: string) => void;
+  onQuestionUpdate?: (id: string, patch: Partial<Question>) => void;
   onTaskCreate?: (task: Task) => void;
   onTaskUpdate?: (id: string, patch: Partial<Task>) => void;
   onTaskDelete?: (id: string) => void;
+  onTaskRestore?: (id: string) => void;
+  onTaskPurge?: (id: string) => void;
 }) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [expandedRequirements, setExpandedRequirements] = useState<Set<string>>(new Set());
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [trashOpen, setTrashOpen] = useState(false);
+
+  const requirementGroups = useMemo(() => {
+    const groups = new Map<string, SpecDocument["requirements"]>();
+    document.requirements.forEach((requirement) => {
+      const category = requirement.category.trim() || "기타";
+      groups.set(category, [...(groups.get(category) ?? []), requirement]);
+    });
+    return [...groups.entries()];
+  }, [document.requirements]);
+
+  const stateGroups = useMemo(
+    () =>
+      document.screens.map((screen) => ({
+        screen,
+        states: document.states.filter((state) => state.screenId === screen.id),
+      })).filter((group) => group.states.length > 0),
+    [document.screens, document.states],
+  );
+
+  const activeTasks = document.tasks.filter((task) => !task.deletedAt);
+  const deletedTasks = document.tasks.filter((task) => task.deletedAt);
+  const unresolvedCount = document.questions.filter((question) => !question.resolved).length;
 
   function toggleSection(key: string) {
-    setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
+    setCollapsed((current) => ({ ...current, [key]: !current[key] }));
   }
 
   function handleCreateTask() {
     const title = newTaskTitle.trim();
     if (!title || !onTaskCreate) return;
-    const task: Task = {
+    onTaskCreate({
       id: crypto.randomUUID(),
       title,
       status: "inbox",
@@ -210,8 +437,8 @@ export function DocumentView({
       blockerReason: null,
       relatedScreenIds: [],
       relatedRequirementIds: [],
-    };
-    onTaskCreate(task);
+      deletedAt: null,
+    });
     setNewTaskTitle("");
   }
 
@@ -219,136 +446,201 @@ export function DocumentView({
     return (
       <div className="document-view">
         <div className="document-empty">
-          <p>정리된 문서가 없어요. 다시 정리하기를 시도해 보세요.</p>
+          <p>아직 정리된 내용이 없어요. 원문을 확인한 뒤 다시 정리해 주세요.</p>
         </div>
       </div>
     );
   }
 
-  const unresolvedCount = document.questions.filter((q) => !q.resolved).length;
-
   return (
     <div className="document-view">
       <article id="section-brief">
         <h1>{document.brief.title}</h1>
-        <p>{document.brief.purpose}</p>
+        <p className="document-lead">{document.brief.purpose}</p>
 
         {document.brief.problem && (
-          <>
+          <section className="brief-block">
             <h2>해결할 문제</h2>
             <p>{document.brief.problem}</p>
-          </>
+          </section>
         )}
 
         {document.brief.successCriteria.length > 0 && (
-          <>
+          <section className="brief-block">
             <h2>성공 조건</h2>
             <ul>
-              {document.brief.successCriteria.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
+              {document.brief.successCriteria.map((item) => <li key={item}>{item}</li>)}
             </ul>
-          </>
+          </section>
         )}
 
         {document.requirements.length > 0 && (
-          <>
-            <h2
+          <section>
+            <SectionHeading
               id="section-requirements"
-              className="section-collapsible"
-              onClick={() => toggleSection("requirements")}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && toggleSection("requirements")}
-            >
-              요구사항
-              <span className="section-meta">
-                {document.requirements.length}개
-                <span className={`section-chevron${collapsed.requirements ? " is-collapsed" : ""}`}>▾</span>
-              </span>
-            </h2>
+              title="요구사항"
+              meta={`${document.requirements.length}개`}
+              collapsed={!!collapsed.requirements}
+              onToggle={() => toggleSection("requirements")}
+            />
             {!collapsed.requirements && (
-              <ul>
-                {document.requirements.map((item) => (
-                  <li key={item.id}>
-                    {item.content}{" "}
-                    <span
-                      className={`tag tag-${item.evidence.type === "original" ? "original" : "inference"}`}
-                    >
-                      {item.evidence.type === "original" ? "원문" : "추론"}
-                    </span>
-                  </li>
+              <div className="requirement-groups">
+                {requirementGroups.map(([category, requirements]) => (
+                  <section className="requirement-group" key={category}>
+                    <h3>{category}</h3>
+                    {requirements.map((item) => {
+                      const expanded = expandedRequirements.has(item.id);
+                      return (
+                        <button
+                          className={`requirement-item${expanded ? " is-expanded" : ""}`}
+                          type="button"
+                          key={item.id}
+                          aria-expanded={expanded}
+                          onClick={() =>
+                            setExpandedRequirements((current) => {
+                              const next = new Set(current);
+                              if (next.has(item.id)) next.delete(item.id);
+                              else next.add(item.id);
+                              return next;
+                            })
+                          }
+                        >
+                          <span className="requirement-copy">{item.content}</span>
+                          <span
+                            className={`tag tag-${item.evidence.type === "original" ? "original" : "inference"}`}
+                          >
+                            {item.evidence.type === "original" ? "원문" : "정리"}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </section>
                 ))}
-              </ul>
+              </div>
             )}
-          </>
+          </section>
         )}
 
         {document.questions.length > 0 && (
-          <>
-            <h2
+          <section>
+            <SectionHeading
               id="section-questions"
-              className="section-collapsible"
-              onClick={() => toggleSection("questions")}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && toggleSection("questions")}
-            >
-              확인 질문
-              <span className="section-meta">
-                {unresolvedCount > 0 && (
-                  <span className="badge-blocking">{unresolvedCount}개 미해결</span>
-                )}
-                <span className={`section-chevron${collapsed.questions ? " is-collapsed" : ""}`}>▾</span>
-              </span>
-            </h2>
-            {!collapsed.questions &&
-              document.questions.map((item) => (
-                <div
-                  className={`question-callout${item.resolved ? " question-resolved" : ""}`}
-                  key={item.id}
-                >
-                  <div className="question-header">
-                    <span className={`tag tag-priority-${item.priority}`}>
-                      {questionPriorityLabel[item.priority]}
-                    </span>
-                    {onToggleResolved && (
-                      <label className="question-resolve-toggle">
-                        <input
-                          type="checkbox"
-                          checked={item.resolved}
-                          onChange={() => onToggleResolved(item.id)}
-                        />
-                        해결됨
-                      </label>
-                    )}
-                  </div>
-                  <strong>{item.question}</strong>
-                  <p>{item.context}</p>
-                </div>
-              ))}
-          </>
+              title="확인 질문"
+              meta={unresolvedCount > 0 ? `${unresolvedCount}개 남음` : "모두 확인"}
+              collapsed={!!collapsed.questions}
+              onToggle={() => toggleSection("questions")}
+            />
+            {!collapsed.questions && (
+              <div className="question-list">
+                {document.questions.map((item) => (
+                  <QuestionCard
+                    key={item.id}
+                    item={item}
+                    onToggleResolved={onToggleResolved}
+                    onUpdate={onQuestionUpdate}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
         )}
 
-        <>
-          <h2
+        {document.states.length > 0 && (
+          <section>
+            <SectionHeading
+              id="section-states"
+              title="상태와 예외"
+              meta={`${document.states.length}개`}
+              collapsed={!!collapsed.states}
+              onToggle={() => toggleSection("states")}
+            />
+            {!collapsed.states && (
+              <div className="state-groups">
+                {stateGroups.map(({ screen, states }) => (
+                  <section className="state-group" key={screen.id}>
+                    <h3>{screen.name}</h3>
+                    <div className="state-list">
+                      {states.map((state) => (
+                        <article className="state-item" key={state.id}>
+                          <div>
+                            <strong>{state.name}</strong>
+                            <span className={`tag tag-state-kind tag-state-${state.kind}`}>
+                              {stateKindLabel[state.kind]}
+                            </span>
+                          </div>
+                          {state.description && <p className="state-desc">{state.description}</p>}
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {(document.roles.length > 0 || document.permissions.length > 0) && (
+          <section>
+            <SectionHeading
+              id="section-permissions"
+              title="역할과 권한"
+              meta={`${document.roles.length}개 역할`}
+              collapsed={!!collapsed.permissions}
+              onToggle={() => toggleSection("permissions")}
+            />
+            {!collapsed.permissions && (
+              <div className="permission-cards">
+                {document.roles.map((role) => {
+                  const permissions = document.permissions.filter(
+                    (permission) => permission.roleId === role.id,
+                  );
+                  return (
+                    <article className="permission-card" key={role.id}>
+                      <h3>{role.name}</h3>
+                      <p>{role.description}</p>
+                      {[
+                        [true, "할 수 있어요"],
+                        [false, "할 수 없어요"],
+                        [null, "확인이 필요해요"],
+                      ].map(([allowed, label]) => {
+                        const items = permissions.filter(
+                          (permission) => permission.allowed === allowed,
+                        );
+                        if (!items.length) return null;
+                        return (
+                          <div className="permission-group" key={label as string}>
+                            <strong>{label}</strong>
+                            <ul>
+                              {items.map((permission) => (
+                                <li key={permission.id}>
+                                  <span>{permission.capability}</span>
+                                  {permission.note && <small>{permission.note}</small>}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      })}
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        <section>
+          <SectionHeading
             id="section-tasks"
-            className="section-collapsible"
-            onClick={() => toggleSection("tasks")}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === "Enter" && toggleSection("tasks")}
-          >
-            작업 목록
-            <span className="section-meta">
-              {document.tasks.length}개
-              <span className={`section-chevron${collapsed.tasks ? " is-collapsed" : ""}`}>▾</span>
-            </span>
-          </h2>
+            title="작업 목록"
+            meta={`${activeTasks.length}개`}
+            collapsed={!!collapsed.tasks}
+            onToggle={() => toggleSection("tasks")}
+          />
           {!collapsed.tasks && (
             <>
               <ul className="task-list">
-                {document.tasks.map((item) => (
+                {activeTasks.map((item) => (
                   <TaskRow
                     key={item.id}
                     task={item}
@@ -357,100 +649,81 @@ export function DocumentView({
                   />
                 ))}
               </ul>
+              {activeTasks.length === 0 && (
+                <p className="section-empty">진행 중인 작업이 없어요.</p>
+              )}
               {onTaskCreate && (
                 <div className="task-create-row">
                   <input
                     className="field task-create-input"
                     placeholder="새 작업 추가…"
                     value={newTaskTitle}
-                    onChange={(e) => setNewTaskTitle(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleCreateTask()}
+                    onChange={(event) => setNewTaskTitle(event.target.value)}
+                    onKeyDown={(event) => event.key === "Enter" && handleCreateTask()}
                   />
                   <button
                     className="button"
+                    type="button"
                     onClick={handleCreateTask}
                     disabled={!newTaskTitle.trim()}
                   >
-                    <Plus size={14} />
+                    <Plus size={15} />
                     추가
                   </button>
                 </div>
               )}
+              {deletedTasks.length > 0 && (
+                <div className="task-trash">
+                  <button
+                    className="button button-ghost"
+                    type="button"
+                    aria-label="휴지통 열기"
+                    onClick={() => setTrashOpen((value) => !value)}
+                  >
+                    <Trash size={15} />
+                    휴지통 {deletedTasks.length}
+                  </button>
+                  {trashOpen && (
+                    <ul className="task-trash-list">
+                      {deletedTasks.map((task) => (
+                        <li key={task.id}>
+                          <span>{task.title}</span>
+                          <div>
+                            <button
+                              className="button button--sm"
+                              type="button"
+                              onClick={() => onTaskRestore?.(task.id)}
+                            >
+                              <ArrowCounterClockwise size={14} />
+                              복원
+                            </button>
+                            {onTaskPurge && (
+                              <button
+                                className="button button--sm"
+                                type="button"
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      `"${task.title}" 작업을 영구 삭제할까요? 이 작업은 되돌릴 수 없어요.`,
+                                    )
+                                  ) {
+                                    onTaskPurge(task.id);
+                                  }
+                                }}
+                              >
+                                영구 삭제
+                              </button>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
             </>
           )}
-        </>
-
-        {(document.roles.length > 0 || document.permissions.length > 0) && (
-          <>
-            <h2
-              id="section-permissions"
-              className="section-collapsible"
-              onClick={() => toggleSection("permissions")}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && toggleSection("permissions")}
-            >
-              역할과 권한
-              <span className="section-meta">
-                {document.permissions.length}개
-                <span className={`section-chevron${collapsed.permissions ? " is-collapsed" : ""}`}>▾</span>
-              </span>
-            </h2>
-            {!collapsed.permissions && (
-              <div className="doc-table-wrap">
-                <table className="doc-table">
-                  <thead>
-                    <tr><th>역할</th><th>기능</th><th>허용</th><th>메모</th></tr>
-                  </thead>
-                  <tbody>
-                    {document.permissions.map((p) => (
-                      <tr key={p.id}>
-                        <td>{document.roles.find((r) => r.id === p.roleId)?.name ?? p.roleId}</td>
-                        <td>{p.capability}</td>
-                        <td>{p.allowed === true ? "✅" : p.allowed === false ? "❌" : "—"}</td>
-                        <td className="doc-table-note">{p.note}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </>
-        )}
-
-        {document.states.length > 0 && (
-          <>
-            <h2
-              id="section-states"
-              className="section-collapsible"
-              onClick={() => toggleSection("states")}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && toggleSection("states")}
-            >
-              상태와 예외
-              <span className="section-meta">
-                {document.states.length}개
-                <span className={`section-chevron${collapsed.states ? " is-collapsed" : ""}`}>▾</span>
-              </span>
-            </h2>
-            {!collapsed.states && (
-              <ul className="state-list">
-                {document.states.map((s) => {
-                  const screen = document.screens.find((sc) => sc.id === s.screenId);
-                  return (
-                    <li key={s.id} className="state-item">
-                      <span className="state-screen-tag">{screen?.name ?? s.screenId}</span>
-                      <strong>{s.name}</strong>
-                      <span className={`tag tag-state-kind tag-state-${s.kind}`}>{s.kind}</span>
-                      {s.description && <p className="state-desc">{s.description}</p>}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </>
-        )}
+        </section>
       </article>
     </div>
   );

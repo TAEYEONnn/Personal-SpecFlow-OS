@@ -30,7 +30,6 @@ export function LoginForm() {
         return;
       }
       router.push("/projects");
-      router.refresh();
     } catch {
       setError("네트워크 연결을 확인해 주세요.");
     } finally {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { compileSpecDocument } from "@/lib/ai/compiler";
 import { apiError } from "@/lib/api/response";
+import { isDevelopmentDemo } from "@/lib/env";
 import {
   createCompilationRun,
   finishCompilationRun,
@@ -34,7 +35,9 @@ export async function POST(
 
     const run = await createCompilationRun(projectId);
     runId = run.id;
-    const document = await compileSpecDocument(combined);
+    const document = await compileSpecDocument(combined, {
+      mode: isDevelopmentDemo ? "demo" : "live",
+    });
     const revision = await saveProjectDocument(
       projectId,
       project.revision,
@@ -54,13 +57,13 @@ export async function POST(
         status: "failed",
         durationMs: Date.now() - startedAt,
         errorCode: "compile_failed",
-        errorMessage: error instanceof Error ? error.message : "컴파일 실패",
+        errorMessage: error instanceof Error ? error.message : "정리 실패",
       }).catch(() => undefined);
     }
     const response = apiError(error);
     return response.status === 500
       ? NextResponse.json(
-          { error: error instanceof Error ? error.message : "컴파일에 실패했습니다." },
+          { error: error instanceof Error ? error.message : "정리하지 못했습니다." },
           { status: 502 },
         )
       : response;

@@ -11,6 +11,10 @@ function evidenceText(evidence: Evidence) {
   return `[${evidenceLabel[evidence.type]}] ${evidence.sourceExcerpt}${rationale}`;
 }
 
+function activeTasks(document: SpecDocument) {
+  return document.tasks.filter((task) => !task.deletedAt);
+}
+
 export type ExportTemplate = "full" | "screen-spec" | "qa-checklist" | "daily-report";
 
 export function specDocumentToMarkdown(document: SpecDocument): string {
@@ -77,7 +81,7 @@ export function specDocumentToMarkdown(document: SpecDocument): string {
     "",
     "## 작업 목록",
     "",
-    ...document.tasks.map(
+    ...activeTasks(document).map(
       (item) => `- [${item.status === "done" ? "x" : " "}] ${item.title}`,
     ),
     "",
@@ -184,8 +188,9 @@ export function qaChecklistToMarkdown(document: SpecDocument): string {
 
 export function dailyReportToMarkdown(document: SpecDocument): string {
   const report = document.dailyReport;
-  const doneTasks = document.tasks.filter((t) => t.status === "done");
-  const inProgressTasks = document.tasks.filter((t) => t.status === "in-progress");
+  const tasks = activeTasks(document);
+  const doneTasks = tasks.filter((t) => t.status === "done");
+  const inProgressTasks = tasks.filter((t) => t.status === "in-progress");
 
   const lines = [
     `# ${document.brief.title} — 일일보고`,

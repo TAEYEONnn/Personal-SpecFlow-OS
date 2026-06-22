@@ -9,8 +9,10 @@ export default async function ProjectPage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
-  const [auth, project] = await Promise.all([getAuthContext(), getProject(projectId)]);
-  if (!auth || !project?.document) notFound();
+  const auth = await getAuthContext();
+  if (!auth) notFound();
+  const project = await getProject(projectId, auth);
+  if (!project?.document) notFound();
 
   return <WorkspaceShell project={{ ...project, document: project.document }} username={auth.username} />;
 }

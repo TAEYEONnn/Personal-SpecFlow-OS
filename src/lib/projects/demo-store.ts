@@ -89,6 +89,7 @@ export function addDemoSource(
     updatedAt: now,
   };
   project.sources.push(next);
+  project.needsRecompile = true;
   project.updatedAt = next.createdAt;
   return structuredClone(next);
 }
@@ -114,7 +115,7 @@ export function finishDemoRun(
 ) {
   const project = store().get(projectId);
   const run = project?.runs.find((candidate) => candidate.id === runId);
-  if (!project || !run) throw new Error("컴파일 기록을 찾을 수 없습니다.");
+  if (!project || !run) throw new Error("정리 기록을 찾을 수 없습니다.");
   Object.assign(run, update, { finishedAt: new Date().toISOString() });
   return structuredClone(run);
 }
@@ -137,6 +138,7 @@ export function deleteDemoSource(projectId: string, sourceId: string) {
   const before = project.sources.length;
   project.sources = project.sources.filter((s) => s.id !== sourceId);
   if (project.sources.length === before) throw new Error("소스를 찾을 수 없습니다.");
+  project.needsRecompile = true;
   project.updatedAt = new Date().toISOString();
 }
 
@@ -163,6 +165,7 @@ export function saveDemoDocument(
   projectId: string,
   expectedRevision: number,
   document: SpecDocument,
+  clearRecompile = false,
 ) {
   const project = store().get(projectId);
   if (!project) throw new Error("프로젝트를 찾을 수 없습니다.");
@@ -170,6 +173,6 @@ export function saveDemoDocument(
   project.revision += 1;
   project.document = structuredClone(document);
   project.updatedAt = new Date().toISOString();
-  project.needsRecompile = false;
+  if (clearRecompile) project.needsRecompile = false;
   return project.revision;
 }

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { demoSpecDocument } from "@/lib/spec/demo-document";
-import { specDocumentToMarkdown } from "@/lib/export/markdown";
+import {
+  dailyReportToMarkdown,
+  specDocumentToMarkdown,
+} from "@/lib/export/markdown";
 
 describe("specDocumentToMarkdown", () => {
   it("exports every MVP deliverable section", () => {
@@ -21,5 +24,19 @@ describe("specDocumentToMarkdown", () => {
     const markdown = specDocumentToMarkdown(demoSpecDocument);
     expect(markdown).toContain("[추론]");
     expect(markdown).toContain("[원문]");
+  });
+
+  it("excludes soft-deleted tasks from full and daily report exports", () => {
+    const deletedTitle = demoSpecDocument.tasks[0].title;
+    const document = {
+      ...demoSpecDocument,
+      tasks: demoSpecDocument.tasks.map((task, index) => ({
+        ...task,
+        deletedAt: index === 0 ? "2026-06-22T00:00:00.000Z" : null,
+      })),
+    };
+
+    expect(specDocumentToMarkdown(document)).not.toContain(deletedTitle);
+    expect(dailyReportToMarkdown(document)).not.toContain(deletedTitle);
   });
 });

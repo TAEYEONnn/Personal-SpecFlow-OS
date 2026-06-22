@@ -46,4 +46,25 @@ describe("specDocumentToNotionBlocks", () => {
       expect(validTypes.has(block.type), `unknown block type: ${block.type}`).toBe(true);
     }
   });
+
+  it("excludes soft-deleted tasks", () => {
+    const deletedTitle = demoSpecDocument.tasks[0].title;
+    const document = {
+      ...demoSpecDocument,
+      tasks: demoSpecDocument.tasks.map((task, index) => ({
+        ...task,
+        deletedAt: index === 0 ? "2026-06-22T00:00:00.000Z" : null,
+      })),
+    };
+
+    const taskTitles = specDocumentToNotionBlocks(document)
+      .filter((block) => block.type === "to_do")
+      .map((block) =>
+        block.type === "to_do"
+          ? block.to_do.rich_text[0].text.content
+          : "",
+      );
+
+    expect(taskTitles).not.toContain(deletedTitle);
+  });
 });

@@ -1,5 +1,5 @@
 import { COMPILER_PROMPT_VERSION } from "@/lib/ai/compiler";
-import { requireAuthContext } from "@/lib/auth/context";
+import { requireAuthContext, type AuthContext } from "@/lib/auth/context";
 import {
   addDemoSource,
   createDemoProject,
@@ -80,8 +80,11 @@ export async function createProject(name: string) {
   };
 }
 
-export async function getProject(projectId: string): Promise<ProjectView | null> {
-  const auth = await requireAuthContext();
+export async function getProject(
+  projectId: string,
+  providedAuth?: AuthContext,
+): Promise<ProjectView | null> {
+  const auth = providedAuth ?? await requireAuthContext();
   if (auth.demo) return getDemoProject(projectId);
 
   const supabase = await createClient();
@@ -169,6 +172,7 @@ export async function addSource(
     .select("id, name, source_type, content, created_at")
     .single();
   if (error) throw error;
+  await markProjectNeedsRecompile(supabase, projectId, auth.userId);
   return {
     id: data.id,
     name: data.name,
@@ -239,7 +243,14 @@ export async function saveProjectDocument(
   runId?: string,
 ) {
   const auth = await requireAuthContext();
-  if (auth.demo) return saveDemoDocument(projectId, expectedRevision, document);
+  if (auth.demo) {
+    return saveDemoDocument(
+      projectId,
+      expectedRevision,
+      document,
+      Boolean(runId),
+    );
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("save_project_document", {
@@ -288,6 +299,7 @@ export async function deleteSource(projectId: string, sourceId: string) {
     .eq("project_id", projectId)
     .eq("user_id", auth.userId);
   if (error) throw error;
+  await markProjectNeedsRecompile(supabase, projectId, auth.userId);
 }
 
 export async function updateSource(
@@ -315,11 +327,7 @@ export async function updateSource(
     .single();
   if (error) throw error;
   if (patch.content !== undefined) {
-    await supabase
-      .from("projects")
-      .update({ needs_recompile: true })
-      .eq("id", projectId)
-      .eq("user_id", auth.userId);
+    await markProjectNeedsRecompile(supabase, projectId, auth.userId);
   }
   return {
     id: data.id,
@@ -378,6 +386,19 @@ export type DocumentRevisionSummary = {
   createdAt: string;
   runId: string | null;
 };
+
+async function markProjectNeedsRecompile(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  projectId: string,
+  userId: string,
+) {
+  const { error } = await supabase
+    .from("projects")
+    .update({ needs_recompile: true })
+    .eq("id", projectId)
+    .eq("user_id", userId);
+  if (error) throw error;
+}
 
 export async function listDocumentRevisions(
   projectId: string,

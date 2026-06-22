@@ -60,6 +60,7 @@ describe("DocumentView", () => {
         source: "user",
         status: "inbox",
         priority: "medium",
+        deletedAt: null,
       }),
     );
   });
@@ -87,6 +88,101 @@ describe("DocumentView", () => {
     const empty = structuredClone(demoSpecDocument);
     empty.brief.title = "";
     render(<DocumentView document={empty} />);
-    expect(screen.getByText("정리된 문서가 없어요. 다시 정리하기를 시도해 보세요.")).toBeInTheDocument();
+    expect(
+      screen.getByText("아직 정리된 내용이 없어요. 원문을 확인한 뒤 다시 정리해 주세요."),
+    ).toBeInTheDocument();
+  });
+
+  it("edits a confirmation question and resets it to unresolved", () => {
+    const onQuestionUpdate = vi.fn();
+    render(
+      <DocumentView
+        document={demoSpecDocument}
+        onQuestionUpdate={onQuestionUpdate}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByLabelText(`${demoSpecDocument.questions[0].question} 수정`),
+    );
+    const questionInput = screen.getByDisplayValue(
+      demoSpecDocument.questions[0].question,
+    );
+    fireEvent.change(questionInput, { target: { value: "소셜 로그인도 넣을까요?" } });
+    fireEvent.click(screen.getByRole("button", { name: "질문 저장" }));
+
+    expect(onQuestionUpdate).toHaveBeenCalledWith(
+      demoSpecDocument.questions[0].id,
+      expect.objectContaining({
+        question: "소셜 로그인도 넣을까요?",
+        resolved: false,
+        evidence: expect.objectContaining({
+          type: "assumption",
+          sourceId: "user-input",
+          rationale: expect.stringContaining(
+            demoSpecDocument.questions[0].evidence.sourceExcerpt,
+          ),
+        }),
+      }),
+    );
+  });
+
+  it("moves deleted tasks to a trash section and allows restore", () => {
+    const onTaskRestore = vi.fn();
+    const deletedTask = {
+      ...demoSpecDocument.tasks[0],
+      deletedAt: "2026-06-22T00:00:00.000Z",
+    };
+    render(
+      <DocumentView
+        document={{ ...demoSpecDocument, tasks: [deletedTask] }}
+        onTaskRestore={onTaskRestore}
+      />,
+    );
+
+    expect(screen.queryByText(deletedTask.title)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "휴지통 열기" }));
+    expect(screen.getByText(deletedTask.title)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "복원" }));
+    expect(onTaskRestore).toHaveBeenCalledWith(deletedTask.id);
+  });
+
+  it("requires confirmation before permanently deleting a task", () => {
+    const onTaskPurge = vi.fn();
+    const deletedTask = {
+      ...demoSpecDocument.tasks[0],
+      deletedAt: "2026-06-22T00:00:00.000Z",
+    };
+    global.confirm = vi.fn().mockReturnValue(false);
+    render(
+      <DocumentView
+        document={{ ...demoSpecDocument, tasks: [deletedTask] }}
+        onTaskPurge={onTaskPurge}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "휴지통 열기" }));
+    fireEvent.click(screen.getByRole("button", { name: "영구 삭제" }));
+
+    expect(global.confirm).toHaveBeenCalled();
+    expect(onTaskPurge).not.toHaveBeenCalled();
+  });
+
+  it("groups requirements by category", () => {
+    render(<DocumentView document={demoSpecDocument} />);
+    expect(screen.getByRole("heading", { name: "인증" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "보안" })).toBeInTheDocument();
+  });
+
+  it("shows Korean labels instead of state enum values", () => {
+    render(<DocumentView document={demoSpecDocument} />);
+    expect(screen.getByText("불러오는 중")).toBeInTheDocument();
+    expect(screen.queryByText("LOADING")).not.toBeInTheDocument();
+  });
+
+  it("groups permissions by role and plain-language status", () => {
+    render(<DocumentView document={demoSpecDocument} />);
+    expect(screen.getByRole("heading", { name: "디자이너" })).toBeInTheDocument();
+    expect(screen.getByText("할 수 있어요")).toBeInTheDocument();
   });
 });

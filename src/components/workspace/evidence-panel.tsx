@@ -23,34 +23,20 @@ export function EvidencePanel({
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }) {
-  const [isMobileOverlay, setIsMobileOverlay] = useState(
-
-    () =>
-
-      typeof window !== "undefined" &&
-
-      window.matchMedia("(max-width: 1023px)").matches,
-
-  );
+  const [isMobileOverlay, setIsMobileOverlay] = useState(false);
 
   useEffect(() => {
-
     const mq = window.matchMedia("(max-width: 1023px)");
-
-    const handler = (event: MediaQueryListEvent) => {
-
+    const handler = (event: MediaQueryListEvent) =>
       setIsMobileOverlay(event.matches);
-
-    };
-
+    const frame = window.requestAnimationFrame(() =>
+      setIsMobileOverlay(mq.matches),
+    );
     mq.addEventListener("change", handler);
-
     return () => {
-
+      window.cancelAnimationFrame(frame);
       mq.removeEventListener("change", handler);
-
     };
-
   }, []);
   if (collapsed) {
     return (

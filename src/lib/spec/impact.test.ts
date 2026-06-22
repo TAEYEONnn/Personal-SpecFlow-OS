@@ -29,6 +29,29 @@ describe("computeImpact", () => {
     expect(impact.affectedStateIds).toEqual([]);
     expect(impact.affectedCopyIds).toEqual([]);
   });
+
+  it("excludes soft-deleted tasks from affected task IDs", () => {
+    const requirementId = demoSpecDocument.requirements[0].id;
+    const activeTask = {
+      ...demoSpecDocument.tasks[0],
+      id: "task-active",
+      relatedIds: [requirementId],
+      deletedAt: null,
+    };
+    const deletedTask = {
+      ...activeTask,
+      id: "task-deleted",
+      deletedAt: "2026-06-22T00:00:00.000Z",
+    };
+    const document: SpecDocument = {
+      ...demoSpecDocument,
+      tasks: [activeTask, deletedTask],
+    };
+
+    expect(computeImpact(document, requirementId).affectedTaskIds).toEqual([
+      "task-active",
+    ]);
+  });
 });
 
 describe("diffDocuments", () => {
@@ -92,6 +115,26 @@ describe("diffDocuments", () => {
     const change = diff.taskStatusChanges.find((c) => c.id === firstTask.id);
     expect(change).toBeDefined();
     expect(change?.to).toBe("done");
+  });
+
+  it("ignores status changes for soft-deleted tasks", () => {
+    const firstTask = demoSpecDocument.tasks[0];
+    const previous: SpecDocument = {
+      ...demoSpecDocument,
+      tasks: [{ ...firstTask, deletedAt: null }],
+    };
+    const current: SpecDocument = {
+      ...demoSpecDocument,
+      tasks: [
+        {
+          ...firstTask,
+          status: "done",
+          deletedAt: "2026-06-22T00:00:00.000Z",
+        },
+      ],
+    };
+
+    expect(diffDocuments(previous, current).taskStatusChanges).toEqual([]);
   });
 });
 

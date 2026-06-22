@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { isDevelopmentDemo } from "@/lib/env";
+import {
+  getSupabaseEnvState,
+  isDevelopmentDemo,
+  supabaseConfigurationError,
+} from "@/lib/env";
 import { normalizeUsername, usernameSchema } from "@/lib/auth/username";
 import { publicLoginError } from "@/lib/auth/messages";
 import {
@@ -31,6 +35,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: publicLoginError("unknown-user") }, { status: 401 });
   }
 
+  const envState = getSupabaseEnvState();
+  if (envState === "partial" || (envState === "none" && !isDevelopmentDemo)) {
+    return NextResponse.json(
+      { error: supabaseConfigurationError().message },
+      { status: 503 },
+    );
+  }
+
   if (isDevelopmentDemo) {
     if (username !== "designer" || parsed.data.password !== "specflow") {
       return NextResponse.json({ error: publicLoginError("wrong-password") }, { status: 401 });
@@ -52,11 +64,12 @@ export async function POST(request: Request) {
   }
 
   const admin = createAdminClient();
-  const { data: profile } = await admin
+  const profileResult = await admin
     .from("profiles")
     .select("internal_email")
     .eq("username", username)
     .maybeSingle();
+  const { data: profile } = profileResult;
 
   if (!profile) {
     await recordLoginFailure(username, ip);

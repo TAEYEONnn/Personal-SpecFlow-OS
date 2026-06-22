@@ -5,6 +5,10 @@ import { splitIntoChunks } from "@/lib/ai/cost-estimate";
 import { specDocumentSchema, type SpecDocument } from "@/lib/spec/schema";
 
 export const COMPILER_PROMPT_VERSION = "2026-06-21.v2";
+export type CompilerMode = "demo" | "live";
+export type CompileSpecDocumentOptions = {
+  mode?: CompilerMode;
+};
 
 export function buildCompilerPrompt(source: string) {
   return `당신은 프로덕트 디자인 업무 컴파일러입니다.
@@ -107,6 +111,8 @@ evidence.rationale은 다음 기준으로 생성합니다.
 - 버튼 문구는 사용자의 행동을 표현합니다.
 - 오류 문구에는 문제뿐 아니라 다음 행동을 안내합니다.
 - 기술 용어보다 사용자가 이해할 수 있는 표현을 우선합니다.
+- 한국어 문구는 짧고 명확하게 작성하고, 가능한 한 한 문장으로 끝냅니다.
+- 같은 의미의 수식어와 안내를 중복하지 않습니다.
 
 ## 반드시 생성할 최상위 항목
 
@@ -128,12 +134,22 @@ evidence.rationale은 다음 기준으로 생성합니다.
 ${source}`;
 }
 
-export async function compileSpecDocument(source: string): Promise<SpecDocument> {
-  if (!process.env.OPENAI_API_KEY) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("OPENAI_API_KEY 환경변수가 필요합니다.");
-    }
+export async function compileSpecDocument(
+  source: string,
+  options: CompileSpecDocumentOptions = {},
+): Promise<SpecDocument> {
+  const mode =
+    options.mode ??
+    (process.env.OPENAI_API_KEY || process.env.NODE_ENV === "production"
+      ? "live"
+      : "demo");
+
+  if (mode === "demo") {
     return structuredClone(demoSpecDocument);
+  }
+
+  if (!process.env.OPENAI_API_KEY?.trim()) {
+    throw new Error("OPENAI_API_KEY 환경변수가 필요합니다.");
   }
 
   const chunks = splitIntoChunks(source);

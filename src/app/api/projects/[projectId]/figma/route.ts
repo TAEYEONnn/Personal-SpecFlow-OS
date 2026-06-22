@@ -40,7 +40,7 @@ export async function POST(
     const { projectId } = await params;
     const project = await getProject(projectId);
     if (!project?.document) {
-      return NextResponse.json({ error: "컴파일된 문서가 없습니다." }, { status: 404 });
+      return NextResponse.json({ error: "정리된 문서가 없습니다." }, { status: 404 });
     }
 
     const body = bodySchema.parse(await request.json());

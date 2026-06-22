@@ -45,7 +45,7 @@ export function ProjectList({ projects }: { projects: ProjectSummary[] }) {
               <Link className="project-row" href={`/projects/${project.id}`}>
                 <div>
                   <strong>{project.name}</strong>
-                  <span>문서 revision {project.revision}</span>
+                  <span>문서 버전 {project.revision}</span>
                 </div>
                 <span>{new Date(project.updatedAt).toLocaleString("ko-KR")}</span>
                 <ArrowRight size={18} />

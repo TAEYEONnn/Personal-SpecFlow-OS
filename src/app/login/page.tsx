@@ -16,12 +16,12 @@ export default function LoginPage() {
             정리하고 근거까지 함께 검토해요.
           </p>
         </div>
-        <small>Design work compiler for focused product teams.</small>
+        <small>기획부터 작업 정리까지 한곳에서 이어가요.</small>
       </section>
       <section className="login-form-wrap">
         <div className="login-card">
-          <h2>반갑습니다</h2>
-          <p>개인 작업공간에 로그인하세요.</p>
+          <h2>로그인</h2>
+          <p>내 작업공간으로 이동해요.</p>
           <LoginForm />
           {isDevelopmentDemo ? (
             <p className="demo-note">

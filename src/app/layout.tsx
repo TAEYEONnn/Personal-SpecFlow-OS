@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "SpecFlow OS",
-  description: "흩어진 업무 정보를 실행 가능한 디자인 명세로 컴파일합니다.",
+  description: "흩어진 업무 정보를 화면 구조와 작업 목록으로 정리합니다.",
 };
 
 export default function RootLayout({
