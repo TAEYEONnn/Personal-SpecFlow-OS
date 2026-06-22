@@ -15,6 +15,7 @@ import {
   type OnNodesChange,
 } from "@xyflow/react";
 import {
+  ArrowCounterClockwise,
   ArrowsOut,
   Briefcase,
   CaretDown,
@@ -232,7 +233,7 @@ function createFlowNodes(
         statePosition(state, siblingIndex, document.screens),
       className: `state-node ${isPrimarySelectedState ? "selected" : ""}`,
       draggable: false,
-      ariaLabel: `${state.name} 상태`,
+      ariaLabel: `${state.name} 상태. 부모 화면에 따라 배치되어 직접 이동할 수 없습니다.`,
       data: {
         screenId: state.screenId,
         nodeType: "state",
@@ -300,6 +301,7 @@ function FlowBoard({
   const flow = useReactFlow();
   const layoutPositionsRef = useRef<FlowPositions>({});
   const signatureRef = useRef(documentNodeSignature(document));
+  const draggingRef = useRef(false);
   const [nodes, setNodes] = useState<FlowNode[]>(() =>
     createFlowNodes(document, selectedScreenId),
   );
@@ -307,6 +309,7 @@ function FlowBoard({
   const edges = useMemo(() => createFlowEdges(document), [document]);
 
   useEffect(() => {
+    if (draggingRef.current) return;
     const nextSignature = documentNodeSignature(document);
     if (signatureRef.current !== nextSignature) {
       signatureRef.current = nextSignature;
@@ -427,7 +430,8 @@ function FlowBoard({
                   aria-label="자동 정렬 실행 취소"
                   onClick={handleUndoLayout}
                 >
-                  실행 취소
+                  <ArrowCounterClockwise size={14} />
+                  <span className="flow-action-label">실행 취소</span>
                 </button>
               )}
               {onAutoLayout && (
@@ -438,7 +442,7 @@ function FlowBoard({
                   onClick={handleAutoLayout}
                 >
                   <TreeStructure size={14} />
-                  자동 정렬
+                  <span className="flow-action-label">자동 정렬</span>
                 </button>
               )}
               <ZoomControls onFitView={handleFitView} />
@@ -479,7 +483,11 @@ function FlowBoard({
           nodesConnectable={false}
           elementsSelectable
           onNodeClick={(_, node) => onSelect(node.data.screenId)}
+          onNodeDragStart={() => {
+            draggingRef.current = true;
+          }}
           onNodeDragStop={(_, node) => {
+            draggingRef.current = false;
             if (node.data.nodeType === "screen") {
               layoutPositionsRef.current = {
                 ...layoutPositionsRef.current,

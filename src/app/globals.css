@@ -215,6 +215,13 @@ textarea:focus-visible {
   font-size: 13px;
 }
 
+.login-slow-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+
 .cost-estimate {
   display: flex;
   align-items: center;
@@ -696,6 +703,10 @@ textarea:focus-visible {
 .flow-toolbar h2 {
   margin: 0;
   font-size: 15px;
+}
+
+.flow-action-label {
+  display: inline;
 }
 
 .zoom-pill {
@@ -1467,6 +1478,14 @@ textarea:focus-visible {
   margin: 0;
 }
 
+.figma-save-status {
+  min-height: 18px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 /* Error status in compile header */
 .compile-status--error {
   color: var(--danger);
@@ -1736,19 +1755,47 @@ textarea:focus-visible {
     height: auto;
     min-height: 50px;
     flex-wrap: wrap;
-    gap: 6px;
-    padding: 8px 10px;
+    gap: 4px;
+    padding: 6px 10px;
   }
 
   .flow-toolbar-right {
-    width: 100%;
-    max-width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     padding-bottom: 2px;
   }
 
+  .flow-toolbar-right::-webkit-scrollbar { display: none; }
+
   .flow-toolbar h2 {
     font-size: 14px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* hide arrow-key position controls on narrow screens — use drag instead */
+  .flow-position-controls {
+    display: none;
+  }
+
+  /* show icon-only buttons on narrow screens */
+  .flow-action-label {
+    display: none;
+  }
+
+  /* ensure touch targets are at least 44px */
+  .zoom-pill button,
+  .canvas-toggle-btn {
+    min-width: 44px;
+    min-height: 44px;
   }
 
   .task-row-main {
@@ -1819,6 +1866,42 @@ textarea:focus-visible {
 .question-resolve-toggle input { accent-color: var(--accent); cursor: pointer; }
 .question-resolved { opacity: 0.45; }
 .question-resolved strong { text-decoration: line-through; }
+
+.question-answer {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+  border-left: 3px solid var(--accent);
+  padding-left: 10px;
+}
+
+.question-answer span,
+.question-answer small,
+.question-answer-status {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.question-answer p {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.question-answer-actions,
+.question-answer-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.question-answer-form label {
+  display: grid;
+  gap: 8px;
+  color: #344249;
+  font-size: 13px;
+  font-weight: 700;
+}
 
 .tag-priority-blocking { background: #fff0e8; color: #b04800; }
 .tag-priority-should-decide { background: #fef3c7; color: #92400e; }

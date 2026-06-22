@@ -216,5 +216,6 @@ function mergeSpecDocuments(docs: SpecDocument[]): SpecDocument {
     uxCopy: concat("uxCopy") as SpecDocument["uxCopy"],
     tasks: concat("tasks") as SpecDocument["tasks"],
     dailyReport: base.dailyReport,
+    figmaMapping: base.figmaMapping,
   };
 }

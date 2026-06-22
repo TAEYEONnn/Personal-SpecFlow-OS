@@ -8,6 +8,7 @@ import {
   getProject,
   saveProjectDocument,
 } from "@/lib/projects/service";
+import { mergeCompiledDocument } from "@/lib/spec/merge";
 
 export async function POST(
   _request: Request,
@@ -35,9 +36,13 @@ export async function POST(
 
     const run = await createCompilationRun(projectId);
     runId = run.id;
-    const document = await compileSpecDocument(combined, {
+    const compiledDocument = await compileSpecDocument(combined, {
       mode: isDevelopmentDemo ? "demo" : "live",
     });
+    const { document, stats } = mergeCompiledDocument(
+      project.document,
+      compiledDocument,
+    );
     const revision = await saveProjectDocument(
       projectId,
       project.revision,
@@ -50,7 +55,7 @@ export async function POST(
       output: document,
     });
 
-    return NextResponse.json({ runId: run.id, revision, status: "completed", document });
+    return NextResponse.json({ runId: run.id, revision, status: "completed", document, merge: stats });
   } catch (error) {
     if (runId) {
       await finishCompilationRun(projectId, runId, {

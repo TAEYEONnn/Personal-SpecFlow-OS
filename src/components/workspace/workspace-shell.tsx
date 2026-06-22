@@ -43,6 +43,26 @@ import type {
 import type { ProjectView } from "@/lib/projects/service";
 
 type ViewMode = "document" | "flow" | "matrix" | "runs" | "diff" | "figma" | "sources" | "decisions";
+type CompileStep =
+  | "idle"
+  | "preparing"
+  | "reading-sources"
+  | "analyzing"
+  | "merging"
+  | "saving"
+  | "completed"
+  | "failed";
+
+const compileStepLabel: Record<CompileStep, string> = {
+  idle: "",
+  preparing: "원문을 준비하고 있어요",
+  "reading-sources": "원문 내용을 확인하고 있어요",
+  analyzing: "요구사항과 화면을 분석하고 있어요",
+  merging: "기존 수정 내용과 병합하고 있어요",
+  saving: "결과를 저장하고 있어요",
+  completed: "정리가 완료됐어요",
+  failed: "정리하지 못했어요",
+};
 
 const primaryNavItems = [
   { id: "overview", label: "개요", icon: FileText, countKey: "brief", description: "목적과 성공 조건", alwaysShow: true },
@@ -97,6 +117,8 @@ export function WorkspaceShell({
     setEvidencePanelCollapsed,
   } = useWorkspacePreferences();
   const [needsRecompile, setNeedsRecompile] = useState(project.needsRecompile ?? false);
+  const [compileStep, setCompileStep] = useState<CompileStep>("idle");
+  const [compileStartedAt, setCompileStartedAt] = useState<number | null>(null);
   const [sourceOperationCount, setSourceOperationCount] = useState(0);
   const prevPositions = useRef<Record<string, { x: number; y: number }> | null>(null);
   const documentRef = useRef(document);
@@ -261,14 +283,23 @@ export function WorkspaceShell({
     commitDocument(nextDoc);
   }
 
-  function handleQuestionUpdate(id: string, patch: Partial<SpecQuestion>) {
+  async function handleQuestionUpdate(id: string, patch: Partial<SpecQuestion>) {
     const current = documentRef.current;
-    commitDocument({
+    const next = {
       ...current,
       questions: current.questions.map((question) =>
         question.id === id ? { ...question, ...patch } : question,
       ),
-    });
+    };
+    documentRef.current = next;
+    setDocument(next);
+    try {
+      await queueDocumentSave(next);
+    } catch (error) {
+      documentRef.current = current;
+      setDocument(current);
+      throw error;
+    }
   }
 
   function handleTaskCreate(task: Task) {
@@ -303,6 +334,20 @@ export function WorkspaceShell({
       ...current,
       tasks: current.tasks.filter((task) => task.id !== id),
     });
+  }
+
+  async function handleFigmaMappingChange(mapping: SpecDocument["figmaMapping"]) {
+    const current = documentRef.current;
+    const next = { ...current, figmaMapping: mapping };
+    documentRef.current = next;
+    setDocument(next);
+    try {
+      await queueDocumentSave(next);
+    } catch (error) {
+      documentRef.current = current;
+      setDocument(current);
+      throw error;
+    }
   }
 
   function handleUxCopyChange(items: UxCopy[]) {
@@ -412,6 +457,9 @@ export function WorkspaceShell({
   }, [saveDocument]);
 
   async function recompile() {
+    if (compileStep !== "idle" && compileStep !== "completed" && compileStep !== "failed") {
+      return;
+    }
     if (sourcePending) {
       setError("원문 저장이 끝난 뒤 다시 정리해 주세요.");
       return;
@@ -425,16 +473,21 @@ export function WorkspaceShell({
 
     setEditing(false);
     setPending(true);
-    setNote("정리 중…");
+    setCompileStartedAt(Date.now());
+    setCompileStep("preparing");
+    setNote("원문을 준비하고 있어요");
     setNoteIsError(false);
     setRetryFn(null);
     const sourceVersionAtStart = sourceChangeVersionRef.current;
     recompilingRef.current = true;
     try {
+      setCompileStep("reading-sources");
       const result = await saveQueue.current!.runExclusive(async () => {
+        setCompileStep("analyzing");
         const response = await fetch(`/api/projects/${project.id}/compile`, {
           method: "POST",
         });
+        setCompileStep("merging");
         const data = await response.json();
         if (!response.ok) {
           throw new Error(data.error ?? "정리하지 못했습니다.");
@@ -445,22 +498,26 @@ export function WorkspaceShell({
         };
       });
       const compiledDocument = result.value;
+      setCompileStep("saving");
       documentRef.current = compiledDocument;
       setDocument(compiledDocument);
       setRevision(result.revision);
       setSelectedId(compiledDocument.screens[0]?.id ?? "");
-      setNote("정리 완료");
+      setCompileStep("completed");
+      setNote("정리가 완료됐어요");
       setNoteIsError(false);
       setNeedsRecompile(
         sourceChangeVersionRef.current !== sourceVersionAtStart,
       );
     } catch (error) {
+      setCompileStep("failed");
       setError(
         error instanceof Error ? error.message : "정리하지 못했습니다.",
         recompile,
       );
     } finally {
       recompilingRef.current = false;
+      setCompileStartedAt(null);
       if (pendingSaveCount.current === 0) setPending(false);
     }
 
@@ -657,7 +714,12 @@ export function WorkspaceShell({
             )}
             <span className={`compile-status${noteIsError ? " compile-status--error" : ""}`}>
               <span className={`status-dot${pending ? " status-dot--pending" : ""}`} />
-              {note || `정리 완료 · 버전 ${revision}`}
+              {compileStep !== "idle" && compileStep !== "completed"
+                ? compileStepLabel[compileStep]
+                : note || `정리 완료 · 버전 ${revision}`}
+              {compileStartedAt && Date.now() - compileStartedAt > 10_000
+                ? " 시간이 조금 걸리고 있어요."
+                : ""}
               {noteIsError && retryFn && (
                 <button className="retry-button" onClick={() => { clearNote(); retryFn(); }}>
                   다시 시도
@@ -790,6 +852,7 @@ export function WorkspaceShell({
           ) : view === "document" ? (
             <DocumentView
               document={document}
+              username={username}
               onToggleResolved={toggleQuestionResolved}
               onQuestionUpdate={handleQuestionUpdate}
               onTaskCreate={handleTaskCreate}
@@ -805,7 +868,12 @@ export function WorkspaceShell({
           ) : view === "diff" ? (
             <DiffView projectId={project.id} current={document} currentRevision={revision} />
           ) : view === "figma" ? (
-            <FigmaView projectId={project.id} document={document} />
+            <FigmaView
+              projectId={project.id}
+              document={document}
+              mapping={document.figmaMapping}
+              onMappingChange={handleFigmaMappingChange}
+            />
           ) : view === "sources" ? (
             <SourceViewer
               projectId={project.id}

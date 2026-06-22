@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowCounterClockwise,
   CaretDown,
@@ -77,17 +77,30 @@ function editedQuestionEvidence(item: Question, question: string): Evidence {
 
 function QuestionCard({
   item,
+  answeredBy,
   onToggleResolved,
   onUpdate,
 }: {
   item: Question;
+  answeredBy: string;
   onToggleResolved?: (id: string) => void;
-  onUpdate?: (id: string, patch: Partial<Question>) => void;
+  onUpdate?: (id: string, patch: Partial<Question>) => void | Promise<void>;
 }) {
   const [editing, setEditing] = useState(false);
+  const [answerEditing, setAnswerEditing] = useState(false);
+  const [answerDraft, setAnswerDraft] = useState(item.answer ?? "");
+  const [answerStatus, setAnswerStatus] = useState<"idle" | "pending" | "success" | "error">("idle");
   const [question, setQuestion] = useState(item.question);
   const [context, setContext] = useState(item.context);
   const [priority, setPriority] = useState(item.priority);
+
+  useEffect(() => {
+    if (answerEditing) return;
+    const frame = window.requestAnimationFrame(() =>
+      setAnswerDraft(item.answer ?? ""),
+    );
+    return () => window.cancelAnimationFrame(frame);
+  }, [answerEditing, item.answer]);
 
   function cancel() {
     setQuestion(item.question);
@@ -96,10 +109,10 @@ function QuestionCard({
     setEditing(false);
   }
 
-  function save() {
+  async function save() {
     const nextQuestion = question.trim();
     if (!nextQuestion) return;
-    onUpdate?.(item.id, {
+    await onUpdate?.(item.id, {
       question: nextQuestion,
       context: context.trim(),
       priority,
@@ -107,6 +120,30 @@ function QuestionCard({
       evidence: editedQuestionEvidence(item, nextQuestion),
     });
     setEditing(false);
+  }
+
+  function cancelAnswer() {
+    setAnswerDraft(item.answer ?? "");
+    setAnswerEditing(false);
+    setAnswerStatus("idle");
+  }
+
+  async function saveAnswer() {
+    const answer = answerDraft.trim();
+    if (!answer || !onUpdate || answerStatus === "pending") return;
+    setAnswerStatus("pending");
+    try {
+      await onUpdate(item.id, {
+        answer,
+        answeredAt: new Date().toISOString(),
+        answeredBy,
+        resolved: true,
+      });
+      setAnswerStatus("success");
+      setAnswerEditing(false);
+    } catch {
+      setAnswerStatus("error");
+    }
   }
 
   return (
@@ -185,6 +222,81 @@ function QuestionCard({
           </div>
           <strong>{item.question}</strong>
           {item.context && <p>{item.context}</p>}
+          {item.answer ? (
+            <div className="question-answer">
+              <span>답변</span>
+              <p>{item.answer}</p>
+              <small>
+                {[item.answeredBy, item.answeredAt?.slice(0, 10)]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </small>
+            </div>
+          ) : null}
+          {onUpdate && (
+            <div className="question-answer-actions">
+              {answerEditing ? (
+                <div className="question-answer-form">
+                  <label>
+                    답변
+                    <textarea
+                      className="field"
+                      value={answerDraft}
+                      autoFocus
+                      onChange={(event) => setAnswerDraft(event.target.value)}
+                      onKeyDown={(event) => {
+                        if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+                          event.preventDefault();
+                          void saveAnswer();
+                        }
+                        if (event.key === "Escape") {
+                          event.preventDefault();
+                          cancelAnswer();
+                        }
+                      }}
+                    />
+                  </label>
+                  <div className="question-edit-actions">
+                    <button
+                      className="button"
+                      type="button"
+                      disabled={answerStatus === "pending"}
+                      onClick={cancelAnswer}
+                    >
+                      취소
+                    </button>
+                    <button
+                      className="button button-primary"
+                      type="button"
+                      disabled={answerStatus === "pending" || !answerDraft.trim()}
+                      onClick={() => void saveAnswer()}
+                    >
+                      {answerStatus === "pending" ? "저장 중…" : "답변 저장"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  className="button button--sm"
+                  type="button"
+                  onClick={() => {
+                    setAnswerDraft(item.answer ?? "");
+                    setAnswerEditing(true);
+                    setAnswerStatus("idle");
+                  }}
+                >
+                  {item.answer ? "답변 수정" : "답변 입력"}
+                </button>
+              )}
+              <span className={`question-answer-status status-${answerStatus}`} aria-live="polite">
+                {answerStatus === "success"
+                  ? "저장했어요"
+                  : answerStatus === "error"
+                    ? "저장하지 못했어요. 다시 시도해 주세요."
+                    : ""}
+              </span>
+            </div>
+          )}
         </>
       )}
     </div>
@@ -373,6 +485,7 @@ function SectionHeading({
 
 export function DocumentView({
   document,
+  username = "designer",
   onToggleResolved,
   onQuestionUpdate,
   onTaskCreate,
@@ -382,8 +495,9 @@ export function DocumentView({
   onTaskPurge,
 }: {
   document: SpecDocument;
+  username?: string;
   onToggleResolved?: (id: string) => void;
-  onQuestionUpdate?: (id: string, patch: Partial<Question>) => void;
+  onQuestionUpdate?: (id: string, patch: Partial<Question>) => void | Promise<void>;
   onTaskCreate?: (task: Task) => void;
   onTaskUpdate?: (id: string, patch: Partial<Task>) => void;
   onTaskDelete?: (id: string) => void;
@@ -536,6 +650,7 @@ export function DocumentView({
                   <QuestionCard
                     key={item.id}
                     item={item}
+                    answeredBy={username}
                     onToggleResolved={onToggleResolved}
                     onUpdate={onQuestionUpdate}
                   />

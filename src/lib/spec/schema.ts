@@ -23,6 +23,9 @@ const questionSchema = z.object({
   context: z.string(),
   evidence: evidenceSchema,
   resolved: z.boolean(),
+  answer: z.string().nullable().catch(null),
+  answeredAt: z.string().nullable().catch(null),
+  answeredBy: z.string().nullable().catch(null),
 });
 
 const roleSchema = z.object({
@@ -104,6 +107,46 @@ const taskSchema = z.object({
   deletedAt: z.string().nullable().catch(null),
 });
 
+const recommendationPatternSchema = z.enum([
+  "existing",
+  "extend-variant",
+  "new-component",
+  "screen-only",
+]);
+
+const screenRecommendationSchema = z.object({
+  element: z.string(),
+  pattern: recommendationPatternSchema,
+  componentKey: z.string().nullable(),
+  componentName: z.string().nullable(),
+  rationale: z.string(),
+  missingStates: z.array(z.string()).catch([]),
+});
+
+const componentRecommendationSchema = z.object({
+  screenId: z.string(),
+  screenName: z.string(),
+  recommendations: z.array(screenRecommendationSchema),
+});
+
+const figmaMappingSchema = z.object({
+  fileUrl: z.string(),
+  fileKey: z.string().nullable(),
+  libraryName: z.string().nullable(),
+  recommendations: z.array(componentRecommendationSchema),
+  analyzedAt: z.string().nullable(),
+  status: z.enum(["idle", "analyzing", "completed", "failed"]),
+  error: z.string().nullable(),
+}).catch({
+  fileUrl: "",
+  fileKey: null,
+  libraryName: null,
+  recommendations: [],
+  analyzedAt: null,
+  status: "idle",
+  error: null,
+});
+
 export const specDocumentSchema = z.object({
   brief: z.object({
     title: z.string(),
@@ -130,6 +173,7 @@ export const specDocumentSchema = z.object({
     next: z.array(z.string()),
     blockers: z.array(z.string()),
   }),
+  figmaMapping: figmaMappingSchema,
 });
 
 export const analysisSchema = z.object({

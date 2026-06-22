@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import type { ComponentRecommendation, RecommendationPattern } from "@/lib/figma/types";
+import { useMemo, useState } from "react";
+import type { RecommendationPattern } from "@/lib/figma/types";
 import type { SpecDocument } from "@/lib/spec/schema";
 
 const patternLabel: Record<RecommendationPattern, string> = {
@@ -21,49 +21,92 @@ const patternClass: Record<RecommendationPattern, string> = {
 type Props = {
   projectId: string;
   document: SpecDocument;
+  mapping: SpecDocument["figmaMapping"];
+  onMappingChange: (mapping: SpecDocument["figmaMapping"]) => Promise<void> | void;
 };
 
-export function FigmaView({ projectId, document }: Props) {
-  const [fileKey, setFileKey] = useState("");
+function extractFigmaFileKey(value: string) {
+  const trimmed = value.trim();
+  const match = trimmed.match(/figma\.com\/(?:file|design)\/([^/?#]+)/);
+  return match?.[1] ?? trimmed;
+}
+
+export function FigmaView({ projectId, document, mapping, onMappingChange }: Props) {
+  const [fileUrl, setFileUrl] = useState(mapping.fileUrl || mapping.fileKey || "");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
-  const [results, setResults] = useState<ComponentRecommendation[] | null>(null);
-
+  const [saveStatus, setSaveStatus] = useState<"idle" | "pending" | "success" | "error">("idle");
 
   async function analyze() {
-    if (!fileKey.trim()) return;
+    const nextFileUrl = fileUrl.trim();
+    const fileKey = extractFigmaFileKey(nextFileUrl);
+    if (!fileKey) return;
     setPending(true);
     setError("");
-    setResults(null);
+    setSaveStatus("pending");
+    const previousCompletedRecommendations = mapping.recommendations;
+    const analyzingMapping: SpecDocument["figmaMapping"] = {
+      ...mapping,
+      fileUrl: nextFileUrl,
+      fileKey,
+      status: "analyzing",
+      error: null,
+    };
+    await onMappingChange(analyzingMapping);
 
-    const response = await fetch(`/api/projects/${projectId}/figma`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        fileKey: fileKey.trim(),
-        components: [],
-        variables: [],
-      }),
-    });
+    try {
+      const response = await fetch(`/api/projects/${projectId}/figma`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          fileKey,
+          components: [],
+          variables: [],
+        }),
+      });
 
-    const data = await response.json();
-    if (response.ok) {
-      setResults(data.recommendations);
-
-    } else {
-      setError(data.error ?? "분석에 실패했습니다.");
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "분석에 실패했습니다.");
+      await onMappingChange({
+        fileUrl: nextFileUrl,
+        fileKey,
+        libraryName: data.libraryName ?? null,
+        recommendations: data.recommendations,
+        analyzedAt: new Date().toISOString(),
+        status: "completed",
+        error: null,
+      });
+      setSaveStatus("success");
+    } catch (reason) {
+      const message = reason instanceof Error ? reason.message : "분석에 실패했습니다.";
+      setError(message);
+      await onMappingChange({
+        ...mapping,
+        fileUrl: nextFileUrl,
+        fileKey,
+        recommendations: previousCompletedRecommendations,
+        status: "failed",
+        error: message,
+      });
+      setSaveStatus("error");
+    } finally {
+      setPending(false);
     }
-    setPending(false);
   }
 
-  const summary = results
+  const results = mapping.recommendations.length ? mapping.recommendations : null;
+  const summary = useMemo(() =>
+    results
     ? {
       existing: results.flatMap((r) => r.recommendations).filter((r) => r.pattern === "existing").length,
       extend: results.flatMap((r) => r.recommendations).filter((r) => r.pattern === "extend-variant").length,
       newComp: results.flatMap((r) => r.recommendations).filter((r) => r.pattern === "new-component").length,
       screenOnly: results.flatMap((r) => r.recommendations).filter((r) => r.pattern === "screen-only").length,
     }
-    : null;
+    : null,
+  [results]);
+
+  const urlChanged = Boolean(mapping.fileUrl) && fileUrl.trim() !== mapping.fileUrl;
 
   return (
     <div className="figma-view">
@@ -76,19 +119,31 @@ export function FigmaView({ projectId, document }: Props) {
         <div className="figma-input-row">
           <input
             className="field"
-            placeholder="Figma 파일 키 (URL에서 /file/ 다음 부분)"
-            value={fileKey}
-            onChange={(e) => setFileKey(e.target.value)}
+            placeholder="Figma 파일 URL 또는 파일 키"
+            value={fileUrl}
+            onChange={(e) => setFileUrl(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && analyze()}
           />
           <button
             className="button button-primary"
-            disabled={pending || !fileKey.trim()}
+            disabled={pending || !fileUrl.trim()}
             onClick={analyze}
           >
-            {pending ? "분석 중…" : "컴포넌트 분석"}
+            {pending ? "분석 중…" : mapping.status === "completed" ? "다시 분석" : "컴포넌트 분석"}
           </button>
         </div>
+        <p className="figma-save-status" aria-live="polite">
+          {mapping.status === "analyzing"
+            ? "Figma URL을 저장하고 분석하고 있어요."
+            : saveStatus === "success"
+              ? "분석 결과를 저장했어요."
+              : saveStatus === "error"
+                ? "새 분석은 실패했지만 기존 결과는 유지했어요."
+                : mapping.analyzedAt
+                  ? `마지막 분석: ${mapping.analyzedAt.slice(0, 10)}`
+                  : ""}
+          {urlChanged ? " URL이 바뀌었어요. 다시 분석하면 새 결과로 교체돼요." : ""}
+        </p>
         {error && <p className="form-error">{error}</p>}
       </div>
 

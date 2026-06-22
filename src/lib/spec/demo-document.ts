@@ -65,6 +65,9 @@ export const demoSpecDocument: SpecDocument = {
         "현재 명세에는 username+password만 언급되어 있으나, 소셜 로그인 지원 여부가 명시되지 않았습니다.",
       ),
       resolved: true,
+      answer: null,
+      answeredAt: null,
+      answeredBy: null,
     },
     {
       id: "question-session",
@@ -76,6 +79,9 @@ export const demoSpecDocument: SpecDocument = {
         "편집 손실을 막으려면 세션 만료 정책이 필요합니다.",
       ),
       resolved: false,
+      answer: null,
+      answeredAt: null,
+      answeredBy: null,
     },
   ],
   roles: [
@@ -233,5 +239,14 @@ export const demoSpecDocument: SpecDocument = {
     completed: ["로그인 요구사항 정리", "기본 상태·예외 정의"],
     next: ["프로젝트 생성 흐름 정의", "컴파일 결과 검토 기준 작성"],
     blockers: ["세션 만료 시 편집 복구 정책 확인 필요"],
+  },
+  figmaMapping: {
+    fileUrl: "",
+    fileKey: null,
+    libraryName: null,
+    recommendations: [],
+    analyzedAt: null,
+    status: "idle",
+    error: null,
   },
 };
