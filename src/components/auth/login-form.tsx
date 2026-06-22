@@ -85,7 +85,12 @@ export function LoginForm() {
         </p>
       ) : null}
       <button className="button button-primary" type="submit" disabled={pending}>
-        {pending ? "로그인 중…" : "로그인"}
+        {pending ? (
+          <>
+            <span className="btn-spinner" aria-hidden="true" />
+            로그인 중…
+          </>
+        ) : "로그인"}
       </button>
       <p
         className="login-slow-hint"

@@ -27,6 +27,7 @@ import { FlowCanvas } from "@/components/workspace/flow-canvas";
 import { MatrixView } from "@/components/workspace/matrix-view";
 import { RunsView } from "@/components/workspace/runs-view";
 import { ScreenDetail } from "@/components/workspace/screen-detail";
+import { CompileProgress } from "@/components/workspace/compile-progress";
 import { DecisionsView } from "@/components/workspace/decisions-view";
 import { HelpOverlay } from "@/components/workspace/help-overlay";
 import { SourceViewer, type ProjectSource } from "@/components/workspace/source-viewer";
@@ -791,6 +792,7 @@ export function WorkspaceShell({
           aria-busy={recompilingRef.current}
           style={view === "flow" ? { display: "flex", flexDirection: "column" } : { gridTemplateRows: "1fr" }}
         >
+          <CompileProgress step={compileStep} startedAt={compileStartedAt} />
           {view === "flow" ? (
             selectedScreen ? (
               <>

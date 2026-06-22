@@ -29,9 +29,12 @@ export function DecisionsView({ document }: { document: SpecDocument }) {
         {confirmed.length > 0 && (
           <>
             <h2>확정된 요구사항 <span className="section-meta">{confirmed.length}개</span></h2>
-            <ul>
+            <ul className="decision-list">
               {confirmed.map((r) => (
-                <li key={r.id}>{r.content}</li>
+                <li key={r.id} className="decision-item">
+                  <span>{r.content}</span>
+                  <span className="decision-category">{r.category}</span>
+                </li>
               ))}
             </ul>
           </>
@@ -40,11 +43,25 @@ export function DecisionsView({ document }: { document: SpecDocument }) {
         {resolved.length > 0 && (
           <>
             <h2>해결된 질문 <span className="section-meta">{resolved.length}개</span></h2>
-            <ul>
+            <ul className="decision-list">
               {resolved.map((q) => (
-                <li key={q.id}>
-                  <strong>{q.question}</strong>
-                  {q.context && <p className="decision-context">{q.context}</p>}
+                <li key={q.id} className="decision-item decision-item--question">
+                  <strong className="decision-question">{q.question}</strong>
+                  {q.answer ? (
+                    <div className="decision-answer">
+                      <span className="decision-answer-label">답변</span>
+                      <p className="decision-answer-text">{q.answer}</p>
+                      {(q.answeredBy || q.answeredAt) && (
+                        <small className="decision-answer-meta">
+                          {[q.answeredBy, q.answeredAt?.slice(0, 10)]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </small>
+                      )}
+                    </div>
+                  ) : (
+                    q.context && <p className="decision-context">{q.context}</p>
+                  )}
                 </li>
               ))}
             </ul>

@@ -615,6 +615,144 @@ textarea:focus-visible {
   background: rgb(255 255 255 / 28%);
 }
 
+/* ── compile progress banner ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.compile-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--accent);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.compile-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  padding: 16px 24px;
+  box-shadow: 0 2px 8px rgb(18 36 43 / 8%);
+}
+
+.compile-progress-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.compile-progress-label {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.compile-progress-elapsed {
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.compile-progress-track {
+  height: 4px;
+  background: var(--surface-soft);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.compile-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.compile-steps {
+  display: flex;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.compile-step {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 0 10px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  position: relative;
+}
+
+.compile-step::before {
+  content: "○";
+  margin-right: 4px;
+}
+
+.compile-step--done {
+  color: var(--accent-dark);
+}
+
+.compile-step--done::before {
+  content: "✓";
+}
+
+.compile-step--active {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.compile-step--active::before {
+  content: "●";
+  color: var(--accent);
+}
+
+.compile-progress-slow {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ── figma analyzing banner ── */
+.figma-analyzing-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--surface-soft);
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  margin: 12px 0;
+  font-size: 13px;
+  color: var(--ink);
+}
+
 .empty-flow {
   display: grid;
   place-items: center;
@@ -1866,6 +2004,81 @@ textarea:focus-visible {
 .question-resolve-toggle input { accent-color: var(--accent); cursor: pointer; }
 .question-resolved { opacity: 0.45; }
 .question-resolved strong { text-decoration: line-through; }
+
+/* ── decision list (decisions-view) ── */
+.decision-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  display: grid;
+  gap: 10px;
+}
+
+.decision-item {
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  display: grid;
+  gap: 6px;
+}
+
+.decision-item--question {
+  border-left: 3px solid var(--accent);
+}
+
+.decision-question {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.decision-category {
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--surface-soft);
+  border-radius: 4px;
+  padding: 2px 6px;
+  align-self: start;
+  justify-self: start;
+}
+
+.decision-context {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.decision-answer {
+  display: grid;
+  gap: 4px;
+  margin-top: 4px;
+  border-left: 3px solid var(--accent);
+  padding-left: 10px;
+}
+
+.decision-answer-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.decision-answer-text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.decision-answer-meta {
+  font-size: 11px;
+  color: var(--muted);
+}
 
 .question-answer {
   display: grid;

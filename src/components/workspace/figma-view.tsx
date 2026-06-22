@@ -129,20 +129,35 @@ export function FigmaView({ projectId, document, mapping, onMappingChange }: Pro
             disabled={pending || !fileUrl.trim()}
             onClick={analyze}
           >
-            {pending ? "분석 중…" : mapping.status === "completed" ? "다시 분석" : "컴포넌트 분석"}
+            {pending ? (
+              <>
+                <span className="btn-spinner" aria-hidden="true" />
+                분석 중…
+              </>
+            ) : mapping.status === "completed" ? "다시 분석" : "컴포넌트 분석"}
           </button>
         </div>
+
+        {pending && (
+          <div className="figma-analyzing-banner" role="status" aria-live="polite">
+            <span className="compile-spinner" aria-hidden="true" />
+            <span>Figma 컴포넌트를 분석하고 있어요. 잠시만 기다려 주세요.</span>
+          </div>
+        )}
+
         <p className="figma-save-status" aria-live="polite">
-          {mapping.status === "analyzing"
-            ? "Figma URL을 저장하고 분석하고 있어요."
-            : saveStatus === "success"
-              ? "분석 결과를 저장했어요."
-              : saveStatus === "error"
-                ? "새 분석은 실패했지만 기존 결과는 유지했어요."
-                : mapping.analyzedAt
-                  ? `마지막 분석: ${mapping.analyzedAt.slice(0, 10)}`
-                  : ""}
-          {urlChanged ? " URL이 바뀌었어요. 다시 분석하면 새 결과로 교체돼요." : ""}
+          {!pending && (
+            mapping.status === "analyzing"
+              ? "Figma URL을 저장하고 분석하고 있어요."
+              : saveStatus === "success"
+                ? "분석 결과를 저장했어요."
+                : saveStatus === "error"
+                  ? "새 분석은 실패했지만 기존 결과는 유지했어요."
+                  : mapping.analyzedAt
+                    ? `마지막 분석: ${mapping.analyzedAt.slice(0, 10)}`
+                    : ""
+          )}
+          {!pending && urlChanged ? " URL이 바뀌었어요. 다시 분석하면 새 결과로 교체돼요." : ""}
         </p>
         {error && <p className="form-error">{error}</p>}
       </div>
