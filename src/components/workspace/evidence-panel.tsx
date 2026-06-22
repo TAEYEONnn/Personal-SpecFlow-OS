@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { CaretRight } from "@phosphor-icons/react";
+import { useHydratedMediaQuery } from "@/lib/browser-state";
 import type { Evidence } from "@/lib/spec/schema";
 
 const labels = {
@@ -23,21 +23,7 @@ export function EvidencePanel({
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }) {
-  const [isMobileOverlay, setIsMobileOverlay] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 1023px)");
-    const handler = (event: MediaQueryListEvent) =>
-      setIsMobileOverlay(event.matches);
-    const frame = window.requestAnimationFrame(() =>
-      setIsMobileOverlay(mq.matches),
-    );
-    mq.addEventListener("change", handler);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      mq.removeEventListener("change", handler);
-    };
-  }, []);
+  const isMobileOverlay = useHydratedMediaQuery("(max-width: 1023px)");
   if (collapsed) {
     return (
       <aside className="evidence-panel evidence-panel--collapsed">

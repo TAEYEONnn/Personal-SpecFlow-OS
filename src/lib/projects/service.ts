@@ -15,6 +15,7 @@ import {
   type DemoRun,
 } from "@/lib/projects/demo-store";
 import type { SpecDocument } from "@/lib/spec/schema";
+import { parseStoredSpecDocument } from "@/lib/spec/stored-document";
 import { createClient } from "@/lib/supabase/server";
 
 export type ProjectView = {
@@ -127,7 +128,9 @@ export async function getProject(
     name: project.name,
     revision: project.revision,
     needsRecompile: project.needs_recompile ?? false,
-    document: (documentResult.data?.document as SpecDocument | undefined) ?? null,
+    document: documentResult.data?.document === undefined
+      ? null
+      : parseStoredSpecDocument(documentResult.data.document, project.id),
     sources: (sourceResult.data ?? []).map((row) => ({
       id: row.id,
       name: row.name,

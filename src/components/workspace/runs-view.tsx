@@ -1,4 +1,5 @@
 import type { DemoRun } from "@/lib/projects/demo-store";
+import { formatKoreanDateTime } from "@/lib/format-date";
 
 const statusLabel: Record<DemoRun["status"], string> = {
   queued: "대기",
@@ -55,7 +56,7 @@ export function RunsView({ runs }: { runs: DemoRun[] }) {
               </td>
               <td>{run.errorCode ?? "—"}</td>
               <td className="run-time">
-                {new Date(run.createdAt).toLocaleString("ko-KR")}
+                {formatKoreanDateTime(run.createdAt)}
               </td>
             </tr>
           ))}

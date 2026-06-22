@@ -30,6 +30,7 @@ import { ScreenDetail } from "@/components/workspace/screen-detail";
 import { DecisionsView } from "@/components/workspace/decisions-view";
 import { HelpOverlay } from "@/components/workspace/help-overlay";
 import { SourceViewer, type ProjectSource } from "@/components/workspace/source-viewer";
+import { useWorkspacePreferences } from "@/lib/browser-state";
 import { createDocumentSaveQueue } from "@/lib/projects/document-save-queue";
 import type {
   Evidence,
@@ -89,8 +90,12 @@ export function WorkspaceShell({
   const [lastDeletedTaskId, setLastDeletedTaskId] = useState<string | null>(null);
   const [canvasCollapsed, setCanvasCollapsed] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
-  const [canvasHeight, setCanvasHeight] = useState(360);
-  const [evidencePanelCollapsed, setEvidencePanelCollapsed] = useState(false);
+  const {
+    canvasHeight,
+    setCanvasHeight,
+    evidencePanelCollapsed,
+    setEvidencePanelCollapsed,
+  } = useWorkspacePreferences();
   const [needsRecompile, setNeedsRecompile] = useState(project.needsRecompile ?? false);
   const [sourceOperationCount, setSourceOperationCount] = useState(0);
   const prevPositions = useRef<Record<string, { x: number; y: number }> | null>(null);
@@ -104,22 +109,6 @@ export function WorkspaceShell({
   if (!saveQueue.current) {
     saveQueue.current = createDocumentSaveQueue(project.revision, sendDocument);
   }
-
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      const savedHeight = window.localStorage.getItem("specflow-canvas-height");
-      const parsedHeight = savedHeight
-        ? Number.parseInt(savedHeight, 10)
-        : Number.NaN;
-      if (!Number.isNaN(parsedHeight) && parsedHeight > 0) {
-        setCanvasHeight(parsedHeight);
-      }
-      setEvidencePanelCollapsed(
-        window.localStorage.getItem("specflow-evidence-collapsed") === "true",
-      );
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, []);
 
   useEffect(() => {
     if (!note || noteIsError) return;

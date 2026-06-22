@@ -1,9 +1,13 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { EvidencePanel } from "@/components/workspace/evidence-panel";
 import { demoSpecDocument } from "@/lib/spec/demo-document";
 
 const evidence = demoSpecDocument.screens[1].evidence;
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("EvidencePanel", () => {
   it("separates original excerpts from inference rationale", () => {
@@ -60,5 +64,52 @@ describe("EvidencePanel", () => {
 
     expect(screen.getByText("검토 상태")).toBeInTheDocument();
     expect(screen.getByLabelText("근거 패널 접기")).toBeInTheDocument();
+  });
+
+  it("applies matchMedia after hydration, reacts to changes, and cleans up", () => {
+    let restore: FrameRequestCallback | undefined;
+    let onChange: ((event: MediaQueryListEvent) => void) | undefined;
+    const removeEventListener = vi.fn();
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      restore = callback;
+      return 9;
+    });
+    const cancelAnimationFrame = vi
+      .spyOn(window, "cancelAnimationFrame")
+      .mockImplementation(() => undefined);
+    vi.spyOn(window, "matchMedia").mockImplementation(
+      (query) =>
+        ({
+          matches: true,
+          media: query,
+          onchange: null,
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+          addEventListener: (_type, listener) => {
+            onChange = listener as (event: MediaQueryListEvent) => void;
+          },
+          removeEventListener,
+          dispatchEvent: () => false,
+        }) as MediaQueryList,
+    );
+
+    const view = render(
+      <EvidencePanel
+        evidence={evidence}
+        onStatusChange={() => undefined}
+        onToggleCollapse={() => undefined}
+      />,
+    );
+
+    expect(document.querySelector(".evidence-overlay-backdrop")).toBeNull();
+    act(() => restore?.(0));
+    expect(document.querySelector(".evidence-overlay-backdrop")).not.toBeNull();
+
+    act(() => onChange?.({ matches: false } as MediaQueryListEvent));
+    expect(document.querySelector(".evidence-overlay-backdrop")).toBeNull();
+
+    view.unmount();
+    expect(cancelAnimationFrame).toHaveBeenCalledWith(9);
+    expect(removeEventListener).toHaveBeenCalledWith("change", onChange);
   });
 });

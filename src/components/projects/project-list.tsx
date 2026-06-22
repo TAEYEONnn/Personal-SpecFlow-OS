@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRight, Plus, Trash } from "@phosphor-icons/react";
+import { formatKoreanDateTime } from "@/lib/format-date";
 
 type ProjectSummary = {
   id: string;
@@ -47,7 +48,7 @@ export function ProjectList({ projects }: { projects: ProjectSummary[] }) {
                   <strong>{project.name}</strong>
                   <span>문서 버전 {project.revision}</span>
                 </div>
-                <span>{new Date(project.updatedAt).toLocaleString("ko-KR")}</span>
+                <span>{formatKoreanDateTime(project.updatedAt)}</span>
                 <ArrowRight size={18} />
               </Link>
               <button

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { ClipboardText, FileText, PencilSimple, Plus, TextAlignLeft, Trash } from "@phosphor-icons/react";
+import { formatKoreanDateTime } from "@/lib/format-date";
 
 export type ProjectSource = {
   id: string;
@@ -297,8 +298,8 @@ export function SourceViewer({
                     <span className="source-type">{typeLabel[source.type]}</span>
                     <span className="source-date">
                       {source.updatedAt && source.updatedAt !== source.createdAt
-                        ? `수정됨 · ${new Date(source.updatedAt).toLocaleString("ko-KR")}`
-                        : new Date(source.createdAt).toLocaleString("ko-KR")}
+                        ? `수정됨 · ${formatKoreanDateTime(source.updatedAt)}`
+                        : formatKoreanDateTime(source.createdAt)}
                     </span>
                   </div>
                 )}
