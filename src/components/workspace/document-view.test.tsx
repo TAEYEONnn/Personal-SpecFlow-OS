@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { DocumentView } from "@/components/workspace/document-view";
 import { demoSpecDocument } from "@/lib/spec/demo-document";
@@ -52,20 +52,16 @@ describe("DocumentView", () => {
     const input = screen.getByPlaceholderText("새 작업 추가…");
     const addButton = screen.getByText("추가");
 
-    Object.defineProperty(input, "value", { value: "테스트 작업", writable: true });
-    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fireEvent.change(input, { target: { value: "테스트 작업" } });
+    fireEvent.click(addButton);
 
-    import("@testing-library/user-event").then(({ default: userEvent }) => {
-      userEvent.type(input, "테스트 작업");
-      userEvent.click(addButton);
-      expect(onTaskCreate).toHaveBeenCalledWith(
-        expect.objectContaining<Partial<Task>>({
-          source: "user",
-          status: "inbox",
-          priority: "medium",
-        }),
-      );
-    });
+    expect(onTaskCreate).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<Task>>({
+        source: "user",
+        status: "inbox",
+        priority: "medium",
+      }),
+    );
   });
 
   it("calls onTaskUpdate when status changed", () => {

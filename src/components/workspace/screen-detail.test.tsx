@@ -114,4 +114,54 @@ describe("ScreenDetail", () => {
     screen.getByLabelText("문구 삭제").click();
     expect(onUxCopyChange).toHaveBeenCalledWith([]);
   });
+
+  it("shows toneRule as badge in view mode when set", () => {
+    const copy: UxCopy[] = [
+      {
+        id: "copy-tone",
+        screenId: demoScreen.id,
+        context: "버튼",
+        text: "시작하기",
+        toneRule: "짧고 행동 유도",
+        evidence: { type: "original", reviewStatus: "confirmed", sourceId: "s1", sourceExcerpt: "시작하기", rationale: null },
+      },
+    ];
+
+    render(
+      <ScreenDetail
+        screen={demoScreen}
+        editing={false}
+        onChange={() => undefined}
+        uxCopy={copy}
+        onUxCopyChange={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("짧고 행동 유도")).toBeInTheDocument();
+  });
+
+  it("shows toneRule input field in edit mode", () => {
+    const copy: UxCopy[] = [
+      {
+        id: "copy-tone-edit",
+        screenId: demoScreen.id,
+        context: "버튼",
+        text: "계속하기",
+        toneRule: "친근하게",
+        evidence: { type: "original", reviewStatus: "confirmed", sourceId: "s1", sourceExcerpt: "계속하기", rationale: null },
+      },
+    ];
+
+    render(
+      <ScreenDetail
+        screen={demoScreen}
+        editing={true}
+        onChange={() => undefined}
+        uxCopy={copy}
+        onUxCopyChange={() => undefined}
+      />,
+    );
+
+    expect(screen.getByPlaceholderText("톤 규칙 (예: 친근하고 간결하게)")).toBeInTheDocument();
+  });
 });

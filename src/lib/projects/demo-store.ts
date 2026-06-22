@@ -9,6 +9,7 @@ export type DemoSource = {
   type: "paste" | "txt" | "md" | "pdf";
   content: string;
   createdAt: string;
+  updatedAt: string;
 };
 
 export type DemoRun = {
@@ -31,6 +32,7 @@ export type DemoProject = {
   sources: DemoSource[];
   runs: DemoRun[];
   updatedAt: string;
+  needsRecompile: boolean;
 };
 
 type DemoGlobal = typeof globalThis & {
@@ -56,6 +58,7 @@ export function createDemoProject(name: string) {
     sources: [],
     runs: [],
     updatedAt: new Date().toISOString(),
+    needsRecompile: false,
   };
   store().set(project.id, project);
   return structuredClone(project);
@@ -74,14 +77,16 @@ export function getDemoProject(id: string) {
 
 export function addDemoSource(
   projectId: string,
-  source: Omit<DemoSource, "id" | "createdAt">,
+  source: Omit<DemoSource, "id" | "createdAt" | "updatedAt">,
 ) {
   const project = store().get(projectId);
   if (!project) throw new Error("프로젝트를 찾을 수 없습니다.");
+  const now = new Date().toISOString();
   const next: DemoSource = {
     ...source,
     id: randomUUID(),
-    createdAt: new Date().toISOString(),
+    createdAt: now,
+    updatedAt: now,
   };
   project.sources.push(next);
   project.updatedAt = next.createdAt;
@@ -145,8 +150,12 @@ export function updateDemoSource(
   const source = project.sources.find((s) => s.id === sourceId);
   if (!source) throw new Error("소스를 찾을 수 없습니다.");
   if (patch.name !== undefined) source.name = patch.name;
-  if (patch.content !== undefined) source.content = patch.content;
-  project.updatedAt = new Date().toISOString();
+  if (patch.content !== undefined) {
+    source.content = patch.content;
+    project.needsRecompile = true;
+  }
+  source.updatedAt = new Date().toISOString();
+  project.updatedAt = source.updatedAt;
   return structuredClone(source);
 }
 
@@ -161,5 +170,6 @@ export function saveDemoDocument(
   project.revision += 1;
   project.document = structuredClone(document);
   project.updatedAt = new Date().toISOString();
+  project.needsRecompile = false;
   return project.revision;
 }

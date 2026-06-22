@@ -12,7 +12,7 @@ const screenRecommendationSchema = z.object({
       componentKey: z.string().nullable(),
       componentName: z.string().nullable(),
       rationale: z.string(),
-      missingStates: z.array(z.string()).optional(),
+      missingStates: z.array(z.string()),
     }),
   ),
 });
@@ -47,14 +47,25 @@ QA 기준: ${screen.qaCriteria.join(", ")}
 ## Figma 라이브러리 컴포넌트 (${library.components.length}개)
 ${componentSummary || "컴포넌트 없음"}
 
-각 화면 요소 (버튼, 입력창, 카드, 네비게이션 등)에 대해 분류와 근거를 JSON으로 반환하세요.`;
+각 화면 요소 (버튼, 입력창, 카드, 네비게이션 등)에 대해 분류와 근거를 JSON으로 반환하세요.
+
+missingStates가 없으면 빈 배열 []을 반환하세요.`;
 }
 
 export async function recommendFigmaComponents(
   screens: Screen[],
   library: FigmaLibrary,
 ): Promise<ComponentRecommendation[]> {
-  if (!process.env.OPENAI_API_KEY) {
+  if (screens.length === 0) {
+    return [];
+  }
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  const useMock =
+    process.env.NODE_ENV === "test" ||
+    !apiKey;
+
+  if (useMock) {
     return screens.map((screen) => ({
       screenId: screen.id,
       screenName: screen.name,
@@ -62,7 +73,9 @@ export async function recommendFigmaComponents(
     }));
   }
 
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const client = new OpenAI({
+    apiKey,
+  });
 
   const results = await Promise.all(
     screens.map(async (screen): Promise<ComponentRecommendation> => {
@@ -105,6 +118,7 @@ function mockRecommendations(screen: Screen, library: FigmaLibrary): ScreenRecom
       rationale: btn
         ? `기존 ${btn.name} 컴포넌트를 CTA로 사용 가능합니다.`
         : "버튼 컴포넌트가 없어 신규 제작이 필요합니다.",
+      missingStates: [],
     });
   }
 
@@ -114,6 +128,7 @@ function mockRecommendations(screen: Screen, library: FigmaLibrary): ScreenRecom
     componentKey: null,
     componentName: null,
     rationale: "화면 전체 레이아웃은 라이브러리화 불필요한 페이지 구조입니다.",
+    missingStates: [],
   });
 
   return recs;

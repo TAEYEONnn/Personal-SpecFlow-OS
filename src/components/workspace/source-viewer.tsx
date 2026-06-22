@@ -9,6 +9,7 @@ type Source = {
   type: "paste" | "txt" | "md" | "pdf";
   content: string;
   createdAt: string;
+  updatedAt?: string;
 };
 
 const typeLabel: Record<Source["type"], string> = {
@@ -236,7 +237,9 @@ export function SourceViewer({
                     <span className="source-name">{source.name}</span>
                     <span className="source-type">{typeLabel[source.type]}</span>
                     <span className="source-date">
-                      {new Date(source.createdAt).toLocaleString("ko-KR")}
+                      {source.updatedAt && source.updatedAt !== source.createdAt
+                        ? `수정됨 · ${new Date(source.updatedAt).toLocaleString("ko-KR")}`
+                        : new Date(source.createdAt).toLocaleString("ko-KR")}
                     </span>
                   </div>
                 )}

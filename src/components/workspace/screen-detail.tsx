@@ -19,6 +19,7 @@ export function ScreenDetail({
 }) {
   const [newCopyText, setNewCopyText] = useState("");
   const [newCopyContext, setNewCopyContext] = useState("");
+  const [newCopyTone, setNewCopyTone] = useState("");
 
   const rows = [
     ["진입 조건", screen.entryConditions],
@@ -35,7 +36,7 @@ export function ScreenDetail({
       screenId: screen.id,
       context: newCopyContext.trim() || "일반",
       text: newCopyText.trim(),
-      toneRule: "",
+      toneRule: newCopyTone.trim(),
       evidence: {
         type: "assumption",
         reviewStatus: "needs-review",
@@ -47,6 +48,7 @@ export function ScreenDetail({
     onUxCopyChange([...uxCopy, item]);
     setNewCopyText("");
     setNewCopyContext("");
+    setNewCopyTone("");
   }
 
   function handleDeleteCopy(id: string) {
@@ -118,6 +120,12 @@ export function ScreenDetail({
                         value={item.text}
                         onChange={(e) => handleCopyChange(item.id, "text", e.target.value)}
                       />
+                      <input
+                        className="field copy-tone-field"
+                        placeholder="톤 규칙 (예: 친근하고 간결하게)"
+                        value={item.toneRule}
+                        onChange={(e) => handleCopyChange(item.id, "toneRule", e.target.value)}
+                      />
                       <button
                         className="copy-delete-btn"
                         aria-label="문구 삭제"
@@ -130,6 +138,9 @@ export function ScreenDetail({
                     <>
                       <span className="copy-context-tag">{item.context}</span>
                       <span className="copy-text">{item.text}</span>
+                      {item.toneRule && (
+                        <span className="copy-tone-tag">{item.toneRule}</span>
+                      )}
                     </>
                   )}
                 </div>
@@ -150,6 +161,12 @@ export function ScreenDetail({
                 value={newCopyText}
                 onChange={(e) => setNewCopyText(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddCopy()}
+              />
+              <input
+                className="field copy-tone-field"
+                placeholder="톤 규칙"
+                value={newCopyTone}
+                onChange={(e) => setNewCopyTone(e.target.value)}
               />
               <button className="button" onClick={handleAddCopy} disabled={!newCopyText.trim()}>
                 <Plus size={14} />

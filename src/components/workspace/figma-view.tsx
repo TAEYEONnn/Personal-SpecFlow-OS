@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ComponentRecommendation, FigmaLibrary, RecommendationPattern } from "@/lib/figma/types";
+import type { ComponentRecommendation, RecommendationPattern } from "@/lib/figma/types";
 import type { SpecDocument } from "@/lib/spec/schema";
 
 const patternLabel: Record<RecommendationPattern, string> = {
@@ -28,7 +28,7 @@ export function FigmaView({ projectId, document }: Props) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [results, setResults] = useState<ComponentRecommendation[] | null>(null);
-  const [libraryName, setLibraryName] = useState("");
+
 
   async function analyze() {
     if (!fileKey.trim()) return;
@@ -49,7 +49,7 @@ export function FigmaView({ projectId, document }: Props) {
     const data = await response.json();
     if (response.ok) {
       setResults(data.recommendations);
-      setLibraryName(data.libraryName);
+
     } else {
       setError(data.error ?? "분석에 실패했습니다.");
     }
@@ -58,11 +58,11 @@ export function FigmaView({ projectId, document }: Props) {
 
   const summary = results
     ? {
-        existing: results.flatMap((r) => r.recommendations).filter((r) => r.pattern === "existing").length,
-        extend: results.flatMap((r) => r.recommendations).filter((r) => r.pattern === "extend-variant").length,
-        newComp: results.flatMap((r) => r.recommendations).filter((r) => r.pattern === "new-component").length,
-        screenOnly: results.flatMap((r) => r.recommendations).filter((r) => r.pattern === "screen-only").length,
-      }
+      existing: results.flatMap((r) => r.recommendations).filter((r) => r.pattern === "existing").length,
+      extend: results.flatMap((r) => r.recommendations).filter((r) => r.pattern === "extend-variant").length,
+      newComp: results.flatMap((r) => r.recommendations).filter((r) => r.pattern === "new-component").length,
+      screenOnly: results.flatMap((r) => r.recommendations).filter((r) => r.pattern === "screen-only").length,
+    }
     : null;
 
   return (

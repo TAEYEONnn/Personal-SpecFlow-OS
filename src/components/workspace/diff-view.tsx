@@ -68,30 +68,91 @@ export function DiffView({
   currentRevision: number;
 }) {
   const [compareRevision, setCompareRevision] = useState<number | null>(null);
-  const [prevDocument, setPrevDocument] = useState<SpecDocument | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  const [comparison, setComparison] = useState<{
+    revision: number;
+    document: SpecDocument | null;
+    error: string | null;
+  } | null>(null);
 
   useEffect(() => {
-    if (compareRevision === null) {
-      setPrevDocument(null);
-      return;
+    if (compareRevision === null) return;
+
+    const controller = new AbortController();
+    const revision = compareRevision;
+
+    async function loadRevision() {
+      try {
+        const response = await fetch(
+          `/api/projects/${projectId}/revisions/${revision}`,
+          {
+            signal: controller.signal,
+          },
+        );
+
+        const data = await response.json();
+
+        if (controller.signal.aborted) return;
+
+        if (!response.ok || data.error) {
+          setComparison({
+            revision,
+            document: null,
+            error: data.error ?? "이전 revision을 불러오지 못했습니다.",
+          });
+          return;
+        }
+
+        setComparison({
+          revision,
+          document: data.document,
+          error: null,
+        });
+      } catch (error) {
+        if (
+          error instanceof DOMException &&
+          error.name === "AbortError"
+        ) {
+          return;
+        }
+
+        setComparison({
+          revision,
+          document: null,
+          error: "이전 revision을 불러오지 못했습니다.",
+        });
+      }
     }
-    setLoading(true);
-    setError("");
-    fetch(`/api/projects/${projectId}/revisions/${compareRevision}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.error) setError(data.error);
-        else setPrevDocument(data.document);
-      })
-      .catch(() => setError("이전 revision을 불러오지 못했습니다."))
-      .finally(() => setLoading(false));
+
+    void loadRevision();
+
+    return () => {
+      controller.abort();
+    };
   }, [projectId, compareRevision]);
 
-  const diff: DocumentDiff | null =
-    prevDocument ? diffDocuments(prevDocument, current) : null;
+  const isCurrentComparison =
+    compareRevision !== null &&
+    comparison?.revision === compareRevision;
 
+  const loading =
+    compareRevision !== null &&
+    !isCurrentComparison;
+
+  const error =
+    isCurrentComparison
+      ? comparison.error ?? ""
+      : "";
+
+  const prevDocument =
+    isCurrentComparison
+      ? comparison.document
+      : null;
+
+  const diff: DocumentDiff | null =
+    prevDocument
+      ? diffDocuments(prevDocument, current)
+      : null;
   const screenLabels = new Map([
     ...current.screens.map((s) => [s.id, s.name] as [string, string]),
   ]);

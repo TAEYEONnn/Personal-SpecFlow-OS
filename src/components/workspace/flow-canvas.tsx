@@ -1,5 +1,6 @@
 "use client";
 
+import dagre from "dagre";
 import { useMemo } from "react";
 import {
   MarkerType,
@@ -23,75 +24,43 @@ import {
 } from "@phosphor-icons/react";
 import type { Screen, ScreenState, SpecDocument } from "@/lib/spec/schema";
 
+const SCREEN_W = 170;
+const SCREEN_H = 90;
+
 export function computeAutoLayout(
   screens: Screen[],
-  _states: ScreenState[],
 ): Record<string, { x: number; y: number }> {
   if (screens.length === 0) return {};
 
-  const NODE_W = 170;
-  const NODE_H = 90;
-  const H_GAP = 80;
-  const V_GAP = 50;
+  const g = new dagre.graphlib.Graph();
+  g.setDefaultEdgeLabel(() => ({}));
+  g.setGraph({ rankdir: "LR", nodesep: 50, ranksep: 100, marginx: 40, marginy: 40 });
 
-  const outgoing = new Map<string, string[]>();
-  const incomingCount = new Map<string, number>(screens.map((s) => [s.id, 0]));
+  const screenSet = new Set(screens.map((s) => s.id));
 
   for (const screen of screens) {
-    const nexts = screen.nextScreenIds.filter((id) => screens.some((s) => s.id === id));
-    outgoing.set(screen.id, nexts);
+    g.setNode(screen.id, { width: SCREEN_W, height: SCREEN_H });
   }
-  for (const screen of screens) {
-    for (const nextId of (outgoing.get(screen.id) ?? [])) {
-      incomingCount.set(nextId, (incomingCount.get(nextId) ?? 0) + 1);
-    }
-  }
-
-  const layer = new Map<string, number>();
-  const queue: string[] = [];
 
   for (const screen of screens) {
-    if ((incomingCount.get(screen.id) ?? 0) === 0) {
-      queue.push(screen.id);
-      layer.set(screen.id, 0);
-    }
-  }
-
-  let qi = 0;
-  while (qi < queue.length) {
-    const id = queue[qi++];
-    const l = layer.get(id) ?? 0;
-    for (const nextId of (outgoing.get(id) ?? [])) {
-      if ((layer.get(nextId) ?? -1) < l + 1) {
-        layer.set(nextId, l + 1);
-        queue.push(nextId);
+    for (const nextId of screen.nextScreenIds) {
+      if (screenSet.has(nextId)) {
+        g.setEdge(screen.id, nextId);
       }
     }
   }
 
-  let maxLayer = 0;
-  for (const screen of screens) {
-    if (!layer.has(screen.id)) {
-      layer.set(screen.id, ++maxLayer);
-    } else {
-      maxLayer = Math.max(maxLayer, layer.get(screen.id)!);
-    }
-  }
-
-  const byLayer = new Map<number, string[]>();
-  for (const [id, l] of layer) {
-    if (!byLayer.has(l)) byLayer.set(l, []);
-    byLayer.get(l)!.push(id);
-  }
+  dagre.layout(g);
 
   const positions: Record<string, { x: number; y: number }> = {};
-  for (const [l, ids] of byLayer) {
-    const x = l * (NODE_W + H_GAP) + 60;
-    const totalH = ids.length * NODE_H + (ids.length - 1) * V_GAP;
-    const startY = -totalH / 2 + 300;
-    ids.forEach((id, i) => {
-      positions[id] = { x, y: startY + i * (NODE_H + V_GAP) };
-    });
+  for (const screen of screens) {
+    const node = g.node(screen.id);
+    if (node) {
+      positions[screen.id] = {
+        x: node.x - SCREEN_W / 2,
+        y: node.y - SCREEN_H / 2,
+      };
+    }
   }
 
   return positions;

@@ -21,6 +21,7 @@ export type ProjectView = {
   id: string;
   name: string;
   revision: number;
+  needsRecompile: boolean;
   document: SpecDocument | null;
   sources: Array<{
     id: string;
@@ -28,6 +29,7 @@ export type ProjectView = {
     type: "paste" | "txt" | "md" | "pdf";
     content: string;
     createdAt: string;
+    updatedAt: string;
   }>;
   runs: DemoRun[];
   updatedAt: string;
@@ -47,6 +49,7 @@ export async function listProjects() {
     id: row.id,
     name: row.name,
     revision: row.revision,
+    needsRecompile: false,
     document: null,
     sources: [],
     runs: [],
@@ -69,6 +72,7 @@ export async function createProject(name: string) {
     id: data.id,
     name: data.name,
     revision: data.revision,
+    needsRecompile: false,
     document: null,
     sources: [],
     runs: [],
@@ -83,7 +87,7 @@ export async function getProject(projectId: string): Promise<ProjectView | null>
   const supabase = await createClient();
   const { data: project, error } = await supabase
     .from("projects")
-    .select("id, name, revision, current_document_id, updated_at")
+    .select("id, name, revision, needs_recompile, current_document_id, updated_at")
     .eq("id", projectId)
     .maybeSingle();
   if (error) throw error;
@@ -99,7 +103,7 @@ export async function getProject(projectId: string): Promise<ProjectView | null>
       : Promise.resolve({ data: null, error: null }),
     supabase
       .from("sources")
-      .select("id, name, source_type, content, created_at")
+      .select("id, name, source_type, content, created_at, updated_at")
       .eq("project_id", projectId)
       .order("created_at", { ascending: false }),
     supabase
@@ -119,6 +123,7 @@ export async function getProject(projectId: string): Promise<ProjectView | null>
     id: project.id,
     name: project.name,
     revision: project.revision,
+    needsRecompile: project.needs_recompile ?? false,
     document: (documentResult.data?.document as SpecDocument | undefined) ?? null,
     sources: (sourceResult.data ?? []).map((row) => ({
       id: row.id,
@@ -126,6 +131,7 @@ export async function getProject(projectId: string): Promise<ProjectView | null>
       type: row.source_type,
       content: row.content,
       createdAt: row.created_at,
+      updatedAt: row.updated_at ?? row.created_at,
     })),
     runs: (runResult.data ?? []).map((row) => ({
       id: row.id,
@@ -243,6 +249,13 @@ export async function saveProjectDocument(
     p_run_id: runId ?? null,
   });
   if (error) throw error;
+  // Clear recompile flag only when saving after a full compile (runId present)
+  if (runId) {
+    await supabase
+      .from("projects")
+      .update({ needs_recompile: false })
+      .eq("id", projectId);
+  }
   return data as number;
 }
 
@@ -298,10 +311,24 @@ export async function updateSource(
     .eq("id", sourceId)
     .eq("project_id", projectId)
     .eq("user_id", auth.userId)
-    .select("id, name, source_type, content, created_at")
+    .select("id, name, source_type, content, created_at, updated_at")
     .single();
   if (error) throw error;
-  return { id: data.id, name: data.name, type: data.source_type, content: data.content, createdAt: data.created_at };
+  if (patch.content !== undefined) {
+    await supabase
+      .from("projects")
+      .update({ needs_recompile: true })
+      .eq("id", projectId)
+      .eq("user_id", auth.userId);
+  }
+  return {
+    id: data.id,
+    name: data.name,
+    type: data.source_type,
+    content: data.content,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at ?? data.created_at,
+  };
 }
 
 export async function renameProject(projectId: string, name: string) {
