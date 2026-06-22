@@ -85,7 +85,7 @@ describe("EvidencePanel", () => {
           onchange: null,
           addListener: vi.fn(),
           removeListener: vi.fn(),
-          addEventListener: (_type, listener) => {
+          addEventListener: (_type: string, listener: EventListenerOrEventListenerObject) => {
             onChange = listener as (event: MediaQueryListEvent) => void;
           },
           removeEventListener,

@@ -22,7 +22,7 @@ export default function LoginPage() {
         <div className="login-card">
           <h2>로그인</h2>
           <p>작업공간 바로 가기</p>
-          <LoginForm />
+          <LoginForm isDemo={isDevelopmentDemo} />
           {isDevelopmentDemo ? (
             <p className="demo-note">
               개발 데모 계정: <strong>designer</strong> / <strong>specflow</strong>

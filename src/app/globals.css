@@ -254,6 +254,33 @@ textarea:focus-visible {
   line-height: 1.6;
 }
 
+.login-mode-badge {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 2px 8px;
+  background: #e8f4e8;
+  color: #2d7a2d;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+.login-setup-hint {
+  margin-top: 6px;
+  color: #849096;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.login-setup-hint code {
+  font-family: ui-monospace, monospace;
+  background: #f0f2f4;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
 .projects-page {
   min-height: 100vh;
   background: var(--surface-soft);
@@ -1395,12 +1422,13 @@ textarea:focus-visible {
   position: relative;
 }
 
-.export-menu:hover .export-dropdown {
-  display: flex;
+.export-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
 }
 
 .export-dropdown {
-  display: none;
   position: absolute;
   right: 0;
   top: calc(100% + 4px);

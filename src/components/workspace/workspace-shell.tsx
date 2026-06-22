@@ -104,6 +104,7 @@ export function WorkspaceShell({
   const [nameSaved, setNameSaved] = useState(false);
   const nameSavedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [notionDialog, setNotionDialog] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [notionPageId, setNotionPageId] = useState("");
   const [notionPending, setNotionPending] = useState(false);
   const [notionResult, setNotionResult] = useState<{ url: string } | null>(null);
@@ -122,6 +123,7 @@ export function WorkspaceShell({
   const [needsRecompile, setNeedsRecompile] = useState(project.needsRecompile ?? false);
   const [compileStep, setCompileStep] = useState<CompileStep>("idle");
   const [compileStartedAt, setCompileStartedAt] = useState<number | null>(null);
+  const [compileElapsed, setCompileElapsed] = useState(0);
   const [sourceOperationCount, setSourceOperationCount] = useState(0);
   const prevPositions = useRef<Record<string, { x: number; y: number }> | null>(null);
   const documentRef = useRef(document);
@@ -153,6 +155,12 @@ export function WorkspaceShell({
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [editing]);
+
+  useEffect(() => {
+    if (!compileStartedAt) return;
+    const id = setInterval(() => setCompileElapsed(Date.now() - compileStartedAt), 1000);
+    return () => { clearInterval(id); setCompileElapsed(0); };
+  }, [compileStartedAt]);
 
   useEffect(() => {
     const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
@@ -467,7 +475,7 @@ export function WorkspaceShell({
       setError("원문 저장이 끝난 뒤 다시 정리해 주세요.");
       return;
     }
-    if (!window.confirm("원문으로 처음부터 다시 정리할까요? 현재 문서는 저장됩니다.")) return;
+    if (!window.confirm("원문 변경사항을 반영해서 다시 정리할까요? 직접 수정한 답변과 작업은 유지해요.")) return;
     try {
       await queueDocumentSave(documentRef.current);
     } catch {
@@ -728,7 +736,7 @@ export function WorkspaceShell({
               {compileStep !== "idle" && compileStep !== "completed"
                 ? compileStepLabel[compileStep]
                 : note || `정리 완료 · 버전 ${revision}`}
-              {compileStartedAt && Date.now() - compileStartedAt > 10_000
+              {compileStartedAt && compileElapsed > 10_000
                 ? " 시간이 조금 걸리고 있어요."
                 : ""}
               {noteIsError && retryFn && (
@@ -748,51 +756,73 @@ export function WorkspaceShell({
               다시 정리하기
             </button>
             <div className="export-menu">
-              <button className="button">
+              <button
+                className="button"
+                aria-expanded={exportOpen}
+                aria-haspopup="true"
+                onClick={() => setExportOpen((v) => !v)}
+                onKeyDown={(e) => e.key === "Escape" && setExportOpen(false)}
+              >
                 <DownloadSimple size={17} />
                 내보내기
               </button>
-              <div className="export-dropdown">
-                <div className="export-group-label">Markdown</div>
-                {[
-                  ["full", "전체 명세"],
-                  ["screen-spec", "화면 정의서"],
-                  ["qa-checklist", "QA 체크리스트"],
-                  ["daily-report", "일일보고"],
-                ].map(([tmpl, label]) => (
-                  <a
-                    key={tmpl}
-                    className="export-option"
-                    href={`/api/projects/${project.id}/export?format=markdown&template=${tmpl}`}
-                  >
-                    {label}
-                  </a>
-                ))}
-                <div className="export-divider" />
-                <div className="export-group-label">데이터</div>
-                <a
-                  className="export-option"
-                  href={`/api/projects/${project.id}/export?format=json`}
-                >
-                  JSON (원본)
-                </a>
-                <div className="export-divider" />
-                <div className="export-group-label">연동</div>
-                <button
-                  className="export-option"
-                  type="button"
-                  onClick={() => { setNotionDialog(true); setNotionResult(null); }}
-                >
-                  Notion으로 내보내기
-                </button>
-                <button
-                  className="export-option"
-                  type="button"
-                  onClick={() => setView("figma")}
-                >
-                  Figma 매핑 확인
-                </button>
-              </div>
+              {exportOpen && (
+                <>
+                  <div
+                    className="export-overlay"
+                    onClick={() => setExportOpen(false)}
+                    onKeyDown={(e) => e.key === "Escape" && setExportOpen(false)}
+                    aria-hidden="true"
+                  />
+                  <div className="export-dropdown" role="menu">
+                    <div className="export-group-label">Markdown</div>
+                    {[
+                      ["full", "전체 명세"],
+                      ["screen-spec", "화면 정의서"],
+                      ["qa-checklist", "QA 체크리스트"],
+                      ["daily-report", "일일보고"],
+                    ].map(([tmpl, label]) => (
+                      <a
+                        key={tmpl}
+                        className="export-option"
+                        role="menuitem"
+                        href={`/api/projects/${project.id}/export?format=markdown&template=${tmpl}`}
+                        onClick={() => setExportOpen(false)}
+                      >
+                        {label}
+                      </a>
+                    ))}
+                    <div className="export-divider" />
+                    <div className="export-group-label">데이터</div>
+                    <a
+                      className="export-option"
+                      role="menuitem"
+                      href={`/api/projects/${project.id}/export?format=json`}
+                      onClick={() => setExportOpen(false)}
+                    >
+                      JSON (원본)
+                    </a>
+                    <div className="export-divider" />
+                    <div className="export-group-label">연동</div>
+                    <button
+                      className="export-option"
+                      type="button"
+                      role="menuitem"
+                      onClick={() => { setExportOpen(false); setNotionDialog(true); setNotionResult(null); }}
+                    >
+                      Notion으로 내보내기
+                    </button>
+                    <button
+                      className="export-option"
+                      type="button"
+                      role="menuitem"
+                      onClick={() => { setExportOpen(false); setView("figma"); }}
+                    >
+                      Figma 매핑 확인
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </header>

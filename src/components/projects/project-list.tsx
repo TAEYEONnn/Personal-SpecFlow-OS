@@ -66,6 +66,10 @@ export function ProjectList({ projects }: { projects: ProjectSummary[] }) {
             <div>
               <h2>첫 프로젝트를 만들어 볼까요?</h2>
               <p>회의록이나 요청 메모를 올리면 화면 구조와 요구사항으로 정리해 드려요.</p>
+              <Link className="button button-primary" href="/projects/new" style={{ marginTop: 16, display: "inline-flex" }}>
+                <Plus size={17} weight="bold" />
+                첫 프로젝트 만들기
+              </Link>
             </div>
           </div>
         )}

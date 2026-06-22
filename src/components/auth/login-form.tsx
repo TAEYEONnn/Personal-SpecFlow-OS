@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
-export function LoginForm() {
+export function LoginForm({ isDemo = false }: { isDemo?: boolean }) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -38,7 +38,7 @@ export function LoginForm() {
       });
       const data = await response.json();
       if (!response.ok) {
-        setError(data.error ?? "로그인하지 못했습니다.");
+        setError(data.error ?? "로그인하지 못했어요.");
         return;
       }
       router.push("/projects");
@@ -56,6 +56,9 @@ export function LoginForm() {
 
   return (
     <form className="login-form" onSubmit={handleSubmit} noValidate>
+      {isDemo && (
+        <p className="login-mode-badge" role="status">데모 모드</p>
+      )}
       <label className="field-label">
         아이디
         <input
@@ -80,9 +83,14 @@ export function LoginForm() {
         />
       </label>
       {error ? (
-        <p className="form-error" role="alert">
-          {error}
-        </p>
+        <>
+          <p className="form-error" role="alert">{error}</p>
+          {!isDemo && (
+            <p className="login-setup-hint">
+              계정이 없다면 터미널에서 <code>pnpm admin:create-user</code>로 먼저 만들어 주세요.
+            </p>
+          )}
+        </>
       ) : null}
       <button className="button button-primary" type="submit" disabled={pending}>
         {pending ? (
