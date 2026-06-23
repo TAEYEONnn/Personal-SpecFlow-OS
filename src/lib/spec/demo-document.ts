@@ -34,6 +34,7 @@ export const demoSpecDocument: SpecDocument = {
     scope: ["텍스트 입력", "AI 컴파일", "결과 검토", "Markdown/JSON 내보내기"],
     outOfScope: ["Figma 자동 생성", "팀 협업", "PDF/OCR"],
     constraints: ["개인 계정", "웹 우선", "한국어 기본"],
+    userEditedFields: [],
   },
   requirements: [
     {
@@ -240,6 +241,7 @@ export const demoSpecDocument: SpecDocument = {
     next: ["프로젝트 생성 흐름 정의", "컴파일 결과 검토 기준 작성"],
     blockers: ["세션 만료 시 편집 복구 정책 확인 필요"],
   },
+  suppressedTaskKeys: [],
   figmaMapping: {
     fileUrl: "",
     fileKey: null,

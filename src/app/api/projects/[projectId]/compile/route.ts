@@ -39,13 +39,14 @@ export async function POST(
     const compiledDocument = await compileSpecDocument(combined, {
       mode: isDevelopmentDemo ? "demo" : "live",
     });
-    const { document, stats } = mergeCompiledDocument(
-      project.document,
-      compiledDocument,
-    );
+    // Re-fetch latest state after AI compilation to pick up any user edits made during compilation.
+    const latestProject = await getProject(projectId).catch(() => null);
+    const baseDocument = latestProject?.document ?? project.document;
+    const baseRevision = latestProject?.revision ?? project.revision;
+    const { document, stats } = mergeCompiledDocument(baseDocument, compiledDocument);
     const revision = await saveProjectDocument(
       projectId,
-      project.revision,
+      baseRevision,
       document,
       run.id,
     );

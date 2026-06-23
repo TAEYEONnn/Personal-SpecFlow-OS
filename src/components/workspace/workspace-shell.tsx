@@ -82,6 +82,18 @@ const referenceNavItems = [
   { id: "runs", label: "활동 기록", icon: ClockCounterClockwise, countKey: "runs", description: "정리 실행 기록", alwaysShow: true },
 ] as const;
 
+function buildMergeNote(
+  merge: { added?: number; deduplicated?: number; preservedCompletedTasks?: number; preservedAnsweredQuestions?: number } | undefined,
+): string {
+  if (!merge) return "정리가 완료됐어요";
+  const parts: string[] = ["정리 완료"];
+  if ((merge.added ?? 0) > 0) parts.push(`새 항목 ${merge.added}개`);
+  if ((merge.deduplicated ?? 0) > 0) parts.push(`중복 ${merge.deduplicated}개 병합`);
+  if ((merge.preservedCompletedTasks ?? 0) > 0) parts.push(`완료 작업 ${merge.preservedCompletedTasks}개 유지`);
+  if ((merge.preservedAnsweredQuestions ?? 0) > 0) parts.push(`답변 ${merge.preservedAnsweredQuestions}개 유지`);
+  return parts.join(" · ");
+}
+
 export function WorkspaceShell({
   project,
   username,
@@ -296,7 +308,8 @@ export function WorkspaceShell({
 
   function handleBriefProblemChange(problem: string) {
     const current = documentRef.current;
-    const next = { ...current, brief: { ...current.brief, problem } };
+    const userEditedFields = [...new Set([...(current.brief.userEditedFields ?? []), "problem"])];
+    const next = { ...current, brief: { ...current.brief, problem, userEditedFields } };
     commitDocument(next);
   }
 
@@ -496,6 +509,7 @@ export function WorkspaceShell({
     recompilingRef.current = true;
     try {
       setCompileStep("reading-sources");
+      let capturedMerge: { added?: number; deduplicated?: number; preservedCompletedTasks?: number; preservedAnsweredQuestions?: number } | undefined;
       const result = await saveQueue.current!.runExclusive(async () => {
         setCompileStep("analyzing");
         const response = await fetch(`/api/projects/${project.id}/compile`, {
@@ -506,6 +520,7 @@ export function WorkspaceShell({
         if (!response.ok) {
           throw new Error(data.error ?? "정리하지 못했습니다.");
         }
+        capturedMerge = data.merge;
         return {
           revision: data.revision as number,
           value: data.document as SpecDocument,
@@ -518,7 +533,8 @@ export function WorkspaceShell({
       setRevision(result.revision);
       setSelectedId(compiledDocument.screens[0]?.id ?? "");
       setCompileStep("completed");
-      setNote("정리가 완료됐어요");
+      const mergeNote = buildMergeNote(capturedMerge);
+      setNote(mergeNote);
       setNoteIsError(false);
       setNeedsRecompile(
         sourceChangeVersionRef.current !== sourceVersionAtStart,
