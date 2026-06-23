@@ -1157,7 +1157,7 @@ textarea:focus-visible {
 .matrix-view {
   height: 100%;
   overflow: auto;
-  padding: 36px 40px 64px;
+  padding: 28px 36px 56px;
 }
 
 .document-view article {
@@ -1166,17 +1166,18 @@ textarea:focus-visible {
 }
 
 .document-view h1 {
-  margin: 0 0 10px;
-  font-size: 32px;
-  line-height: 1.25;
-  letter-spacing: -0.04em;
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 1.3;
+  letter-spacing: -0.035em;
 }
 
 .document-view h2,
 .matrix-view h2 {
-  margin: 38px 0 14px;
-  font-size: 20px;
+  margin: 30px 0 12px;
+  font-size: 18px;
   line-height: 1.4;
+  font-weight: 600;
 }
 
 .document-view p,
@@ -1193,7 +1194,72 @@ textarea:focus-visible {
 }
 
 .brief-block {
-  margin-top: 30px;
+  margin-top: 22px;
+}
+
+.brief-block-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.brief-block-header h2 {
+  margin: 0;
+}
+
+.brief-edit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  color: var(--ink-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.brief-block:hover .brief-edit-btn {
+  opacity: 1;
+}
+
+.brief-edit-btn:hover {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+
+.brief-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.brief-edit-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  font-family: inherit;
+  color: var(--ink);
+  background: #fff;
+}
+
+.brief-edit-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.brief-edit-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .question-callout {
@@ -2661,7 +2727,7 @@ textarea:focus-visible {
 }
 
 /* ── readable document structure ── */
-.section-heading { margin: 38px 0 14px !important; }
+.section-heading { margin: 28px 0 12px !important; }
 .section-heading > button {
   display: flex;
   width: 100%;

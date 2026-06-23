@@ -160,7 +160,7 @@ function QuestionCard({
             />
           </label>
           <label>
-            왜 확인해야 하나요?
+            배경
             <textarea
               className="field"
               value={context}
@@ -488,6 +488,7 @@ export function DocumentView({
   username = "designer",
   onToggleResolved,
   onQuestionUpdate,
+  onBriefProblemChange,
   onTaskCreate,
   onTaskUpdate,
   onTaskDelete,
@@ -498,6 +499,7 @@ export function DocumentView({
   username?: string;
   onToggleResolved?: (id: string) => void;
   onQuestionUpdate?: (id: string, patch: Partial<Question>) => void | Promise<void>;
+  onBriefProblemChange?: (problem: string) => void;
   onTaskCreate?: (task: Task) => void;
   onTaskUpdate?: (id: string, patch: Partial<Task>) => void;
   onTaskDelete?: (id: string) => void;
@@ -508,6 +510,8 @@ export function DocumentView({
   const [expandedRequirements, setExpandedRequirements] = useState<Set<string>>(new Set());
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [trashOpen, setTrashOpen] = useState(false);
+  const [problemEditing, setProblemEditing] = useState(false);
+  const [problemDraft, setProblemDraft] = useState(document.brief.problem);
 
   const requirementGroups = useMemo(() => {
     const groups = new Map<string, SpecDocument["requirements"]>();
@@ -572,10 +576,45 @@ export function DocumentView({
         <h1>{document.brief.title}</h1>
         <p className="document-lead">{document.brief.purpose}</p>
 
-        {document.brief.problem && (
+        {(document.brief.problem || problemEditing) && (
           <section className="brief-block">
-            <h2>해결할 문제</h2>
-            <p>{document.brief.problem}</p>
+            <div className="brief-block-header">
+              <h2>문제 배경</h2>
+              {onBriefProblemChange && !problemEditing && (
+                <button
+                  className="brief-edit-btn"
+                  aria-label="문제 배경 편집"
+                  onClick={() => { setProblemDraft(document.brief.problem); setProblemEditing(true); }}
+                >
+                  <PencilSimple size={13} />
+                </button>
+              )}
+            </div>
+            {problemEditing ? (
+              <div className="brief-edit-form">
+                <textarea
+                  className="brief-edit-textarea"
+                  value={problemDraft}
+                  onChange={(e) => setProblemDraft(e.target.value)}
+                  autoFocus
+                  rows={3}
+                />
+                <div className="brief-edit-actions">
+                  <button className="button" onClick={() => setProblemEditing(false)}>취소</button>
+                  <button
+                    className="button button-primary"
+                    onClick={() => {
+                      onBriefProblemChange?.(problemDraft.trim());
+                      setProblemEditing(false);
+                    }}
+                  >
+                    저장
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p>{document.brief.problem}</p>
+            )}
           </section>
         )}
 
@@ -659,7 +698,7 @@ export function DocumentView({
                 ))}
               </div>
             ) : (
-              <p className="section-empty">확인이 필요한 질문이 없어요. 원문이 충분히 구체적이에요.</p>
+              <p className="section-empty">확인할 질문이 없어요.</p>
             )
           )}
         </section>
@@ -667,7 +706,7 @@ export function DocumentView({
         <section>
           <SectionHeading
             id="section-states"
-            title="상태와 예외"
+            title="상태·예외"
             meta={document.states.length > 0 ? `${document.states.length}개` : ""}
             collapsed={!!collapsed.states}
             onToggle={() => toggleSection("states")}
@@ -703,7 +742,7 @@ export function DocumentView({
         <section>
           <SectionHeading
             id="section-permissions"
-            title="역할과 권한"
+            title="역할·권한"
             meta={document.roles.length > 0 ? `${document.roles.length}개 역할` : ""}
             collapsed={!!collapsed.permissions}
             onToggle={() => toggleSection("permissions")}

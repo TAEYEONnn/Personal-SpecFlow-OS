@@ -141,6 +141,13 @@ export function mergeCompiledDocument(
   return {
     document: {
       ...compiled,
+      brief: {
+        ...compiled.brief,
+        problem: previous.brief.problem || compiled.brief.problem,
+        successCriteria: previous.brief.successCriteria.length
+          ? previous.brief.successCriteria
+          : compiled.brief.successCriteria,
+      },
       requirements: compiled.requirements.map((requirement) => {
         const previousRequirement = previousRequirements.get(requirement.id);
         return previousRequirement

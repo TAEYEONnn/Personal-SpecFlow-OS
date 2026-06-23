@@ -294,6 +294,12 @@ export function WorkspaceShell({
     commitDocument(nextDoc);
   }
 
+  function handleBriefProblemChange(problem: string) {
+    const current = documentRef.current;
+    const next = { ...current, brief: { ...current.brief, problem } };
+    commitDocument(next);
+  }
+
   async function handleQuestionUpdate(id: string, patch: Partial<SpecQuestion>) {
     const current = documentRef.current;
     const next = {
@@ -409,14 +415,11 @@ export function WorkspaceShell({
     commitDocument(nextDoc);
   }
 
-  function handlePositionUpdate(screenId: string, pos: { x: number; y: number }) {
+  function handlePositionUpdate(id: string, pos: { x: number; y: number }, nodeType: "screen" | "state" = "screen") {
     const current = documentRef.current;
-    const nextDoc = {
-      ...current,
-      screens: current.screens.map((s) =>
-        s.id === screenId ? { ...s, position: pos } : s,
-      ),
-    };
+    const nextDoc = nodeType === "state"
+      ? { ...current, states: current.states.map((s) => s.id === id ? { ...s, position: pos } : s) }
+      : { ...current, screens: current.screens.map((s) => s.id === id ? { ...s, position: pos } : s) };
     commitDocument(nextDoc);
   }
 
@@ -718,7 +721,6 @@ export function WorkspaceShell({
 
         <header className="workspace-header">
           <div className="workspace-title">
-            <span>프로젝트</span>
             <strong>{projectName}</strong>
           </div>
           <div className="header-actions">
@@ -751,10 +753,12 @@ export function WorkspaceShell({
             <button className="button button--icon" onClick={() => setHelpOpen(true)} aria-label="도움말 (?)">
               <Question size={17} />
             </button>
-            <button className="button" disabled={pending || sourcePending} onClick={recompile}>
-              <ArrowClockwise size={17} />
-              다시 정리하기
-            </button>
+            {!needsRecompile && (
+              <button className="button" disabled={pending || sourcePending} onClick={recompile}>
+                <ArrowClockwise size={17} />
+                다시 정리하기
+              </button>
+            )}
             <div className="export-menu">
               <button
                 className="button"
@@ -897,6 +901,7 @@ export function WorkspaceShell({
               username={username}
               onToggleResolved={toggleQuestionResolved}
               onQuestionUpdate={handleQuestionUpdate}
+              onBriefProblemChange={handleBriefProblemChange}
               onTaskCreate={handleTaskCreate}
               onTaskUpdate={handleTaskUpdate}
               onTaskDelete={handleTaskDelete}

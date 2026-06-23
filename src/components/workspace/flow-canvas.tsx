@@ -46,7 +46,7 @@ export interface FlowCanvasProps {
   document: SpecDocument;
   selectedScreenId: string;
   onSelect: (id: string) => void;
-  onPositionUpdate?: (screenId: string, position: FlowPosition) => void;
+  onPositionUpdate?: (id: string, position: FlowPosition, nodeType: "screen" | "state") => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
   onRecompile?: () => void;
@@ -64,10 +64,10 @@ export function computeAutoLayout(
   graph.setDefaultEdgeLabel(() => ({}));
   graph.setGraph({
     rankdir: "LR",
-    nodesep: 56,
-    ranksep: 96,
-    marginx: 40,
-    marginy: 40,
+    nodesep: 80,
+    ranksep: 160,
+    marginx: 48,
+    marginy: 48,
     acyclicer: "greedy",
   });
 
@@ -232,8 +232,7 @@ function createFlowNodes(
         state.position ??
         statePosition(state, siblingIndex, document.screens),
       className: `state-node ${isPrimarySelectedState ? "selected" : ""}`,
-      draggable: false,
-      ariaLabel: `${state.name} 상태. 부모 화면에 따라 배치되어 직접 이동할 수 없습니다.`,
+      ariaLabel: `${state.name} 상태. 방향 버튼으로 위치를 이동할 수 있습니다.`,
       data: {
         screenId: state.screenId,
         nodeType: "state",
@@ -379,7 +378,7 @@ function FlowBoard({
           : node,
       ),
     );
-    onPositionUpdate?.(selectedScreenId, nextPosition);
+    onPositionUpdate?.(selectedScreenId, nextPosition, "screen");
   }
 
   return (
@@ -488,13 +487,11 @@ function FlowBoard({
           }}
           onNodeDragStop={(_, node) => {
             draggingRef.current = false;
-            if (node.data.nodeType === "screen") {
-              layoutPositionsRef.current = {
-                ...layoutPositionsRef.current,
-                [node.id]: node.position,
-              };
-              onPositionUpdate?.(node.id, node.position);
-            }
+            layoutPositionsRef.current = {
+              ...layoutPositionsRef.current,
+              [node.id]: node.position,
+            };
+            onPositionUpdate?.(node.id, node.position, node.data.nodeType);
           }}
           proOptions={{ hideAttribution: true }}
         />
