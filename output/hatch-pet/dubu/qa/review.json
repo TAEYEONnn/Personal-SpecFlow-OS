@@ -1,0 +1,962 @@
+{
+  "ok": true,
+  "frames_root": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames",
+  "errors": [],
+  "warnings": [],
+  "rows": [
+    {
+      "state": "idle",
+      "expected_frames": 6,
+      "actual_frames": 6,
+      "extraction_method": "components",
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "frames": [
+        {
+          "index": 0,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/idle/00.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 21438,
+          "bbox": [
+            15,
+            5,
+            177,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 44
+        },
+        {
+          "index": 1,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/idle/01.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 21016,
+          "bbox": [
+            16,
+            5,
+            176,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 42
+        },
+        {
+          "index": 2,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/idle/02.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 22715,
+          "bbox": [
+            11,
+            5,
+            180,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 49
+        },
+        {
+          "index": 3,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/idle/03.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 22142,
+          "bbox": [
+            13,
+            5,
+            179,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 52
+        },
+        {
+          "index": 4,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/idle/04.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 19621,
+          "bbox": [
+            17,
+            5,
+            174,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 28
+        },
+        {
+          "index": 5,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/idle/05.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 21159,
+          "bbox": [
+            19,
+            5,
+            173,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 52
+        }
+      ]
+    },
+    {
+      "state": "running-right",
+      "expected_frames": 8,
+      "actual_frames": 8,
+      "extraction_method": "components",
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "frames": [
+        {
+          "index": 0,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-right/00.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 12210,
+          "bbox": [
+            5,
+            39,
+            187,
+            168
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 58
+        },
+        {
+          "index": 1,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-right/01.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 13619,
+          "bbox": [
+            5,
+            39,
+            187,
+            169
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 45
+        },
+        {
+          "index": 2,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-right/02.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 14284,
+          "bbox": [
+            5,
+            29,
+            187,
+            178
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 61
+        },
+        {
+          "index": 3,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-right/03.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 12686,
+          "bbox": [
+            5,
+            43,
+            187,
+            165
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 62
+        },
+        {
+          "index": 4,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-right/04.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 12718,
+          "bbox": [
+            5,
+            46,
+            187,
+            161
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 74
+        },
+        {
+          "index": 5,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-right/05.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 14752,
+          "bbox": [
+            5,
+            27,
+            187,
+            180
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 77
+        },
+        {
+          "index": 6,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-right/06.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 13154,
+          "bbox": [
+            5,
+            41,
+            187,
+            166
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 76
+        },
+        {
+          "index": 7,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-right/07.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 13249,
+          "bbox": [
+            5,
+            36,
+            187,
+            172
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 82
+        }
+      ]
+    },
+    {
+      "state": "running-left",
+      "expected_frames": 8,
+      "actual_frames": 8,
+      "extraction_method": "components",
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "frames": [
+        {
+          "index": 0,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-left/00.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 15086,
+          "bbox": [
+            5,
+            34,
+            187,
+            173
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 100
+        },
+        {
+          "index": 1,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-left/01.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 14260,
+          "bbox": [
+            5,
+            37,
+            187,
+            170
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 89
+        },
+        {
+          "index": 2,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-left/02.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 11750,
+          "bbox": [
+            5,
+            50,
+            187,
+            157
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 80
+        },
+        {
+          "index": 3,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-left/03.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 12169,
+          "bbox": [
+            5,
+            45,
+            187,
+            162
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 89
+        },
+        {
+          "index": 4,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-left/04.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 14112,
+          "bbox": [
+            5,
+            34,
+            187,
+            174
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 93
+        },
+        {
+          "index": 5,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-left/05.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 13156,
+          "bbox": [
+            5,
+            42,
+            187,
+            165
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 72
+        },
+        {
+          "index": 6,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-left/06.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 14195,
+          "bbox": [
+            5,
+            37,
+            187,
+            171
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 90
+        },
+        {
+          "index": 7,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running-left/07.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 11314,
+          "bbox": [
+            5,
+            51,
+            187,
+            157
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 75
+        }
+      ]
+    },
+    {
+      "state": "waving",
+      "expected_frames": 4,
+      "actual_frames": 4,
+      "extraction_method": "components",
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "frames": [
+        {
+          "index": 0,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/waving/00.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 20481,
+          "bbox": [
+            19,
+            5,
+            172,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 30
+        },
+        {
+          "index": 1,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/waving/01.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 20594,
+          "bbox": [
+            7,
+            5,
+            184,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 36
+        },
+        {
+          "index": 2,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/waving/02.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 20498,
+          "bbox": [
+            18,
+            5,
+            173,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 21
+        },
+        {
+          "index": 3,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/waving/03.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 20031,
+          "bbox": [
+            22,
+            5,
+            170,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 25
+        }
+      ]
+    },
+    {
+      "state": "jumping",
+      "expected_frames": 5,
+      "actual_frames": 5,
+      "extraction_method": "components",
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "frames": [
+        {
+          "index": 0,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/jumping/00.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 17330,
+          "bbox": [
+            5,
+            32,
+            187,
+            176
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 40
+        },
+        {
+          "index": 1,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/jumping/01.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 21917,
+          "bbox": [
+            5,
+            10,
+            187,
+            198
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 62
+        },
+        {
+          "index": 2,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/jumping/02.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 21415,
+          "bbox": [
+            5,
+            15,
+            187,
+            193
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 56
+        },
+        {
+          "index": 3,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/jumping/03.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 18527,
+          "bbox": [
+            11,
+            5,
+            180,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 40
+        },
+        {
+          "index": 4,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/jumping/04.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 17451,
+          "bbox": [
+            5,
+            29,
+            187,
+            179
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 54
+        }
+      ]
+    },
+    {
+      "state": "failed",
+      "expected_frames": 8,
+      "actual_frames": 8,
+      "extraction_method": "components",
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "frames": [
+        {
+          "index": 0,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/failed/00.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 24880,
+          "bbox": [
+            8,
+            5,
+            183,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 83
+        },
+        {
+          "index": 1,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/failed/01.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 26006,
+          "bbox": [
+            6,
+            5,
+            185,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 73
+        },
+        {
+          "index": 2,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/failed/02.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 19719,
+          "bbox": [
+            5,
+            31,
+            187,
+            177
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 78
+        },
+        {
+          "index": 3,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/failed/03.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 17482,
+          "bbox": [
+            5,
+            37,
+            187,
+            170
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 71
+        },
+        {
+          "index": 4,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/failed/04.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 17825,
+          "bbox": [
+            5,
+            37,
+            187,
+            170
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 61
+        },
+        {
+          "index": 5,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/failed/05.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 16362,
+          "bbox": [
+            5,
+            41,
+            187,
+            167
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 73
+        },
+        {
+          "index": 6,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/failed/06.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 19415,
+          "bbox": [
+            5,
+            28,
+            187,
+            180
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 73
+        },
+        {
+          "index": 7,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/failed/07.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 25235,
+          "bbox": [
+            9,
+            5,
+            182,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 88
+        }
+      ]
+    },
+    {
+      "state": "waiting",
+      "expected_frames": 6,
+      "actual_frames": 6,
+      "extraction_method": "components",
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "frames": [
+        {
+          "index": 0,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/waiting/00.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 19218,
+          "bbox": [
+            27,
+            5,
+            164,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 42
+        },
+        {
+          "index": 1,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/waiting/01.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 17641,
+          "bbox": [
+            33,
+            5,
+            159,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 31
+        },
+        {
+          "index": 2,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/waiting/02.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 17204,
+          "bbox": [
+            21,
+            5,
+            171,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 36
+        },
+        {
+          "index": 3,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/waiting/03.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 14148,
+          "bbox": [
+            49,
+            5,
+            142,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 25
+        },
+        {
+          "index": 4,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/waiting/04.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 15919,
+          "bbox": [
+            36,
+            5,
+            156,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 53
+        },
+        {
+          "index": 5,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/waiting/05.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 17456,
+          "bbox": [
+            28,
+            5,
+            163,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 38
+        }
+      ]
+    },
+    {
+      "state": "running",
+      "expected_frames": 6,
+      "actual_frames": 6,
+      "extraction_method": "components",
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "frames": [
+        {
+          "index": 0,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running/00.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 23114,
+          "bbox": [
+            11,
+            5,
+            180,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 59
+        },
+        {
+          "index": 1,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running/01.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 17584,
+          "bbox": [
+            36,
+            5,
+            156,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 37
+        },
+        {
+          "index": 2,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running/02.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 22120,
+          "bbox": [
+            14,
+            5,
+            177,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 53
+        },
+        {
+          "index": 3,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running/03.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 26672,
+          "bbox": [
+            5,
+            8,
+            187,
+            200
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 73
+        },
+        {
+          "index": 4,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running/04.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 24167,
+          "bbox": [
+            20,
+            5,
+            171,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 54
+        },
+        {
+          "index": 5,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/running/05.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 21704,
+          "bbox": [
+            16,
+            5,
+            175,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 58
+        }
+      ]
+    },
+    {
+      "state": "review",
+      "expected_frames": 6,
+      "actual_frames": 6,
+      "extraction_method": "components",
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "frames": [
+        {
+          "index": 0,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/review/00.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 19833,
+          "bbox": [
+            5,
+            18,
+            187,
+            190
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 44
+        },
+        {
+          "index": 1,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/review/01.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 16424,
+          "bbox": [
+            37,
+            5,
+            154,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 23
+        },
+        {
+          "index": 2,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/review/02.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 17558,
+          "bbox": [
+            35,
+            5,
+            156,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 26
+        },
+        {
+          "index": 3,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/review/03.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 23901,
+          "bbox": [
+            22,
+            5,
+            170,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 28
+        },
+        {
+          "index": 4,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/review/04.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 17222,
+          "bbox": [
+            28,
+            5,
+            164,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 31
+        },
+        {
+          "index": 5,
+          "file": "/Users/taeyeon/Downloads/\u1100\u1162\u110b\u1175\u11ab\u110b\u1162\u11b8/Personal-SpecFlow-OS/output/hatch-pet/dubu/frames/review/05.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 20626,
+          "bbox": [
+            23,
+            5,
+            169,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 44
+        }
+      ]
+    }
+  ]
+}
