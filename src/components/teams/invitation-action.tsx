@@ -6,8 +6,8 @@ import { useState } from "react";
 type InvitationView = {
   id: string;
   token: string;
-  email: string;
-  username: string;
+  email: string | null;
+  username: string | null;
   status: "pending" | "accepted" | "rejected";
   role: "owner" | "admin" | "member";
   expiresAt: string;
@@ -85,7 +85,11 @@ export function InvitationAction({
       <>
         <h2>{invitation.teamName} 팀 초대</h2>
         <p>
-          <strong>{invitation.username}</strong> 아이디로 초대가 왔어요.
+          {invitation.username ? (
+            <><strong>{invitation.username}</strong> 아이디로 초대가 왔어요.</>
+          ) : (
+            <>초대 링크로 초대가 왔어요.</>
+          )}
           수락하려면 먼저 로그인해 주세요.
         </p>
         <Link
@@ -100,7 +104,7 @@ export function InvitationAction({
           href={`/signup?next=/invitations/${token}`}
           style={{ display: "block", marginTop: "8px", textAlign: "center" }}
         >
-          계정 만들고 수락하기
+          계정 만들고 바로 참여하기
         </Link>
       </>
     );
@@ -138,7 +142,11 @@ export function InvitationAction({
     <>
       <h2>{invitation.teamName} 팀 초대</h2>
       <p>
-        <strong>{invitation.username}</strong> 아이디로 초대가 왔어요.
+        {invitation.username ? (
+          <><strong>{invitation.username}</strong> 아이디로 초대가 왔어요.</>
+        ) : (
+          <>초대 링크로 초대가 왔어요.</>
+        )}
         팀에 합류하시겠어요?
       </p>
       {error && <p className="form-error">{error}</p>}

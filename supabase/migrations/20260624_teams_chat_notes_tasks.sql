@@ -54,6 +54,12 @@ create table if not exists public.team_invitations (
   created_at timestamptz not null default now()
 );
 
+alter table public.team_invitations
+  add column if not exists target_username text;
+
+alter table public.team_invitations
+  alter column email drop not null;
+
 create table if not exists public.chat_messages (
   id uuid primary key default gen_random_uuid(),
   team_id uuid not null references public.teams(id) on delete cascade,

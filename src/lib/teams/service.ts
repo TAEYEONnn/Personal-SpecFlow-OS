@@ -24,8 +24,8 @@ export type TeamMemberView = {
 export type InvitationView = {
   id: string;
   token: string;
-  email: string;
-  username: string;
+  email: string | null;
+  username: string | null;
   role: TeamRole;
   status: "pending" | "accepted" | "rejected";
   expiresAt: string;
@@ -278,39 +278,50 @@ export async function inviteMember(
   teamId: string,
   username: string,
   role: "admin" | "member" = "member",
-): Promise<{ token: string; email: string; username: string; expiresAt: string; id: string }> {
+): Promise<{ token: string; email: string | null; username: string | null; expiresAt: string; id: string }> {
   await assertManager(teamId, "팀 소유자 또는 관리자만 초대할 수 있습니다.");
   const auth = await requireAuthContext();
   const admin = createAdminClient();
+  const targetUsername = username.trim().toLowerCase() || null;
 
-  // Check if account exists
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("user_id, username, internal_email")
-    .eq("username", username)
-    .maybeSingle();
-  if (!profile)
-    throw new Error("등록된 계정이 없는 아이디예요. 먼저 가입을 안내해 주세요.");
+  const { data: profile } = targetUsername
+    ? await admin
+        .from("profiles")
+        .select("user_id, username, internal_email")
+        .eq("username", targetUsername)
+        .maybeSingle()
+    : { data: null };
 
-  // Already a member?
   const supabase = await createClient();
-  const { data: existing } = await supabase
-    .from("team_members")
-    .select("id")
-    .eq("team_id", teamId)
-    .eq("user_id", profile.user_id)
-    .maybeSingle();
-  if (existing) throw new Error("이미 팀 멤버인 사용자예요.");
+  if (profile) {
+    const { data: existing } = await supabase
+      .from("team_members")
+      .select("id")
+      .eq("team_id", teamId)
+      .eq("user_id", profile.user_id)
+      .maybeSingle();
+    if (existing) throw new Error("이미 팀 멤버인 사용자예요.");
+  }
 
-  // Pending invitation?
-  const { data: pending } = await supabase
-    .from("team_invitations")
-    .select("id")
-    .eq("team_id", teamId)
-    .eq("email", profile.internal_email)
-    .eq("status", "pending")
-    .maybeSingle();
-  if (pending) throw new Error("이미 초대가 발송됐습니다.");
+  if (profile) {
+    const { data: pending } = await supabase
+      .from("team_invitations")
+      .select("id")
+      .eq("team_id", teamId)
+      .eq("email", profile.internal_email)
+      .eq("status", "pending")
+      .maybeSingle();
+    if (pending) throw new Error("이미 초대가 발송됐습니다.");
+  } else if (targetUsername) {
+    const { data: pending } = await supabase
+      .from("team_invitations")
+      .select("id")
+      .eq("team_id", teamId)
+      .eq("target_username", targetUsername)
+      .eq("status", "pending")
+      .maybeSingle();
+    if (pending) throw new Error("이미 초대가 발송됐습니다.");
+  }
 
   const token = randomUUID();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -319,7 +330,8 @@ export async function inviteMember(
     .from("team_invitations")
     .insert({
       team_id: teamId,
-      email: profile.internal_email,
+      email: profile?.internal_email ?? null,
+      target_username: profile?.username ?? targetUsername,
       role,
       token,
       status: "pending",
@@ -330,7 +342,13 @@ export async function inviteMember(
     .single();
   if (error || !inv) throw new Error("초대 생성에 실패했습니다.");
 
-  return { token, email: profile.internal_email, username: profile.username, expiresAt, id: inv.id };
+  return {
+    token,
+    email: profile?.internal_email ?? null,
+    username: profile?.username ?? targetUsername,
+    expiresAt,
+    id: inv.id,
+  };
 }
 
 export async function cancelInvitation(invitationId: string): Promise<void> {
@@ -350,23 +368,25 @@ export async function getInvitation(token: string): Promise<InvitationView> {
   const admin = createAdminClient();
   const { data: inv } = await admin
     .from("team_invitations")
-    .select("id, token, email, role, status, expires_at, team_id, teams(name)")
+    .select("id, token, email, target_username, role, status, expires_at, team_id, teams(name)")
     .eq("token", token)
     .single();
   if (!inv) throw new Error("초대를 찾을 수 없습니다.");
 
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("username")
-    .eq("internal_email", inv.email)
-    .maybeSingle();
+  const { data: profile } = inv.email
+    ? await admin
+        .from("profiles")
+        .select("username")
+        .eq("internal_email", inv.email)
+        .maybeSingle()
+    : { data: null };
 
   const team = inv.teams as unknown as { name: string };
   return {
     id: inv.id,
     token: inv.token,
-    email: inv.email,
-    username: profile?.username ?? inv.email,
+    email: inv.email ?? null,
+    username: profile?.username ?? inv.target_username ?? null,
     role: inv.role as TeamRole,
     status: inv.status as "pending" | "accepted" | "rejected",
     expiresAt: inv.expires_at,
@@ -386,12 +406,15 @@ export async function acceptInvitation(
   const admin = createAdminClient();
   const { data: profile } = await admin
     .from("profiles")
-    .select("internal_email")
+    .select("internal_email, username")
     .eq("user_id", auth.userId)
     .maybeSingle();
 
-  if (profile?.internal_email?.toLowerCase() !== inv.email.toLowerCase()) {
-    throw new Error("초대받은 이메일로 로그인해 주세요.");
+  if (inv.email && profile?.internal_email?.toLowerCase() !== inv.email.toLowerCase()) {
+    throw new Error("초대받은 아이디로 로그인해 주세요.");
+  }
+  if (!inv.email && inv.username && profile?.username?.toLowerCase() !== inv.username.toLowerCase()) {
+    throw new Error("초대받은 아이디로 로그인해 주세요.");
   }
 
   await admin
@@ -425,12 +448,15 @@ export async function rejectInvitation(token: string): Promise<void> {
   const admin = createAdminClient();
   const { data: profile } = await admin
     .from("profiles")
-    .select("internal_email")
+    .select("internal_email, username")
     .eq("user_id", auth.userId)
     .maybeSingle();
 
-  if (profile?.internal_email?.toLowerCase() !== inv.email.toLowerCase()) {
-    throw new Error("초대받은 이메일로 로그인해 주세요.");
+  if (inv.email && profile?.internal_email?.toLowerCase() !== inv.email.toLowerCase()) {
+    throw new Error("초대받은 아이디로 로그인해 주세요.");
+  }
+  if (!inv.email && inv.username && profile?.username?.toLowerCase() !== inv.username.toLowerCase()) {
+    throw new Error("초대받은 아이디로 로그인해 주세요.");
   }
 
   await admin
@@ -469,19 +495,19 @@ export async function removeMember(
 export async function listPendingInvitations(
   teamId: string,
 ): Promise<
-  Array<{ id: string; email: string; username: string; role: TeamRole; token: string; expiresAt: string }>
+  Array<{ id: string; email: string | null; username: string | null; role: TeamRole; token: string; expiresAt: string }>
 > {
   await getTeam(teamId); // auth check
   const supabase = await createClient();
 
   const { data } = await supabase
     .from("team_invitations")
-    .select("id, email, role, token, expires_at")
+    .select("id, email, target_username, role, token, expires_at")
     .eq("team_id", teamId)
     .eq("status", "pending")
     .limit(100);
 
-  const emails = (data ?? []).map((inv) => inv.email);
+  const emails = (data ?? []).map((inv) => inv.email).filter(Boolean);
   const admin = createAdminClient();
   const { data: profiles } = emails.length
     ? await admin
@@ -495,8 +521,8 @@ export async function listPendingInvitations(
 
   return (data ?? []).map((inv) => ({
     id: inv.id,
-    email: inv.email,
-    username: usernameMap.get(inv.email) ?? inv.email,
+    email: inv.email ?? null,
+    username: inv.email ? (usernameMap.get(inv.email) ?? inv.target_username ?? null) : (inv.target_username ?? null),
     role: inv.role as TeamRole,
     token: inv.token,
     expiresAt: inv.expires_at,

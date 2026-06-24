@@ -35,6 +35,18 @@ export function SignupForm({ next }: { next?: string }) {
         return;
       }
       const redirectTo = next && next.startsWith("/") ? next : "/projects";
+      const invitationToken = redirectTo.match(/^\/invitations\/([^/?#]+)/)?.[1];
+      if (invitationToken) {
+        const acceptRes = await fetch(`/api/invitations/${invitationToken}/accept`, {
+          method: "POST",
+          credentials: "include",
+        });
+        if (acceptRes.ok) {
+          const acceptData = await acceptRes.json();
+          router.push(acceptData?.teamId ? `/teams/${acceptData.teamId}` : "/projects");
+          return;
+        }
+      }
       router.push(redirectTo);
     } catch {
       setError("네트워크 연결을 확인해 주세요.");

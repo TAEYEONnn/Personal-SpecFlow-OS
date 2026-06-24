@@ -14,8 +14,8 @@ type Member = {
 };
 type Invitation = {
   id: string;
-  email: string;
-  username: string;
+  email: string | null;
+  username: string | null;
   role: TeamRole;
   token: string;
   expiresAt: string;
@@ -115,7 +115,7 @@ export function TeamSettings({
 
   async function handleInvite(event: FormEvent) {
     event.preventDefault();
-    if (invitePending || !inviteUsername.trim()) return;
+    if (invitePending) return;
     setInviteError(""); setInviteLink(""); setInvitePending(true);
     try {
       const res = await fetch(`/api/teams/${teamId}/invitations`, {
@@ -130,7 +130,7 @@ export function TeamSettings({
       setInvitations((prev) => [...prev, {
         id: data.invitation.id ?? "",
         email: data.invitation.email ?? "",
-        username: data.invitation.username ?? inviteUsername.trim(),
+        username: data.invitation.username ?? (inviteUsername.trim() || null),
         role: inviteRole, token, expiresAt: data.invitation.expiresAt ?? "",
       }]);
     } catch { setInviteError("네트워크 연결을 확인해 주세요."); }
@@ -293,9 +293,9 @@ export function TeamSettings({
         <section className="team-section">
           <h2>팀원 초대</h2>
           <form className="invite-form" onSubmit={handleInvite}>
-            <input className="field" placeholder="초대할 아이디"
+            <input className="field" placeholder="아이디를 몰라도 비워두고 링크 생성"
               value={inviteUsername} onChange={(e) => setInviteUsername(e.target.value)}
-              disabled={invitePending} required />
+              disabled={invitePending} />
             <select className="field invite-role-select" value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value as "admin" | "member")}
               disabled={invitePending}>
@@ -328,7 +328,7 @@ export function TeamSettings({
           <ul className="member-list">
             {invitations.map((inv) => (
               <li key={inv.id} className="member-item">
-                <span className="member-email">{inv.username}</span>
+                <span className="member-email">{inv.username ?? "초대 링크"}</span>
                 <span className="member-role member-role--pending">대기 중</span>
                 <span className={`member-role member-role--${inv.role}`}>{roleLabel[inv.role]}</span>
                 {isManager && (

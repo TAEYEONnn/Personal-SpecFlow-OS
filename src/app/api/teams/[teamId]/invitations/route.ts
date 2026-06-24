@@ -4,7 +4,7 @@ import { apiError } from "@/lib/api/response";
 import { inviteMember, listPendingInvitations } from "@/lib/teams/service";
 
 const inviteSchema = z.object({
-  username: z.string().trim().min(3).max(32),
+  username: z.string().trim().max(32).optional(),
   role: z.enum(["admin", "member"]).default("member"),
 });
 
@@ -27,7 +27,7 @@ export async function POST(
   try {
     const { teamId } = await params;
     const body = inviteSchema.parse(await request.json());
-    const invitation = await inviteMember(teamId, body.username, body.role);
+    const invitation = await inviteMember(teamId, body.username ?? "", body.role);
     return NextResponse.json({ invitation }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
