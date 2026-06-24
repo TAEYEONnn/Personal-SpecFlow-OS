@@ -19,8 +19,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ team: await createTeam(body.name) }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "팀 이름을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json(
+        { error: "팀 이름을 확인해 주세요.", code: "TEAM_INVALID_NAME" },
+        { status: 422 },
+      );
     }
+    console.error("team_create_failed", {
+      event: "team_create_failed",
+      requestId: request.headers.get("x-vercel-id") ?? crypto.randomUUID(),
+      message: error instanceof Error ? error.message : "unknown",
+    });
     return apiError(error);
   }
 }

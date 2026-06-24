@@ -2,11 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { apiError } from "@/lib/api/response";
 import { getAuthContext, requireAuthContext } from "@/lib/auth/context";
-import { normalizeUsername, usernameSchema } from "@/lib/auth/username";
 import { createClient } from "@/lib/supabase/server";
 
 const updateProfileSchema = z.object({
-  displayName: z.string().transform(normalizeUsername).pipe(usernameSchema),
+  displayName: z.string().trim().max(80).nullable(),
 });
 
 export async function GET() {
@@ -19,7 +18,7 @@ export async function GET() {
     const supabase = await createClient();
     const { data: profile } = await supabase
       .from("profiles")
-      .select("user_id, username, internal_email")
+      .select("user_id, username, internal_email, display_name")
       .eq("user_id", auth.userId)
       .single();
 
@@ -27,6 +26,7 @@ export async function GET() {
       id: auth.userId,
       email: profile?.internal_email ?? "",
       username: auth.username,
+      displayName: profile?.display_name ?? profile?.username ?? "",
       role: "user",
     });
   } catch (error) {
@@ -40,12 +40,20 @@ export async function PATCH(request: Request) {
     const body = updateProfileSchema.parse(await request.json());
 
     const supabase = await createClient();
+    const displayName = body.displayName?.trim() || null;
     const { error } = await supabase
       .from("profiles")
-      .update({ username: body.displayName })
+      .update({ display_name: displayName })
       .eq("user_id", auth.userId);
 
-    if (error) throw new Error("프로필 업데이트에 실패했습니다.");
+    if (error) {
+      console.error("profile_update_failed", {
+        code: error.code,
+        table: "profiles",
+        operation: "update",
+      });
+      throw new Error("프로필 업데이트에 실패했습니다.");
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

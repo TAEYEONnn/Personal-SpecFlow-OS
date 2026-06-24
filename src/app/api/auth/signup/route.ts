@@ -104,6 +104,7 @@ export async function POST(request: Request) {
     user_id: createdUser.user.id,
     username,
     internal_email: email,
+    display_name: username,
   });
   if (profileError) {
     await admin.auth.admin.deleteUser(createdUser.user.id);

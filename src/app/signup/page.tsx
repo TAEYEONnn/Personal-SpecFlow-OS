@@ -1,10 +1,18 @@
+import { redirect } from "next/navigation";
 import { SignupForm } from "@/components/auth/signup-form";
+import { getAuthContext } from "@/lib/auth/context";
+import { isDevelopmentDemo } from "@/lib/env";
 
 export default async function SignupPage({
   searchParams,
 }: {
   searchParams: Promise<{ next?: string }>
 }) {
+  if (!isDevelopmentDemo) {
+    const auth = await getAuthContext();
+    if (auth) redirect("/projects");
+  }
+
   const { next } = await searchParams;
 
   return (

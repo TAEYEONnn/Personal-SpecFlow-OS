@@ -1,7 +1,14 @@
+import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
 import { isDevelopmentDemo } from "@/lib/env";
+import { getAuthContext } from "@/lib/auth/context";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  if (!isDevelopmentDemo) {
+    const auth = await getAuthContext();
+    if (auth) redirect("/projects");
+  }
+
   return (
     <main className="login-page">
       <section className="login-panel">

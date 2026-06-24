@@ -1,9 +1,8 @@
-import { WorkspaceHome } from '@/components/home/workspace-home'
-import { requireAuthContext } from '@/lib/auth/context'
-import { listProjects } from '@/lib/projects/service'
+import { redirect } from "next/navigation";
+import { getAuthContext } from "@/lib/auth/context";
 
 export default async function HomePage() {
-  const auth = await requireAuthContext()
-  const projects = await listProjects()
-  return <WorkspaceHome username={auth.username} projects={projects} />
+  const auth = await getAuthContext();
+  if (!auth) redirect("/login");
+  redirect("/projects");
 }

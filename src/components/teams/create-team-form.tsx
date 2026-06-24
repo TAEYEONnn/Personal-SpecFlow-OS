@@ -22,6 +22,7 @@ export function CreateTeamForm() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "팀을 만들지 못했어요."); return; }
+      window.localStorage.setItem("specflow-active-team-id", data.team.id);
       router.push(`/teams/${data.team.id}`);
     } catch {
       setError("네트워크 연결을 확인해 주세요.");

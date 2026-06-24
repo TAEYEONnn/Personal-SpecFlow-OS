@@ -62,18 +62,24 @@ export async function createTeam(name: string): Promise<TeamView> {
   const supabase = await createClient();
 
   const { data: team, error } = await supabase
-    .from("teams")
-    .insert({ name, owner_id: auth.userId })
-    .select()
+    .rpc("create_team_with_owner", { p_name: name })
     .single();
-  if (error || !team) throw new Error("팀 생성에 실패했습니다.");
+  if (error || !team) {
+    console.error("team_create_rpc_failed", {
+      code: error?.code,
+      operation: "create_team_with_owner",
+    });
+    throw new Error("팀을 만들지 못했어요.");
+  }
 
-  const admin = createAdminClient();
-  await admin
-    .from("team_members")
-    .insert({ team_id: team.id, user_id: auth.userId, role: "owner" });
+  const createdTeam = team as { id: string; name: string; owner_id: string };
 
-  return { id: team.id, name: team.name, ownerId: auth.userId, myRole: "owner" };
+  return {
+    id: createdTeam.id,
+    name: createdTeam.name,
+    ownerId: createdTeam.owner_id ?? auth.userId,
+    myRole: "owner",
+  };
 }
 
 export async function renameTeam(teamId: string, name: string): Promise<void> {

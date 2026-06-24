@@ -99,11 +99,9 @@ export function LoginForm({
       {error ? (
         <>
           <p className="form-error" role="alert">{error}</p>
-          {!isDemo && (
-            <p className="login-setup-hint">
-              계정이 없다면 터미널에서 <code>pnpm admin:create-user</code>로 먼저 만들어 주세요.
-            </p>
-          )}
+          <p className="login-setup-hint">
+            계정이 없다면 회원가입 후 다시 시도해 주세요.
+          </p>
         </>
       ) : null}
       <button className="button button-primary" type="submit" disabled={pending}>
@@ -122,6 +120,23 @@ export function LoginForm({
         style={{ visibility: slowIndicator ? "visible" : "hidden" }}
       >
         계정을 확인하고 있어요…
+      </p>
+      <p
+        className="login-signup-link"
+        style={{
+          textAlign: "center",
+          marginTop: "12px",
+          fontSize: "14px",
+          color: "var(--fg-muted)",
+        }}
+      >
+        계정이 없나요?{" "}
+        <a
+          href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"}
+          style={{ color: "var(--accent)" }}
+        >
+          회원가입
+        </a>
       </p>
     </form>
   );
