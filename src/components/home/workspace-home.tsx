@@ -76,10 +76,10 @@ export function WorkspaceHome({
   }, [activeTeam])
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
+    const timeout = window.setTimeout(() => {
       void load()
-    })
-    return () => window.cancelAnimationFrame(frame)
+    }, 0)
+    return () => window.clearTimeout(timeout)
   }, [load])
 
   useEffect(() => {

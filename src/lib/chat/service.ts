@@ -31,11 +31,14 @@ async function enrichAuthors(
   const admin = createAdminClient();
   const { data: profiles } = await admin
     .from("profiles")
-    .select("user_id, username, internal_email")
+    .select("user_id, username, display_name, internal_email")
     .in("user_id", userIds);
   const map = new Map<string, { email: string; name: string }>();
   for (const p of profiles ?? []) {
-    map.set(p.user_id, { email: p.internal_email, name: p.username });
+    map.set(p.user_id, {
+      email: p.internal_email,
+      name: p.display_name ?? p.username,
+    });
   }
   return map;
 }

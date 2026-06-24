@@ -44,11 +44,11 @@ export function ChatRoom() {
   }, [activeTeam])
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
+    const timeout = window.setTimeout(() => {
       latestId.current = null
       load().catch((reason) => setError(reason.message))
-    })
-    return () => window.cancelAnimationFrame(frame)
+    }, 0)
+    return () => window.clearTimeout(timeout)
   }, [load])
 
   useEffect(() => {
