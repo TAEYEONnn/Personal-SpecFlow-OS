@@ -5,6 +5,7 @@ import { createProject, listProjects } from "@/lib/projects/service";
 
 const createProjectSchema = z.object({
   name: z.string().trim().min(1).max(120),
+  teamId: z.string().uuid().nullable().optional(),
 });
 
 export async function GET() {
@@ -18,7 +19,10 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = createProjectSchema.parse(await request.json());
-    return NextResponse.json({ project: await createProject(body.name) }, { status: 201 });
+    return NextResponse.json(
+      { project: await createProject(body.name, body.teamId ?? null) },
+      { status: 201 },
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "프로젝트 이름을 확인해 주세요." }, { status: 422 });
