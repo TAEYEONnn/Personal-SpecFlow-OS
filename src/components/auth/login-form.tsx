@@ -1,9 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
-export function LoginForm({ isDemo = false }: { isDemo?: boolean }) {
+export function LoginForm({
+  isDemo = false,
+  next,
+}: {
+  isDemo?: boolean;
+  next?: string;
+}) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -34,14 +40,22 @@ export function LoginForm({ isDemo = false }: { isDemo?: boolean }) {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
+        credentials: "include",
+        body: JSON.stringify({ ...payload, ...(next ? { next } : {}) }),
       });
-      const data = await response.json();
+      const contentType = response.headers.get("content-type") ?? "";
+      const data = contentType.includes("application/json") ? await response.json() : null;
       if (!response.ok) {
-        setError(data.error ?? "로그인하지 못했어요.");
+        setError(data?.error ?? "로그인하지 못했어요.");
         return;
       }
-      router.push("/projects");
+      const redirectTo =
+        data?.redirectTo && String(data.redirectTo).startsWith("/")
+          ? data.redirectTo
+          : next && next.startsWith("/")
+            ? next
+            : "/projects";
+      router.push(redirectTo);
     } catch {
       setError("네트워크 연결을 확인해 주세요.");
     } finally {

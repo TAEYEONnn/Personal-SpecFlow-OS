@@ -14,6 +14,7 @@ import {
   updateDemoSource,
   type DemoRun,
 } from "@/lib/projects/demo-store";
+import { getMyTeamIds } from "@/lib/teams/service";
 import type { SpecDocument } from "@/lib/spec/schema";
 import { parseStoredSpecDocument } from "@/lib/spec/stored-document";
 import { createClient } from "@/lib/supabase/server";
@@ -34,6 +35,8 @@ export type ProjectView = {
   }>;
   runs: DemoRun[];
   updatedAt: string;
+  teamId?: string | null;
+  teamName?: string | null;
 };
 
 export async function listProjects() {
@@ -43,7 +46,7 @@ export async function listProjects() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("projects")
-    .select("id, name, revision, updated_at")
+    .select("id, name, revision, updated_at, team_id, teams(name)")
     .order("updated_at", { ascending: false });
   if (error) throw error;
   return data.map((row) => ({
@@ -55,18 +58,30 @@ export async function listProjects() {
     sources: [],
     runs: [],
     updatedAt: row.updated_at,
+    teamId: row.team_id ?? null,
+    teamName: Array.isArray(row.teams)
+      ? (row.teams[0]?.name ?? null)
+      : ((row.teams as { name?: string } | null)?.name ?? null),
   }));
 }
 
-export async function createProject(name: string) {
+async function assertTeamAccess(teamId: string) {
+  const teamIds = await getMyTeamIds();
+  if (!teamIds.includes(teamId)) {
+    throw new Error("팀 프로젝트를 만들 권한이 없습니다.");
+  }
+}
+
+export async function createProject(name: string, teamId?: string | null) {
   const auth = await requireAuthContext();
   if (auth.demo) return createDemoProject(name);
+  if (teamId) await assertTeamAccess(teamId);
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("projects")
-    .insert({ name, user_id: auth.userId })
-    .select("id, name, revision, updated_at")
+    .insert({ name, user_id: auth.userId, team_id: teamId ?? null })
+    .select("id, name, revision, updated_at, team_id")
     .single();
   if (error) throw error;
   return {
@@ -78,6 +93,8 @@ export async function createProject(name: string) {
     sources: [],
     runs: [],
     updatedAt: data.updated_at,
+    teamId: data.team_id ?? null,
+    teamName: null,
   };
 }
 
@@ -91,7 +108,7 @@ export async function getProject(
   const supabase = await createClient();
   const { data: project, error } = await supabase
     .from("projects")
-    .select("id, name, revision, needs_recompile, current_document_id, updated_at")
+    .select("id, name, revision, needs_recompile, current_document_id, updated_at, team_id, teams(name)")
     .eq("id", projectId)
     .maybeSingle();
   if (error) throw error;
@@ -151,6 +168,10 @@ export async function getProject(
       finishedAt: row.finished_at ?? undefined,
     })),
     updatedAt: project.updated_at,
+    teamId: project.team_id ?? null,
+    teamName: Array.isArray(project.teams)
+      ? (project.teams[0]?.name ?? null)
+      : ((project.teams as { name?: string } | null)?.name ?? null),
   };
 }
 
@@ -342,16 +363,28 @@ export async function updateSource(
   };
 }
 
-export async function renameProject(projectId: string, name: string) {
+export async function renameProject(
+  projectId: string,
+  update: string | { name?: string; teamId?: string | null },
+) {
   const auth = await requireAuthContext();
+  const patch = typeof update === "string" ? { name: update } : update;
   if (auth.demo) {
-    renameDemoProject(projectId, name);
+    if (patch.name) renameDemoProject(projectId, patch.name);
     return;
   }
+  if (patch.teamId) await assertTeamAccess(patch.teamId);
+
+  const updates: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+  if (patch.name !== undefined) updates.name = patch.name;
+  if ("teamId" in patch) updates.team_id = patch.teamId ?? null;
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("projects")
-    .update({ name, updated_at: new Date().toISOString() })
+    .update(updates)
     .eq("id", projectId)
     .eq("user_id", auth.userId);
   if (error) throw error;

@@ -7,6 +7,10 @@
 ## 주요 기능
 
 - 사용자명·비밀번호 로그인과 사용자별 프로젝트 격리
+- 이메일 기반 회원가입, 프로필 아이디 수정, 비밀번호 변경
+- 팀 생성, 멤버 초대, 역할 변경, 소유권 이전, 팀 나가기
+- 팀 채팅, 개인/팀 메모, 개인/팀 할 일 관리
+- 프로젝트를 팀에 연결하고 팀 작업공간에서 함께 확인
 - 텍스트 붙여넣기 및 TXT, Markdown, PDF 업로드
 - OpenAI Responses API와 Structured Outputs 기반 문서 생성
 - 원문 수정 후 재분석 안내와 저장 순서 충돌 방지
@@ -80,10 +84,15 @@ NOTION_CLIENT_SECRET=
 ## Supabase 설정
 
 1. Supabase 프로젝트를 만듭니다.
-2. SQL Editor에서 [`supabase/migrations/202606210001_initial.sql`](supabase/migrations/202606210001_initial.sql)을 실행합니다.
+2. SQL Editor에서 `supabase/migrations`의 SQL 파일을 파일명 순서대로 실행합니다.
+   - [`202606210001_initial.sql`](supabase/migrations/202606210001_initial.sql)
+   - [`202606210002_add_pdf_source_type.sql`](supabase/migrations/202606210002_add_pdf_source_type.sql)
+   - [`202606210003_add_indexes.sql`](supabase/migrations/202606210003_add_indexes.sql)
+   - [`202606220001_designops.sql`](supabase/migrations/202606220001_designops.sql)
+   - [`20260624_teams_chat_notes_tasks.sql`](supabase/migrations/20260624_teams_chat_notes_tasks.sql)
 3. Authentication에서 Email provider를 활성화합니다.
 4. `.env.local`에 Supabase URL과 키를 설정합니다.
-5. 초기 사용자를 생성합니다.
+5. 앱의 `/signup`에서 계정을 만들거나, 초기 사용자를 관리 명령으로 생성합니다.
 
 ```bash
 pnpm admin:create-user --username designer
@@ -126,6 +135,7 @@ Vercel 등 Node.js 호스팅 환경에 배포할 수 있습니다.
 
 - `.env`, `.env.local`, 개인 키, 토큰, 실제 사용자 데이터는 커밋하지 않습니다.
 - `.env.example`에는 변수 이름만 작성합니다.
+- Supabase URL, anon key, service role key, OpenAI 키, Notion secret은 README나 코드 예시에 실제 값으로 적지 않습니다.
 - 공개 전 `git status`와 Git 이력의 비밀키 패턴을 확인합니다.
 - 노출된 키는 파일을 지우는 것만으로 해결되지 않습니다. 즉시 폐기하고 새 키를 발급해야 합니다.
 - 테스트와 스크린샷에는 실제 이메일, 전화번호, 고객 문서 같은 개인정보를 사용하지 않습니다.

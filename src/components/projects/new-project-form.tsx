@@ -13,10 +13,13 @@ function sourceType(fileName: string): "pdf" | "md" | "txt" {
   return "txt";
 }
 
-export function NewProjectForm() {
+type Team = { id: string; name: string };
+
+export function NewProjectForm({ teams = [] }: { teams?: Team[] }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [name, setName] = useState("리디자인 프로젝트 (MVP)");
+  const [name, setName] = useState("새 프로젝트");
+  const [teamId, setTeamId] = useState("");
   const [content, setContent] = useState("");
   const [fileName, setFileName] = useState("");
   const [fileSize, setFileSize] = useState<number | undefined>();
@@ -57,32 +60,38 @@ export function NewProjectForm() {
       const projectResponse = await fetch("/api/projects", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, teamId: teamId || undefined }),
       });
       const projectData = await projectResponse.json();
       if (!projectResponse.ok) throw new Error(projectData.error);
       const projectId = projectData.project.id;
-      setStep("uploading");
-      const type = fileName ? sourceType(fileName) : "paste";
-      const sourceResponse = await fetch(`/api/projects/${projectId}/sources`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          name: fileName || "직접 입력",
-          type,
-          content,
-          fileSize,
-          isPdfBase64: isPdf,
-        }),
-      });
-      const sourceData = await sourceResponse.json();
-      if (!sourceResponse.ok) throw new Error(sourceData.error);
-      setStep("compiling");
-      const compileResponse = await fetch(`/api/projects/${projectId}/compile`, {
-        method: "POST",
-      });
-      const compileData = await compileResponse.json();
-      if (!compileResponse.ok) throw new Error(compileData.error);
+      const hasContent = isPdf || content.trim().length > 0;
+      if (hasContent) {
+        setStep("uploading");
+        const type = fileName ? sourceType(fileName) : "paste";
+        const sourceResponse = await fetch(`/api/projects/${projectId}/sources`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            name: fileName || "직접 입력",
+            type,
+            content,
+            fileSize,
+            isPdfBase64: isPdf,
+          }),
+        });
+        const sourceData = await sourceResponse.json();
+        if (!sourceResponse.ok) throw new Error(sourceData.error);
+        setStep("compiling");
+        const compileResponse = await fetch(`/api/projects/${projectId}/compile`, {
+          method: "POST",
+        });
+        if (!compileResponse.ok) {
+          // Source saved but compile failed -- redirect to project onboarding
+          router.push(`/projects/${projectId}`);
+          return;
+        }
+      }
       router.push(`/projects/${projectId}`);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "프로젝트를 만들지 못했어요.");
@@ -97,14 +106,29 @@ export function NewProjectForm() {
         프로젝트 이름
         <input className="field" value={name} maxLength={100} onChange={(event) => setName(event.target.value)} />
       </label>
+      {teams.length > 0 && (
+        <label className="field-label">
+          팀 (선택)
+          <select
+            className="field"
+            value={teamId}
+            onChange={(e) => setTeamId(e.target.value)}
+            disabled={step !== "idle"}
+          >
+            <option value="">개인 프로젝트</option>
+            {teams.map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+        </label>
+      )}
       <label className="field-label">
-        원문
+        원문 <span className="field-optional">(선택)</span>
         <textarea
           className="field source-textarea"
           value={isPdf ? "" : content}
           onChange={(event) => { setContent(event.target.value); setIsPdf(false); }}
-          placeholder="회의록, 요청 메모, 기획 내용을 붙여 넣어도 괜찮아요."
-          required={!isPdf}
+          placeholder="회의록, 요청 메모, 기획 내용을 붙여 넣어도 괜찮아요. 나중에 추가해도 돼요."
           disabled={isPdf}
         />
       </label>
@@ -134,12 +158,13 @@ export function NewProjectForm() {
       {error ? <p className="form-error">{error}</p> : null}
       <div className="form-actions">
         <Link className="button button-ghost" href="/projects">취소</Link>
-        <button className="button button-primary" disabled={step !== "idle" || (!content.trim() && !isPdf)}>
+        <button className="button button-primary" disabled={step !== "idle"}>
           <Sparkle size={18} weight="fill" />
           {step === "creating" ? "프로젝트 생성 중…"
            : step === "uploading" ? "원문 업로드 중…"
            : step === "compiling" ? "AI가 정리 중이에요…"
-           : "프로젝트 만들고 정리하기"}
+           : (isPdf || content.trim()) ? "프로젝트 만들고 정리하기"
+           : "프로젝트 만들기"}
         </button>
       </div>
     </form>

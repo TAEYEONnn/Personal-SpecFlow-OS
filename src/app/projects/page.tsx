@@ -1,20 +1,19 @@
 import { ProjectList } from "@/components/projects/project-list";
-import { LogoutButton } from "@/components/auth/logout-button";
 import { listProjects } from "@/lib/projects/service";
+import { listMyTeams } from "@/lib/teams/service";
 
 export default async function ProjectsPage() {
-  const projects = await listProjects();
+  const [projects, teams] = await Promise.all([
+    listProjects(),
+    listMyTeams().catch(() => []),
+  ]);
   return (
-    <main className="projects-page">
-      <header className="projects-header">
-        <div className="brand">
-          <span className="brand-mark" aria-hidden />
-          <span>SpecFlow OS</span>
-        </div>
-        <LogoutButton />
-      </header>
+    <main className="workspace-page">
       <section className="projects-main">
-        <ProjectList projects={projects} />
+        <ProjectList
+          projects={projects}
+          teams={teams.map((t) => ({ id: t.id, name: t.name }))}
+        />
       </section>
     </main>
   );

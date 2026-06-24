@@ -1,0 +1,4965 @@
+{
+  "brief": {
+    "title": "온앤오프 블렌디드/브랜디드 러닝 서비스 디자인 시안 및 제품 UX 명세 초안",
+    "purpose": "회의록과 리뷰 내용을 바탕으로 웹 우선의 제품·UX 디자인 범위, 핵심 화면, 역할, 미결정 사항, 후속 작업을 실행 가능한 명세 초안으로 정리합니다.",
+    "problem": "또한 모바일 기획 미확정, 반응형/적응형 기준 주요 설계 원칙은 존재하나 화면 범위와 세부 제약은 추가 확인이 필요하다.",
+    "successCriteria": [
+      "웹 우선의 핵심 보고용 화면 범위가 합의된다.",
+      "강사와 수강생을 동일 우선순위의 핵심 사용자로 반영한 화면 구조가 정리된다.",
+      "러닝 허브 방향성, 콘텐츠 탐색, VOD, 검색 요소의 반영 수준이 명확해진다.",
+      "모바일은 Proposal/Draft 성격으로 분리 관리되며 포함 범위가 결정된다.",
+      "반응형 기반 + 주요 화면 적응형 원칙이 화면별로 정리되고 개발 확인 항목이 도출된다.",
+      "웹/모바일 컴포넌트 분리 및 공통 토큰 공유 원칙이 디자인 시스템 작업 기준으로 문서화된다."
+    ],
+    "audience": [
+      "프로덕트 디자이너",
+      "기획자",
+      "프론트엔드 개발팀",
+      "의사결정자(대표/부사장/부장/과장)"
+    ],
+    "scope": [
+      "웹 우선 디자인 시안 범위 정리",
+      "강사 홈/대시보드",
+      "강사 마이클래스 및 과목/강의 목록",
+      "강의 자료 등록 콘텐츠 에디터",
+      "수강생 홈/콘텐츠 조회/강의 상세 열람",
+      "통합 검색 제안 화면",
+      "어드민 공지사항 및 배너 관리",
+      "모바일 제안형 축약안 방향",
+      "반응형+적응형 대응 원칙",
+      "디자인 시스템/컴포넌트 분리 방향"
+    ],
+    "outOfScope": [
+      "최종 확정된 모바일 정보구조",
+      "세부 개발 스펙 확정",
+      "영상 업로드 인코딩/용량 정책 확정",
+      "에디터 도구 최종 선정",
+      "정확한 일정/타임라인 확정",
+      "실시간 온라인 강의 상세 플로우 확정"
+    ],
+    "constraints": [
+      "원문 기준으로 확정되지 않은 내용은 질문 또는 가정으로 유지해야 함.",
+      "웹 먼저 진행한다.",
+      "모바일은 확정안이 아니라 Proposal 또는 Draft 상태로 관리한다.",
+      "AI 최초 생성 항목은 confirmed로 표시하지 않는다.",
+      "주요 사용자로 강사와 수강생을 동일 우선순위로 본다.",
+      "완료기한이 늘어나지 않는 상황에서 범위 확장 리스크가 존재한다."
+    ],
+    "userEditedFields": []
+  },
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "content": "디자인 시안은 웹 우선으로 진행해야 한다.",
+      "category": "process",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "오프라인 강의 이후 수강생이 복습할 수 있는 콘텐츠를 제공하는 서비스",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-STUDENT-HOME",
+        "SCR-STUDENT-CONTENT-DETAIL",
+        "SCR-TEACHER-CONTENT-EDITOR"
+      ]
+    },
+    {
+      "id": "REQ-002",
+      "content": "강사와 수강생은 동일한 우선순위의 핵심 사용자로 반영해야 한다.",
+      "category": "user-priority",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "이번 서비스에서는 **강사와 수강생의 우선순위가 동일**하다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-DASHBOARD",
+        "SCR-STUDENT-HOME",
+        "SCR-STUDENT-CONTENT-DETAIL"
+      ]
+    },
+    {
+      "id": "REQ-003",
+      "content": "서비스의 현재 출발점은 오프라인 강의 이후 복습 콘텐츠 제공이며, 강사는 자료를 업로드하고 수강생은 이를 조회·복습할 수 있어야 한다.",
+      "category": "product",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "이번 디자인 시안은 **웹 먼저 진행**한다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-LEARNING-HUB-HOME",
+        "SCR-STUDENT-HOME",
+        "SCR-STUDENT-CONTENT-DETAIL",
+        "SCR-TEACHER-DASHBOARD",
+        "SCR-TEACHER-CONTENT-EDITOR"
+      ]
+    },
+    {
+      "id": "REQ-004",
+      "content": "디자인 시안은 단순 LMS나 백오피스처럼 보이지 않도록 콘텐츠 탐색과 학습 진입이 자연스러운 러닝 허브 방향성을 고려해야 한다.",
+      "category": "ux-direction",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "모바일 화면은 현재 단계에서 확정 디자인으로 보기보다, 웹 구조를 기반으로 한 **제안형 축약안**으로 관리하는 것이 적절하다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-MOBILE-LEARNING-HUB-PROPOSAL",
+        "SCR-MOBILE-STUDENT-CONTENT-DETAIL-PROPOSAL",
+        "SCR-MOBILE-TEACHER-DASHBOARD-PROPOSAL",
+        "SCR-MOBILE-SEARCH-PROPOSAL"
+      ]
+    },
+    {
+      "id": "REQ-005",
+      "content": "웹 1차 필수 화면으로 Learning Hub Home, Student Content Feed/Home, Student Content Detail, Teacher Dashboard, Teacher Content Editor를 우선 제작해야 한다.",
+      "category": "screen-priority",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "장기적으로는 단순 복습 서비스가 아니라 코리아교육그룹의 다양한 교육 콘텐츠를 담을 수 있는 러닝 허브형 플랫폼으로 확장될 가능성이 있다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-LEARNING-HUB-HOME",
+        "SCR-STUDENT-HOME",
+        "SCR-UNIFIED-SEARCH"
+      ]
+    },
+    {
+      "id": "REQ-006",
+      "content": "모바일 화면은 확정 디자인이 아니라 웹 구조 기반의 제안형 축약안으로 관리해야 한다.",
+      "category": "mobile-strategy",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강사 홈은 일정, 해야 할 일, 콘텐츠 업로드 현황 등을 한 번에 확인할 수 있도록 설계함.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-DASHBOARD"
+      ]
+    },
+    {
+      "id": "REQ-007",
+      "content": "모바일은 수강생의 콘텐츠 소비 경험 중심으로 우선 검토하고, 강사 등록/관리 기능의 모바일 지원 범위는 별도 확인해야 한다.",
+      "category": "mobile-strategy",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "- 오늘 수업 일정 및 요약\n- 캘린더 및 참여도\n- 업로드가 필요한 강의\n- 주요 안내 배너\n- 강의 및 콘텐츠 현황",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-DASHBOARD"
+      ]
+    },
+    {
+      "id": "REQ-008",
+      "content": "강사 대시보드는 업로드 필요한 강의 수와 관리 경험을 전달해야 한다.",
+      "category": "functional",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "**메인 화면**: 배너, 공지사항(어드민 공지), 알림(업로드 미완료 강의 수 표시)",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-DASHBOARD"
+      ]
+    },
+    {
+      "id": "REQ-009",
+      "content": "업로드 필요한 강의 수는 강의일이 지났으나 자료가 미업로드된 강의 개수 기준으로 표시해야 한다.",
+      "category": "functional",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "업로드 필요 강의 수 = 강의일이 지났으나 자료 미업로드된 강의 개수",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-DASHBOARD",
+        "SCR-TEACHER-MYCLASS"
+      ]
+    },
+    {
+      "id": "REQ-010",
+      "content": "강사 마이클래스는 과목 리스트와 강의 리스트 두 가지 뷰를 제공해야 한다.",
+      "category": "functional",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "**마이클래스**: 과목 리스트와 강의 리스트 두 가지 뷰 제공",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-MYCLASS"
+      ]
+    },
+    {
+      "id": "REQ-011",
+      "content": "강의 상태는 완료, 미업로드 지연, 예정 상태를 시각적으로 구분해야 한다.",
+      "category": "functional",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강의 상태 색상 구분: 파란 점(완료), 빨간 점(미업로드 지연), 회색(예정)",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-MYCLASS",
+        "SCR-TEACHER-CALENDAR"
+      ]
+    },
+    {
+      "id": "REQ-012",
+      "content": "미래 강의는 수강생에게 공개되지 않으며 강의일 이후 공개되어야 한다.",
+      "category": "access-rule",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "미래 강의는 수강생에게 공개되지 않으며 강의일 이후 공개",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-STUDENT-HOME",
+        "SCR-STUDENT-CONTENT-DETAIL",
+        "SCR-TEACHER-MYCLASS"
+      ]
+    },
+    {
+      "id": "REQ-013",
+      "content": "강의 자료 등록 화면은 콘텐츠 블록 방식으로 구성해야 하며, 강의 주제와 등록일 등 필수 입력값을 포함해야 한다.",
+      "category": "functional",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "**과목 상세**: 수업 설명, 수업 공지(강사가 직접 등록), 수업 진행률, 강의 리스트 제공",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-COURSE-DETAIL"
+      ]
+    },
+    {
+      "id": "REQ-014",
+      "content": "강의 자료 등록 화면은 수업영상, 실습영상, 텍스트 박스(HTML 에디터), 참고자료(파일), FAQ 블록 추가를 지원해야 한다.",
+      "category": "functional",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "**강의 자료 등록**: 컨텐츠 블록 방식으로 구성",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-CONTENT-EDITOR"
+      ]
+    },
+    {
+      "id": "REQ-015",
+      "content": "강의 자료 등록 화면은 미리보기를 통해 수강생 화면을 확인할 수 있어야 한다.",
+      "category": "functional",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "- 강의 회차 입력\n- 영상 업로드\n- 텍스트·이미지·첨부파일 블록 추가\n- 블록 순서 변경\n- 게시하기\n- 게시 날짜 설정\n- 동일 유형 블록 중복 추가",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-CONTENT-EDITOR"
+      ]
+    },
+    {
+      "id": "REQ-016",
+      "content": "강의 자료 등록 화면은 단순 입력 화면이 아니라 강사가 부담 없이 콘텐츠를 등록할 수 있도록 접근성과 심미성을 함께 고려해야 한다.",
+      "category": "ux-direction",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "블록 유형: 수업영상, 실습영상, 텍스트 박스(HTML 에디터), 참고자료(파일), FAQ",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-CONTENT-EDITOR"
+      ]
+    },
+    {
+      "id": "REQ-017",
+      "content": "수강생 홈/피드 화면은 수강 중인 과목 확인, 새로 업로드된 복습 콘텐츠 확인, VOD 또는 콘텐츠 탐색, 검색을 통한 콘텐츠 접근을 지원해야 한다.",
+      "category": "functional",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "필수 입력값: 강의 주제, 등록일, 침대용(기타 항목)",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-CONTENT-EDITOR"
+      ]
+    },
+    {
+      "id": "REQ-018",
+      "content": "수강생 콘텐츠 상세 화면은 복습 콘텐츠 또는 VOD 소비 경험을 전달해야 한다.",
+      "category": "functional",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "미리보기 버튼으로 수강생 화면 팝업 확인 가능",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-CONTENT-EDITOR",
+        "SCR-STUDENT-CONTENT-DETAIL"
+      ]
+    },
+    {
+      "id": "REQ-019",
+      "content": "어드민은 최소화 원칙으로 공지사항 관리와 배너 관리 기능을 제공해야 한다.",
+      "category": "functional",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "- 콘텐츠 추가 방식은 우측 고정 드로어 구조를 우선 검토함.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-CONTENT-EDITOR"
+      ]
+    },
+    {
+      "id": "REQ-020",
+      "content": "어드민 공지사항은 대상, 게시 여부, 상단고정 여부 설정을 지원해야 한다.",
+      "category": "functional",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "- 전체 디자인 톤은 라이트 시안을 우선 검토함.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-DASHBOARD",
+        "SCR-TEACHER-CONTENT-EDITOR",
+        "SCR-LEARNING-HUB-HOME",
+        "SCR-STUDENT-HOME"
+      ]
+    },
+    {
+      "id": "REQ-021",
+      "content": "어드민 배너 관리는 대상별 배너 설정, 노출기간, 순서 변경을 지원해야 한다.",
+      "category": "functional",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "배너 영역을 더 크게 구성하는 방안도 검토할 필요가 있음.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-DASHBOARD",
+        "SCR-STUDENT-HOME",
+        "SCR-LEARNING-HUB-HOME"
+      ]
+    },
+    {
+      "id": "REQ-022",
+      "content": "반응형 정책은 기본으로 적용하되, 러닝 허브 홈·수강생 콘텐츠 피드·콘텐츠 상세·강사 대시보드 일부·공지/배너 기본 레이아웃에 우선 적용한다.",
+      "category": "responsive-policy",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "수강생이 강의, 강사, 학원, VOD 등을 한 번에 검색할 수 있는 탐색 화면을 제안함.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-UNIFIED-SEARCH"
+      ]
+    },
+    {
+      "id": "REQ-023",
+      "content": "적응형 패턴은 강의 자료 등록, 콘텐츠 블록 에디터, 검색/필터, 테이블/리스트 관리, 캘린더, 미리보기 패널, 업로드 플로우에 대해 고려해야 한다.",
+      "category": "adaptive-policy",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "통합 검색은 현재 기획서에 포함된 기능은 아니며, 플랫폼이 확장되는 상황을 가정하여 추가한 제안 화면임.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-UNIFIED-SEARCH"
+      ]
+    },
+    {
+      "id": "REQ-024",
+      "content": "디자인 시스템은 공통 토큰을 공유하고 웹과 모바일 컴포넌트를 분리 관리해야 한다.",
+      "category": "design-system",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "- 카테고리 필터\n- 강의 검색\n- 강사 검색\n- 학원 검색\n- VOD 검색\n- 다양한 콘텐츠 유형의 통합 탐색",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-UNIFIED-SEARCH"
+      ]
+    },
+    {
+      "id": "REQ-025",
+      "content": "같은 기능의 컴포넌트는 Web/Mobile 매핑표로 연결해야 한다.",
+      "category": "design-system",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "지원 가능한 콘텐츠 유형은 다음과 같음.\n- 영상\n- 텍스트\n- 이미지\n- 첨부파일\n- AI 요약\n- 학습 진행도\n- 북마크",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-STUDENT-CONTENT-DETAIL"
+      ]
+    },
+    {
+      "id": "REQ-026",
+      "content": "현재 시안 단계에서는 모든 컴포넌트를 완성하기보다 웹 우선 시안 제작에 필요한 최소 단위부터 만들어야 한다.",
+      "category": "design-system",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "재생 버튼은 일반적인 영상 서비스처럼 영상 중앙에 배치하는 것이 사용자에게 더 익숙함.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-STUDENT-CONTENT-DETAIL"
+      ]
+    },
+    {
+      "id": "REQ-027",
+      "content": "모바일 대응은 필수이지만, 이번 단계의 모바일 산출물 범위와 수준은 별도 확정이 필요하다.",
+      "category": "mobile-strategy",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강의 회차가 많아질 경우 스크롤 방식 또는 아코디언 방식으로 처리하는 방안을 검토함.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-STUDENT-CONTENT-DETAIL",
+        "SCR-TEACHER-COURSE-DETAIL"
+      ]
+    },
+    {
+      "id": "REQ-028",
+      "content": "수강생 화면은 강사 화면과 동일 레이아웃을 일부 재사용할 수 있으나, 역할과 핵심 행동 차이로 인해 실제 화면 설계 단계에서 재검토해야 한다.",
+      "category": "layout",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "동일한 레이아웃 안에서 콘텐츠와 우선순위를 변경하는 방식이 가능하다는 의견이 있었음.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-STUDENT-HOME",
+        "SCR-TEACHER-DASHBOARD"
+      ]
+    },
+    {
+      "id": "REQ-029",
+      "content": "모바일에서는 전체 편집 기능 대신 영상·사진·파일 업로드와 임시 저장 등 축소된 기능 범위를 우선 검토해야 한다.",
+      "category": "mobile",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "- 모바일: 영상·사진·파일 업로드, 임시 저장\n- PC: 블록 편집, 상세 구성, 최종 게시",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-MOBILE-TEACHER-DASHBOARD-PROPOSAL",
+        "SCR-MOBILE-STUDENT-CONTENT-DETAIL-PROPOSAL"
+      ]
+    },
+    {
+      "id": "REQ-030",
+      "content": "반응형 기반 + 주요 화면 적응형 방식을 기본 정책으로 검토해야 한다.",
+      "category": "responsive",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "**반응형 기반 + 주요 화면 적응형** 방식이 적절하다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-LEARNING-HUB-HOME",
+        "SCR-STUDENT-HOME",
+        "SCR-STUDENT-CONTENT-DETAIL",
+        "SCR-TEACHER-DASHBOARD",
+        "SCR-TEACHER-CONTENT-EDITOR",
+        "SCR-UNIFIED-SEARCH"
+      ]
+    },
+    {
+      "id": "REQ-031",
+      "content": "적응형 고려가 필요한 화면에는 강의 자료 등록, 콘텐츠 블록 에디터, 검색/필터, 테이블/리스트 관리, 캘린더, 미리보기 패널, 업로드 플로우가 포함된다.",
+      "category": "responsive",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "- 강의 자료 등록\n- 콘텐츠 블록 에디터\n- 검색 / 필터\n- 테이블 / 리스트 관리\n- 캘린더\n- 미리보기 패널\n- 업로드 플로우",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-TEACHER-CONTENT-EDITOR",
+        "SCR-UNIFIED-SEARCH",
+        "SCR-TEACHER-CALENDAR"
+      ]
+    },
+    {
+      "id": "REQ-032",
+      "content": "어드민은 최소화 원칙으로 사이트 관리(공지사항)와 배너 관리 두 메뉴를 우선 제공해야 한다.",
+      "category": "admin",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "최소화 원칙으로 **두 가지 메뉴만** 제공: 사이트 관리(공지사항), 배너 관리",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-ADMIN-NOTICE-MANAGEMENT",
+        "SCR-ADMIN-BANNER-MANAGEMENT"
+      ]
+    },
+    {
+      "id": "REQ-033",
+      "content": "공지사항 관리에서는 대상, 게시 여부, 상단고정 여부를 설정할 수 있어야 한다.",
+      "category": "admin",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "**공지사항**: 대상(수강생/강사/전체), 게시 여부, 상단보정 여부 설정 가능",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-ADMIN-NOTICE-MANAGEMENT"
+      ]
+    },
+    {
+      "id": "REQ-034",
+      "content": "배너 관리에서는 대상별 배너, 노출기간, 순서 변경을 설정할 수 있어야 한다.",
+      "category": "admin",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "**배너 관리**: 대상별(수강생용/강사용) 배너 설정, 노출기간 및 순서 변경 가능",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-ADMIN-BANNER-MANAGEMENT"
+      ]
+    },
+    {
+      "id": "REQ-035",
+      "content": "웹과 모바일 컴포넌트는 분리하여 관리하되 공통 토큰은 공유하는 방향을 검토해야 한다.",
+      "category": "design-system",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "- 공통 토큰은 공유한다.\n- 웹과 모바일 컴포넌트는 분리한다.",
+        "rationale": null
+      },
+      "affectedScreenIds": []
+    },
+    {
+      "id": "REQ-036",
+      "content": "보고용 시안은 현재 기획서 기준인지, 근미래 러닝 허브 방향까지 포함할지 범위를 확정해야 한다.",
+      "category": "scope",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "이번 보고용 시안이 “현재 기획서를 디자인하는 것인지”, 아니면 “근미래 러닝 허브 플랫폼 방향까지 디자인하는 것인지” 범위 확정이 필요하다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-LEARNING-HUB-HOME",
+        "SCR-UNIFIED-SEARCH",
+        "SCR-STUDENT-HOME",
+        "SCR-TEACHER-DASHBOARD"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "Q-001",
+      "question": "이번 보고용 시안 범위는 현재 기획서 중심인가요, 아니면 근미래 러닝 허브 방향까지 포함하나요?",
+      "priority": "blocking",
+      "context": "보고용 화면 수, 검색/VOD/피드 포함 여부, 전체 작업량에 직접 영향을 줍니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "이번 보고용 시안이 “현재 기획서를 디자인하는 것인지”, 아니면 “근미래 러닝 허브 플랫폼 방향까지 디자인하는 것인지” 범위 확정이 필요하다.",
+        "rationale": null
+      },
+      "resolved": true,
+      "answer": "런닝 허브 방향까지 포함",
+      "answeredAt": "2026-06-23T02:26:14.822Z",
+      "answeredBy": "bis08"
+    },
+    {
+      "id": "Q-002",
+      "question": "통합 검색, VOD, 피드형 구조를 이번 보고용 시안에 실제 화면으로 포함할까요, 아니면 확장 제안으로만 설명할까요?",
+      "priority": "should-decide",
+      "context": "확정 기능과 제안 기능의 구분이 필요하며, 대표 보고 메시지와 디자인 범위가 달라집니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "VOD / 검색 / 피드 기능을 실제 화면으로 포함할지",
+        "rationale": null
+      },
+      "resolved": true,
+      "answer": "확장제안으로 설명하기",
+      "answeredAt": "2026-06-23T02:53:22.002Z",
+      "answeredBy": "bis08"
+    },
+    {
+      "id": "Q-003",
+      "question": "강의 자료 등록 필수 입력값의 '침대용'은 정확히 어떤 항목을 의미하나요?",
+      "priority": "blocking",
+      "context": "에디터 폼 구조와 검증 규칙 정의에 필요합니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "필수 입력값: 강의 주제, 등록일, 침대용(기타 항목)",
+        "rationale": null
+      },
+      "resolved": true,
+      "answer": "오타",
+      "answeredAt": "2026-06-23T02:53:32.010Z",
+      "answeredBy": "bis08"
+    },
+    {
+      "id": "Q-004",
+      "question": "모바일에서 강사 기능은 어디까지 지원하나요? 업로드/임시저장만인지, 일부 편집까지 포함하는지 확정이 필요합니다.",
+      "priority": "should-decide",
+      "context": "모바일 제안형 화면의 범위와 적응형 플로우 정의에 필요합니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "모바일 편집 범위는 향후 기획 단계에서 별도로 결정하기로 함.",
+        "rationale": null
+      },
+      "resolved": true,
+      "answer": "일단 업로드까지",
+      "answeredAt": "2026-06-23T02:53:58.715Z",
+      "answeredBy": "bis08"
+    },
+    {
+      "id": "Q-005",
+      "question": "어드민 화면은 이번 보고용 1차 범위에서 제외 가능한가요?",
+      "priority": "should-decide",
+      "context": "우선순위가 낮다고 언급되었으나 최소 운영 기능 화면 필요 여부가 남아 있습니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Admin / Notice Management | 이번 보고용에서는 우선순위 낮음",
+        "rationale": null
+      },
+      "resolved": true,
+      "answer": "네",
+      "answeredAt": "2026-06-23T02:54:02.466Z",
+      "answeredBy": "bis08"
+    },
+    {
+      "id": "Q-006",
+      "question": "에디터 블록 추가 방식은 최종적으로 플로팅 버튼과 우측 고정 드로어 중 무엇을 선택하나요?",
+      "priority": "should-decide",
+      "context": "현재 우측 고정 드로어 우선 검토 상태이며 최종 인터랙션 결정이 필요합니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "플로팅 방식과 고정 드로어 방식의 장단점을 정리한 후 최종 적용 방식을 결정함.",
+        "rationale": null
+      },
+      "resolved": true,
+      "answer": "제외 가능",
+      "answeredAt": "2026-06-23T02:46:21.322Z",
+      "answeredBy": "bis08"
+    },
+    {
+      "id": "Q-007",
+      "question": "에디터 도구는 어떤 제품 또는 구현 방식으로 선택할까요?",
+      "priority": "assumable",
+      "context": "HTML 텍스트 박스와 블록 편집 구현 난이도, 비용, 커스터마이징 범위에 영향을 줍니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "에디터 도구 선정 필요 (무료 옵션 포함 검토 중)",
+        "rationale": null
+      },
+      "resolved": false,
+      "answer": null,
+      "answeredAt": null,
+      "answeredBy": null
+    },
+    {
+      "id": "Q-008",
+      "question": "반응형 기반 + 주요 화면 적응형 구조를 개발팀이 허용할 수 있나요?",
+      "priority": "should-decide",
+      "context": "디자인 시안과 구현 구조의 차이를 줄이기 위해 개발 확인이 필요합니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "기본 반응형 + 주요 화면 적응형 방식이 가능한지",
+        "rationale": null
+      },
+      "resolved": false,
+      "answer": null,
+      "answeredAt": null,
+      "answeredBy": null
+    },
+    {
+      "id": "q-1",
+      "question": "이번 보고용 시안은 현재 기획서 기준으로만 디자인하나요, 아니면 근미래 러닝 허브 방향까지 포함하나요?",
+      "priority": "blocking",
+      "context": "전체 화면 범위, 홈 구조, 탐색 기능, 작업량에 직접 영향을 준다.\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "이번 보고용 시안이 “현재 기획서를 디자인하는 것인지”, 아니면 “근미래 러닝 허브 플랫폼 방향까지 디자인하는 것인지” 범위 확정이 필요하다.",
+        "rationale": null
+      },
+      "resolved": true,
+      "answer": "런닝 허브 방향까지 포함",
+      "answeredAt": "2026-06-23T02:26:14.822Z",
+      "answeredBy": "bis08"
+    },
+    {
+      "id": "q-2",
+      "question": "VOD, 검색, 피드형 구조를 이번 보고용 시안에 실제 화면으로 포함하나요, 포함한다면 몇 장까지 제작하나요?",
+      "priority": "blocking",
+      "context": "러닝 허브 방향을 실제 산출물로 어느 정도 보여줄지 결정해야 화면 우선순위와 일정이 정리된다.\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "- VOD / 검색 / 피드형 구조를 이번 보고용 시안에 포함할 것인가?\n- 포함한다면 실제 화면으로 몇 장까지 만들 것인가?",
+        "rationale": null
+      },
+      "resolved": true,
+      "answer": "듀듀다닫",
+      "answeredAt": "2026-06-22T07:06:19.898Z",
+      "answeredBy": "bis08"
+    },
+    {
+      "id": "q-3",
+      "question": "모바일은 이번 보고에 어디까지 포함하나요? 제안형 축약안 수준인지, 보고 제외 후 추후 별도 진행인지 결정이 필요합니다.",
+      "priority": "should-decide",
+      "context": "모바일 산출물의 기대 수준과 디자인 시스템 분기 범위에 영향을 준다.\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "- 이번 보고에 모바일을 포함할지\n- 포함한다면 제안형 축약안 수준으로 둘지\n- 모바일 기획 확정 후 별도 진행할지",
+        "rationale": null
+      },
+      "resolved": true,
+      "answer": "모바일 포함",
+      "answeredAt": "2026-06-22T07:55:09.306Z",
+      "answeredBy": "bis08"
+    },
+    {
+      "id": "q-4",
+      "question": "강사와 수강생 화면 비중을 보고용 시안에서 어떻게 가져가나요?",
+      "priority": "should-decide",
+      "context": "동일 우선순위 원칙은 있으나 실제 화면 수와 강조 수준은 미정이다.\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "- 강사와 수강생 화면 비중을 어떻게 가져갈 것인가?",
+        "rationale": null
+      },
+      "resolved": true,
+      "answer": "제외",
+      "answeredAt": "2026-06-23T02:23:43.271Z",
+      "answeredBy": "bis08"
+    },
+    {
+      "id": "q-5",
+      "question": "어드민 화면은 이번 보고용 범위에서 제외해도 되나요, 아니면 최소 수준으로 포함해야 하나요?",
+      "priority": "should-decide",
+      "context": "어드민은 우선순위가 낮다고 명시되지만 완전 제외 여부는 미정이다.\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "- 어드민 화면은 이번 보고용 범위에서 제외해도 되는가?",
+        "rationale": null
+      },
+      "resolved": true,
+      "answer": "제외 가능",
+      "answeredAt": "2026-06-23T02:46:21.322Z",
+      "answeredBy": "bis08"
+    },
+    {
+      "id": "q-6",
+      "question": "강의 자료 등록 화면의 필수 입력값으로 적힌 '침대용(기타 항목)'의 정확한 의미와 실제 필드명은 무엇인가요?",
+      "priority": "blocking",
+      "context": "핵심 입력 화면의 정보 구조와 검증 규칙에 직접 영향을 준다.\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "필수 입력값: 강의 주제, 등록일, 침대용(기타 항목)",
+        "rationale": "원문 표현이 오기 또는 받아쓰기 오류일 가능성이 있어 그대로 확정할 수 없다."
+      },
+      "resolved": true,
+      "answer": "확인완료",
+      "answeredAt": "2026-06-22T07:56:03.865Z",
+      "answeredBy": "bis08"
+    }
+  ],
+  "roles": [
+    {
+      "id": "ROLE-TEACHER",
+      "name": "강사",
+      "description": "오프라인 수업 이후 복습 콘텐츠를 등록, 관리, 업로드하는 핵심 사용자입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강사 | 콘텐츠 등록 / 관리 / 업로드 | 강의 자료 등록, 콘텐츠 블록 작성, 업로드 상태 관리, 강의 관리",
+        "rationale": null
+      }
+    },
+    {
+      "id": "ROLE-STUDENT",
+      "name": "수강생",
+      "description": "업로드된 강의 자료와 복습 콘텐츠를 조회, 복습, 탐색하는 핵심 사용자입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "수강생 | 콘텐츠 조회 / 복습 / 탐색 | 강의 자료 확인, 복습 콘텐츠 조회, 콘텐츠 검색, VOD 탐색",
+        "rationale": null
+      }
+    },
+    {
+      "id": "ROLE-ADMIN",
+      "name": "어드민",
+      "description": "공지사항과 배너 등 기본 운영 기능을 관리하는 운영 사용자입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "어드민 | 서비스 운영 관리 | 공지사항 관리, 배너 관리, 노출 대상 설정",
+        "rationale": null
+      }
+    }
+  ],
+  "permissions": [
+    {
+      "id": "PERM-001",
+      "roleId": "ROLE-TEACHER",
+      "capability": "강의 자료 등록 및 수정",
+      "allowed": true,
+      "note": "강사는 콘텐츠 블록 기반으로 강의 자료를 등록하고 수정합니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강의 자료 등록, 콘텐츠 블록 작성, 업로드 상태 관리",
+        "rationale": null
+      }
+    },
+    {
+      "id": "PERM-002",
+      "roleId": "ROLE-TEACHER",
+      "capability": "업로드 필요 강의 확인",
+      "allowed": true,
+      "note": "강의일이 지났으나 자료 미업로드된 강의를 확인합니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "업로드 필요한 강의 확인",
+        "rationale": null
+      }
+    },
+    {
+      "id": "PERM-003",
+      "roleId": "ROLE-TEACHER",
+      "capability": "수강생 화면 미리보기",
+      "allowed": true,
+      "note": "등록 화면에서 수강생 노출 결과를 확인합니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "미리보기를 통한 수강생 화면 확인",
+        "rationale": null
+      }
+    },
+    {
+      "id": "PERM-004",
+      "roleId": "ROLE-STUDENT",
+      "capability": "강의 자료 조회 및 복습",
+      "allowed": true,
+      "note": "수강생은 콘텐츠를 등록하지 않고 조회합니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "수강생은 직접 콘텐츠를 등록하지 않고, 제공된 강의 자료와 복습 콘텐츠를 조회하는 역할이다.",
+        "rationale": null
+      }
+    },
+    {
+      "id": "PERM-005",
+      "roleId": "ROLE-STUDENT",
+      "capability": "콘텐츠 검색 및 탐색",
+      "allowed": true,
+      "note": "검색을 통해 콘텐츠 접근, VOD 탐색이 가능합니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "검색을 통한 콘텐츠 접근",
+        "rationale": null
+      }
+    },
+    {
+      "id": "PERM-006",
+      "roleId": "ROLE-ADMIN",
+      "capability": "공지사항 관리",
+      "allowed": true,
+      "note": "대상, 게시 여부, 상단고정 여부 설정 포함",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "공지사항 관리, 노출 대상 설정",
+        "rationale": null
+      }
+    },
+    {
+      "id": "PERM-007",
+      "roleId": "ROLE-ADMIN",
+      "capability": "배너 관리",
+      "allowed": true,
+      "note": "대상별 배너, 노출기간, 순서 변경 포함",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "배너 관리",
+        "rationale": null
+      }
+    },
+    {
+      "id": "PERM-008",
+      "roleId": "ROLE-STUDENT",
+      "capability": "미래 강의 자료 열람",
+      "allowed": false,
+      "note": "미래 강의는 강의일 이후 공개됩니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "미래 강의는 수강생에게 공개되지 않으며 강의일 이후 공개",
+        "rationale": null
+      }
+    }
+  ],
+  "screens": [
+    {
+      "id": "SCR-LEARNING-HUB-HOME",
+      "name": "웹 러닝 허브 홈",
+      "description": "서비스의 전체 방향성과 러닝 허브 인상을 전달하는 웹 우선 홈 화면입니다.",
+      "entryConditions": [
+        "보고용 웹 시안 범위에 러닝 허브 방향을 포함하기로 한 경우"
+      ],
+      "primaryActions": [
+        "콘텐츠 섹션 탐색",
+        "배너 확인",
+        "검색 진입"
+      ],
+      "requiredData": [
+        "주요 배너",
+        "콘텐츠 섹션 목록",
+        "탐색 구조",
+        "검색 진입점"
+      ],
+      "nextScreenIds": [
+        "SCR-STUDENT-HOME",
+        "SCR-UNIFIED-SEARCH",
+        "SCR-STUDENT-CONTENT-DETAIL"
+      ],
+      "cta": "콘텐츠 둘러보기",
+      "qaCriteria": [
+        "러닝 허브형 인상이 전달되어야 합니다.",
+        "단순 백오피스처럼 보이지 않아야 합니다.",
+        "웹 우선 구조로 정보가 정리되어야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Web / Learning Hub Home | 서비스의 전체 방향성과 러닝 허브 인상 전달",
+        "rationale": null
+      },
+      "position": {
+        "x": 388,
+        "y": 48
+      }
+    },
+    {
+      "id": "SCR-STUDENT-HOME",
+      "name": "수강생 홈/콘텐츠 피드",
+      "description": "수강생이 수강 중인 과목, 새로 업로드된 복습 콘텐츠, 알림, 배너 등을 확인하는 화면입니다.",
+      "entryConditions": [
+        "수강생으로 로그인함"
+      ],
+      "primaryActions": [
+        "수강 중 과목 확인",
+        "새로 업로드된 콘텐츠 확인",
+        "복습 시작",
+        "검색 진입"
+      ],
+      "requiredData": [
+        "수강 과목 목록",
+        "강의 리스트",
+        "업로드 알림",
+        "배너",
+        "공지사항"
+      ],
+      "nextScreenIds": [
+        "SCR-STUDENT-CONTENT-DETAIL",
+        "SCR-UNIFIED-SEARCH"
+      ],
+      "cta": "복습 시작하기",
+      "qaCriteria": [
+        "강사 화면과 유사한 구조이되 조회 중심이어야 합니다.",
+        "업로드 알림에서 바로 복습으로 이동할 수 있어야 합니다.",
+        "미래 강의는 노출되지 않아야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "수강생은 콘텐츠 조회 / 복습 / 탐색이 핵심이다.",
+        "rationale": null
+      },
+      "position": {
+        "x": 1068,
+        "y": 512
+      }
+    },
+    {
+      "id": "SCR-STUDENT-CONTENT-DETAIL",
+      "name": "수강생 강의 상세/자료 열람",
+      "description": "강사가 등록한 블록이 수강생에게 실제로 어떻게 표시되는지 보여주는 학습 및 자료 열람 화면입니다.",
+      "entryConditions": [
+        "수강생이 특정 강의 또는 복습 콘텐츠를 선택함"
+      ],
+      "primaryActions": [
+        "영상 재생",
+        "텍스트/이미지/첨부파일 열람",
+        "북마크",
+        "학습 진행 확인"
+      ],
+      "requiredData": [
+        "영상",
+        "텍스트",
+        "이미지",
+        "첨부파일",
+        "AI 요약",
+        "학습 진행도",
+        "북마크 상태"
+      ],
+      "nextScreenIds": [
+        "SCR-STUDENT-HOME"
+      ],
+      "cta": "학습 이어보기",
+      "qaCriteria": [
+        "영상 재생 버튼은 중앙에 익숙한 형태로 보여야 합니다.",
+        "강의 자료가 접히면 핵심 영상 영역이 더 강조되어야 합니다.",
+        "회차가 많을 때 스크롤 또는 아코디언 대응 검토가 가능해야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강사가 콘텐츠 에디터에서 등록한 블록이 실제 수강생 화면에서 어떻게 표시되는지 보여주는 화면임.",
+        "rationale": null
+      },
+      "position": {
+        "x": 1408,
+        "y": 294
+      }
+    },
+    {
+      "id": "SCR-TEACHER-DASHBOARD",
+      "name": "강사 홈 대시보드",
+      "description": "오늘 일정, 해야 할 일, 업로드 필요 강의, 캘린더 참여도, 배너 등을 한 번에 보는 강사 메인 화면입니다.",
+      "entryConditions": [
+        "강사로 로그인함"
+      ],
+      "primaryActions": [
+        "오늘 일정 확인",
+        "업로드 필요 강의 확인",
+        "강의 자료 등록 진입",
+        "배너/공지 확인"
+      ],
+      "requiredData": [
+        "오늘 수업 일정",
+        "요약",
+        "캘린더",
+        "참여도",
+        "업로드 필요 강의 수",
+        "배너",
+        "공지사항",
+        "콘텐츠 현황"
+      ],
+      "nextScreenIds": [
+        "SCR-TEACHER-MYCLASS",
+        "SCR-TEACHER-CONTENT-EDITOR",
+        "SCR-TEACHER-CALENDAR"
+      ],
+      "cta": "강의 자료 등록하기",
+      "qaCriteria": [
+        "정보 구조가 한눈에 명확해야 합니다.",
+        "라이트 톤 우선 방향을 반영해야 합니다.",
+        "배너 존재감이 약하지 않도록 검토되어야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강사 홈 화면은 깔끔한 디자인으로 오늘 수업 일정, 요약, 캘린더 참여도, 업로드 필요한 강의, 배너를 한 번에 확인할 수 있도록 구성되었습니다.",
+        "rationale": null
+      },
+      "position": {
+        "x": 388,
+        "y": 1325
+      }
+    },
+    {
+      "id": "SCR-TEACHER-MYCLASS",
+      "name": "강사 마이클래스",
+      "description": "강사의 과목 리스트와 강의 리스트를 조회하고 업로드 상태를 확인하는 화면입니다.",
+      "entryConditions": [
+        "강사가 마이클래스 메뉴로 이동함"
+      ],
+      "primaryActions": [
+        "과목 리스트 보기",
+        "강의 리스트 보기",
+        "검색",
+        "특정 강의 작성 진입"
+      ],
+      "requiredData": [
+        "과목 목록",
+        "강의 목록",
+        "강의 상태",
+        "검색 조건"
+      ],
+      "nextScreenIds": [
+        "SCR-TEACHER-COURSE-DETAIL",
+        "SCR-TEACHER-CONTENT-EDITOR"
+      ],
+      "cta": "작성하기",
+      "qaCriteria": [
+        "과목과 강의의 구분이 명확해야 합니다.",
+        "완료/지연/예정 상태가 구분되어야 합니다.",
+        "강의 단위 작업 진입이 쉬워야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강사 목록을 강사의 강의 목록을 보는 화면인데요 제가 두 가지로 이제 표시를 했어요 하나는 과목리스트 하나는 강의 리스트",
+        "rationale": null
+      },
+      "position": {
+        "x": 728,
+        "y": 1325
+      }
+    },
+    {
+      "id": "SCR-TEACHER-COURSE-DETAIL",
+      "name": "강사 과목 상세",
+      "description": "특정 과목의 설명, 공지, 진행률, 강의 리스트를 확인하고 관리하는 화면입니다.",
+      "entryConditions": [
+        "강사가 특정 과목을 선택함"
+      ],
+      "primaryActions": [
+        "수업 설명 확인",
+        "수업 공지 관리",
+        "진행률 확인",
+        "강의 자료 등록 진입"
+      ],
+      "requiredData": [
+        "과목 설명",
+        "과목 공지",
+        "수업 진행률",
+        "강의 리스트"
+      ],
+      "nextScreenIds": [
+        "SCR-TEACHER-CONTENT-EDITOR"
+      ],
+      "cta": "강의 자료 등록하기",
+      "qaCriteria": [
+        "어드민 공지와 강사 수업 공지가 구분되어야 합니다.",
+        "강의 리스트에서 작업 진입이 가능해야 합니다.",
+        "진행률 정보가 이해 가능해야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "이게 과목 상세 페이지거든요. 그래서 이 과목은 이제 ... 수업 설명 ... 수업에 대한 공지 ... 수업 진행률 ... 강의 리스트",
+        "rationale": null
+      },
+      "position": {
+        "x": 1408,
+        "y": 1139.5
+      }
+    },
+    {
+      "id": "SCR-TEACHER-CONTENT-EDITOR",
+      "name": "강의 자료 업로드/콘텐츠 에디터",
+      "description": "강사가 회차별 강의 자료를 블록 방식으로 등록하고 미리보기하는 핵심 편집 화면입니다.",
+      "entryConditions": [
+        "강사가 특정 강의의 자료 등록 또는 수정 작업을 시작함"
+      ],
+      "primaryActions": [
+        "필수 항목 입력",
+        "영상 업로드",
+        "블록 추가",
+        "블록 순서 변경",
+        "미리보기",
+        "게시/게시일 설정"
+      ],
+      "requiredData": [
+        "강의 회차/주제",
+        "등록일",
+        "기타 필수 항목",
+        "블록 목록",
+        "게시 설정",
+        "미리보기 데이터"
+      ],
+      "nextScreenIds": [
+        "SCR-STUDENT-CONTENT-DETAIL",
+        "SCR-TEACHER-MYCLASS",
+        "SCR-TEACHER-COURSE-DETAIL"
+      ],
+      "cta": "게시하기",
+      "qaCriteria": [
+        "콘텐츠 블록 추가와 순서 변경이 가능해야 합니다.",
+        "우측 드로어 방식 우선 검토가 반영되어야 합니다.",
+        "수강생 화면 미리보기가 가능해야 합니다.",
+        "필수 항목 미입력 시 저장/게시가 제한되어야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강의 자료 업로드 화면은 콘텐트 에디터로 강의 회차, 영상 업로드, 블록 추가, 개시 날짜 설정이 가능하며",
+        "rationale": null
+      },
+      "position": {
+        "x": 1068,
+        "y": 1086
+      }
+    },
+    {
+      "id": "SCR-TEACHER-CALENDAR",
+      "name": "강사 강의 캘린더",
+      "description": "강의 단위로 날짜별 상태를 확인하는 캘린더 화면입니다.",
+      "entryConditions": [
+        "강사가 캘린더 메뉴로 이동함"
+      ],
+      "primaryActions": [
+        "날짜 선택",
+        "해당 날짜 강의 상태 확인"
+      ],
+      "requiredData": [
+        "강의 일정",
+        "강의 상태",
+        "날짜별 강의 목록"
+      ],
+      "nextScreenIds": [
+        "SCR-TEACHER-CONTENT-EDITOR"
+      ],
+      "cta": "해당 강의 확인하기",
+      "qaCriteria": [
+        "완료/미업로드 지연/예정 상태가 점 색상으로 구분되어야 합니다.",
+        "날짜 선택 시 하단 목록 연동이 가능해야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "**강의 캘린더**: 강의 단위로 날짜별 상태 표시",
+        "rationale": null
+      },
+      "position": {
+        "x": 728,
+        "y": 911.5
+      }
+    },
+    {
+      "id": "SCR-UNIFIED-SEARCH",
+      "name": "통합 검색",
+      "description": "강의, 강사, 학원, VOD 등 다양한 콘텐츠 유형을 통합 탐색하는 제안형 검색 화면입니다.",
+      "entryConditions": [
+        "사용자가 검색 진입점을 선택함"
+      ],
+      "primaryActions": [
+        "검색어 입력",
+        "카테고리 필터 적용",
+        "강의/강사/학원/VOD 결과 탐색"
+      ],
+      "requiredData": [
+        "검색어",
+        "카테고리 필터",
+        "검색 결과 목록",
+        "콘텐츠 타입"
+      ],
+      "nextScreenIds": [
+        "SCR-STUDENT-CONTENT-DETAIL",
+        "SCR-STUDENT-HOME"
+      ],
+      "cta": "검색하기",
+      "qaCriteria": [
+        "현재 확정 기능이 아니라 제안 화면임이 구분되어야 합니다.",
+        "카테고리별 탐색이 가능해야 합니다.",
+        "플랫폼 확장 시 활용 가능한 구조가 드러나야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "학생 검색 화면은 통합 검색으로 카테고리, 지평태 필터링, 강의, 선생님, VOD 검색이 가능합니다.",
+        "rationale": "원문에 오탈자 '지평태'가 있으나 의미상 필터링 항목 존재로 해석됩니다. 정확한 필터 명칭은 확인이 필요합니다."
+      },
+      "position": {
+        "x": 728,
+        "y": 135
+      }
+    },
+    {
+      "id": "SCR-ADMIN-NOTICE-MANAGEMENT",
+      "name": "어드민 공지사항 관리",
+      "description": "공지사항 목록 조회 및 등록/수정이 가능한 운영 화면입니다.",
+      "entryConditions": [
+        "어드민으로 로그인함"
+      ],
+      "primaryActions": [
+        "공지 목록 조회",
+        "공지 검색",
+        "공지 등록",
+        "공지 수정"
+      ],
+      "requiredData": [
+        "공지 제목",
+        "대상",
+        "게시 여부",
+        "상단고정 여부",
+        "등록일"
+      ],
+      "nextScreenIds": [
+        "SCR-TEACHER-DASHBOARD",
+        "SCR-STUDENT-HOME"
+      ],
+      "cta": "공지 등록하기",
+      "qaCriteria": [
+        "대상/게시 여부/상단고정 여부 설정이 가능해야 합니다.",
+        "강사/수강생/전체 대상 구분이 가능해야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "공지사항: 대상(수강생/강사/전체), 게시 여부, 상단보정 여부 설정 가능",
+        "rationale": null
+      },
+      "position": {
+        "x": 48,
+        "y": 1740
+      }
+    },
+    {
+      "id": "SCR-ADMIN-BANNER-MANAGEMENT",
+      "name": "어드민 배너 관리",
+      "description": "대상별 배너를 등록하고 노출기간 및 노출 순서를 관리하는 운영 화면입니다.",
+      "entryConditions": [
+        "어드민으로 로그인함"
+      ],
+      "primaryActions": [
+        "배너 목록 조회",
+        "배너 등록",
+        "노출기간 설정",
+        "순서 변경",
+        "게시 상태 변경"
+      ],
+      "requiredData": [
+        "배너명",
+        "링크",
+        "PC 이미지",
+        "모바일 이미지",
+        "대상",
+        "사용 여부",
+        "노출기간",
+        "순서"
+      ],
+      "nextScreenIds": [
+        "SCR-TEACHER-DASHBOARD",
+        "SCR-STUDENT-HOME"
+      ],
+      "cta": "배너 등록하기",
+      "qaCriteria": [
+        "수강생용/강사용/전체 대상 구분이 가능해야 합니다.",
+        "노출기간 및 순서 변경이 가능해야 합니다.",
+        "PC/모바일 이미지 입력 항목이 있어야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "배너 관리: 대상별(수강생용/강사용) 배너 설정, 노출기간 및 순서 변경 가능",
+        "rationale": null
+      },
+      "position": {
+        "x": 48,
+        "y": 1166.5
+      }
+    },
+    {
+      "id": "SCR-MOBILE-LEARNING-HUB-PROPOSAL",
+      "name": "모바일 러닝 허브 홈 제안안",
+      "description": "웹 러닝 허브 홈을 모바일에 축약한 제안형 화면입니다.",
+      "entryConditions": [
+        "모바일 제안형 화면을 준비하기로 한 경우"
+      ],
+      "primaryActions": [
+        "모바일 홈 탐색",
+        "콘텐츠 진입"
+      ],
+      "requiredData": [
+        "모바일 홈 섹션",
+        "배너",
+        "콘텐츠 요약"
+      ],
+      "nextScreenIds": [
+        "SCR-MOBILE-STUDENT-CONTENT-DETAIL-PROPOSAL",
+        "SCR-MOBILE-SEARCH-PROPOSAL"
+      ],
+      "cta": "콘텐츠 보기",
+      "qaCriteria": [
+        "확정안이 아니라 제안형 축약안으로 표시되어야 합니다.",
+        "웹 구조의 핵심 정보가 모바일에 재구성되어야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Mobile / Learning Hub Home / Proposal | 웹 러닝 허브 홈의 모바일 축약안",
+        "rationale": null
+      },
+      "position": {
+        "x": 388,
+        "y": 487
+      }
+    },
+    {
+      "id": "SCR-MOBILE-STUDENT-CONTENT-DETAIL-PROPOSAL",
+      "name": "모바일 수강생 콘텐츠 상세 제안안",
+      "description": "수강생의 모바일 콘텐츠 소비 경험을 보여주는 제안형 상세 화면입니다.",
+      "entryConditions": [
+        "모바일 제안형 상세 화면을 준비하기로 한 경우"
+      ],
+      "primaryActions": [
+        "영상 재생",
+        "텍스트/자료 확인"
+      ],
+      "requiredData": [
+        "모바일 영상 영역",
+        "콘텐츠 블록",
+        "학습 액션"
+      ],
+      "nextScreenIds": [
+        "SCR-MOBILE-LEARNING-HUB-PROPOSAL"
+      ],
+      "cta": "이어서 보기",
+      "qaCriteria": [
+        "모바일 소비 경험 중심으로 단순화되어야 합니다.",
+        "확정안이 아니라 제안안으로 관리되어야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Mobile / Student / Content Detail / Proposal | 수강생 콘텐츠 소비 경험 제안",
+        "rationale": null
+      },
+      "position": {
+        "x": 1068,
+        "y": 708
+      }
+    },
+    {
+      "id": "SCR-MOBILE-TEACHER-DASHBOARD-PROPOSAL",
+      "name": "모바일 강사 대시보드 제안안",
+      "description": "강사의 모바일 관리 경험을 축약해 보여주는 제안형 화면입니다.",
+      "entryConditions": [
+        "모바일에서 강사 기능 지원 여부를 검토하는 경우"
+      ],
+      "primaryActions": [
+        "업로드 필요 강의 확인",
+        "빠른 업로드 진입"
+      ],
+      "requiredData": [
+        "업로드 필요 항목",
+        "모바일 업로드 액션",
+        "임시 저장 상태"
+      ],
+      "nextScreenIds": [
+        "SCR-MOBILE-LEARNING-HUB-PROPOSAL"
+      ],
+      "cta": "파일 업로드하기",
+      "qaCriteria": [
+        "전체 편집보다 업로드/임시저장 중심 축소 범위를 우선 반영해야 합니다.",
+        "확정안이 아니라 제안형 화면이어야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Mobile / Teacher / Dashboard / Proposal | 강사 모바일 관리 경험 제안, 필요 시 진행",
+        "rationale": null
+      },
+      "position": {
+        "x": 48,
+        "y": 567.5
+      }
+    },
+    {
+      "id": "SCR-MOBILE-SEARCH-PROPOSAL",
+      "name": "모바일 검색 제안안",
+      "description": "모바일에서 검색과 필터 탐색 경험을 제안하는 화면입니다.",
+      "entryConditions": [
+        "모바일 검색 제안이 필요한 경우"
+      ],
+      "primaryActions": [
+        "검색어 입력",
+        "필터 열기",
+        "검색 결과 탐색"
+      ],
+      "requiredData": [
+        "검색 입력",
+        "필터 옵션",
+        "결과 목록"
+      ],
+      "nextScreenIds": [
+        "SCR-MOBILE-STUDENT-CONTENT-DETAIL-PROPOSAL"
+      ],
+      "cta": "검색하기",
+      "qaCriteria": [
+        "검색/필터는 적응형 패턴 검토 대상임이 반영되어야 합니다.",
+        "Bottom Sheet 형태의 필터 가능성을 검토할 수 있어야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Mobile / Search / Proposal | 검색/탐색 경험 제안",
+        "rationale": null
+      },
+      "position": {
+        "x": 728,
+        "y": 429
+      }
+    }
+  ],
+  "states": [
+    {
+      "id": "STATE-001",
+      "screenId": "SCR-TEACHER-DASHBOARD",
+      "name": "기본 대시보드 상태",
+      "kind": "default",
+      "description": "오늘 일정, 요약, 참여도, 업로드 필요 강의, 배너가 모두 정상 표시되는 상태입니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "오늘 수업 일정, 요약, 캘린더 참여도, 업로드 필요한 강의, 배너를 한 번에 확인",
+        "rationale": "대시보드의 정상 진입 상태가 필요하다고 추론했습니다."
+      },
+      "position": {
+        "x": 749,
+        "y": 1497
+      }
+    },
+    {
+      "id": "STATE-002",
+      "screenId": "SCR-TEACHER-DASHBOARD",
+      "name": "업로드 필요 강의 있음",
+      "kind": "default",
+      "description": "강의일이 지났으나 자료가 미업로드된 강의 수가 알림/카드로 강조되는 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "업로드 필요 강의 수 = 강의일이 지났으나 자료 미업로드된 강의 개수",
+        "rationale": null
+      },
+      "position": {
+        "x": 749,
+        "y": 1647
+      }
+    },
+    {
+      "id": "STATE-003",
+      "screenId": "SCR-TEACHER-MYCLASS",
+      "name": "과목 리스트 보기",
+      "kind": "default",
+      "description": "과목 단위 목록이 표시되는 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "과목 리스트와 강의 리스트 두 가지 뷰 제공",
+        "rationale": null
+      },
+      "position": {
+        "x": 1089,
+        "y": 1336
+      }
+    },
+    {
+      "id": "STATE-004",
+      "screenId": "SCR-TEACHER-MYCLASS",
+      "name": "강의 리스트 보기",
+      "kind": "default",
+      "description": "강의 회차 단위 목록과 상태가 표시되는 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강의 리스트라고 넘어가게 되면 ... 강의 주제 이렇게 해서 리스트형",
+        "rationale": null
+      },
+      "position": {
+        "x": 1089,
+        "y": 1589
+      }
+    },
+    {
+      "id": "STATE-005",
+      "screenId": "SCR-TEACHER-CONTENT-EDITOR",
+      "name": "에디터 기본 상태",
+      "kind": "default",
+      "description": "필수 정보 입력과 블록 추가가 가능한 상태입니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강의 자료 업로드 화면은 콘텐트 에디터로 강의 회차, 영상 업로드, 블록 추가",
+        "rationale": "콘텐츠 에디터의 기본 편집 상태가 필요하다고 추론했습니다."
+      },
+      "position": {
+        "x": 1429,
+        "y": 839.5
+      }
+    },
+    {
+      "id": "STATE-006",
+      "screenId": "SCR-TEACHER-CONTENT-EDITOR",
+      "name": "필수값 누락",
+      "kind": "validation-error",
+      "description": "필수 입력값이 비어 있어 저장 또는 게시가 제한되는 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "필수 항목들이 비어있으면 저장이 안될거고",
+        "rationale": null
+      },
+      "position": {
+        "x": 1429,
+        "y": 989.5
+      }
+    },
+    {
+      "id": "STATE-007",
+      "screenId": "SCR-TEACHER-CONTENT-EDITOR",
+      "name": "미리보기 열림",
+      "kind": "partial-completion",
+      "description": "수강생 화면 기준 결과를 팝업 또는 별도 미리보기 영역에서 확인하는 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "미리보기 버튼으로 수강생 화면 팝업 확인 가능",
+        "rationale": null
+      },
+      "position": {
+        "x": 1429,
+        "y": 1311.5
+      }
+    },
+    {
+      "id": "STATE-008",
+      "screenId": "SCR-STUDENT-HOME",
+      "name": "새 업로드 알림 있음",
+      "kind": "default",
+      "description": "수강 중인 과목의 강의 자료가 업로드되어 알림과 바로 복습 진입이 가능한 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강의 자료가 업데이트됐을 때 ... 복습하게 누르면",
+        "rationale": null
+      },
+      "position": {
+        "x": 1429,
+        "y": 637.5
+      }
+    },
+    {
+      "id": "STATE-009",
+      "screenId": "SCR-STUDENT-CONTENT-DETAIL",
+      "name": "학습 기본 상태",
+      "kind": "default",
+      "description": "영상, 텍스트, 이미지, 첨부파일 등 학습 블록이 표시되는 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "지원 가능한 콘텐츠 유형은 다음과 같음.\n- 영상\n- 텍스트\n- 이미지\n- 첨부파일",
+        "rationale": null
+      },
+      "position": {
+        "x": 1748,
+        "y": 264
+      }
+    },
+    {
+      "id": "STATE-010",
+      "screenId": "SCR-STUDENT-CONTENT-DETAIL",
+      "name": "자료 영역 접힘",
+      "kind": "partial-completion",
+      "description": "강의 자료 영역이 접혀 영상 재생과 핵심 조작 영역이 더 강조되는 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강의 자료 영역이 접혔을 때는 화면의 복잡도가 낮아지므로, 핵심 재생 버튼과 주요 조작 영역을 더 크게 보여줄 수 있음.",
+        "rationale": null
+      },
+      "position": {
+        "x": 1748,
+        "y": 414
+      }
+    },
+    {
+      "id": "STATE-011",
+      "screenId": "SCR-UNIFIED-SEARCH",
+      "name": "검색 결과 없음",
+      "kind": "empty",
+      "description": "검색 조건에 맞는 결과가 없는 상태입니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "통합 검색",
+        "rationale": "검색 화면에는 결과 없음 상태가 필요하다고 추론했습니다."
+      },
+      "position": {
+        "x": 1089,
+        "y": 115.5
+      }
+    },
+    {
+      "id": "STATE-012",
+      "screenId": "SCR-UNIFIED-SEARCH",
+      "name": "필터 적용 상태",
+      "kind": "default",
+      "description": "카테고리 또는 콘텐츠 유형 필터가 적용된 결과 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "카테고리 필터",
+        "rationale": null
+      },
+      "position": {
+        "x": 1089,
+        "y": 265.5
+      }
+    },
+    {
+      "id": "STATE-013",
+      "screenId": "SCR-TEACHER-CALENDAR",
+      "name": "날짜 선택됨",
+      "kind": "default",
+      "description": "날짜 클릭 후 해당 날짜 강의 목록이 하단에 표시되는 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "이 날짜를 클릭했을 때 여기 밑에 이렇게 ... 강의들 보인다고 생각하시면 될 것 같아요",
+        "rationale": null
+      },
+      "position": {
+        "x": 1089,
+        "y": 932.5
+      }
+    },
+    {
+      "id": "STATE-014",
+      "screenId": "SCR-MOBILE-TEACHER-DASHBOARD-PROPOSAL",
+      "name": "모바일 기능 축소 상태",
+      "kind": "partial-completion",
+      "description": "전체 편집 대신 업로드와 임시 저장 중심 기능만 제공하는 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "모바일: 영상·사진·파일 업로드, 임시 저장",
+        "rationale": null
+      },
+      "position": {
+        "x": 409,
+        "y": 659
+      }
+    }
+  ],
+  "uxCopy": [
+    {
+      "id": "COPY-001",
+      "screenId": "SCR-TEACHER-DASHBOARD",
+      "context": "업로드 필요 강의 카드 제목",
+      "text": "업로드가 필요한 강의가 있어요.",
+      "toneRule": "짧고 명확하게 현재 해야 할 일을 알려줍니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "업로드 필요한 강의가 몇 개 있다",
+        "rationale": "강사 행동 유도를 위해 자연스러운 해요체 카드 문구로 다듬었습니다."
+      }
+    },
+    {
+      "id": "COPY-002",
+      "screenId": "SCR-TEACHER-DASHBOARD",
+      "context": "강의 자료 등록 CTA",
+      "text": "강의 자료 등록하기",
+      "toneRule": "버튼은 사용자의 행동을 표현합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강의 자료 등록",
+        "rationale": "원문의 기능명을 사용자 행동형 CTA로 변환했습니다."
+      }
+    },
+    {
+      "id": "COPY-003",
+      "screenId": "SCR-TEACHER-CONTENT-EDITOR",
+      "context": "블록 추가 영역 안내",
+      "text": "필요한 블록을 추가해 강의 자료를 구성해요.",
+      "toneRule": "기능 설명은 한 문장으로 짧게 안내합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "컨텐츠 블록 방식으로 구성",
+        "rationale": "블록 기반 편집 구조를 사용자 친화적으로 설명하기 위한 문구입니다."
+      }
+    },
+    {
+      "id": "COPY-004",
+      "screenId": "SCR-TEACHER-CONTENT-EDITOR",
+      "context": "필수값 누락 오류",
+      "text": "필수 항목을 먼저 입력해 주세요.",
+      "toneRule": "문제와 다음 행동을 함께 안내합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "필수 항목들이 비어있으면 저장이 안될거고",
+        "rationale": "원문의 저장 불가 조건을 사용자 오류 문구로 변환했습니다."
+      }
+    },
+    {
+      "id": "COPY-005",
+      "screenId": "SCR-TEACHER-CONTENT-EDITOR",
+      "context": "미리보기 버튼",
+      "text": "미리보기",
+      "toneRule": "버튼은 간결하게 행동을 표현합니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "미리보기 버튼",
+        "rationale": null
+      }
+    },
+    {
+      "id": "COPY-006",
+      "screenId": "SCR-STUDENT-HOME",
+      "context": "새 콘텐츠 알림",
+      "text": "새 복습 자료가 올라왔어요.",
+      "toneRule": "알림 문구는 즉시 이해되도록 짧게 작성합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강의 자료가 업데이트됐을 때",
+        "rationale": "업데이트 알림을 자연스러운 사용자 문구로 표현했습니다."
+      }
+    },
+    {
+      "id": "COPY-007",
+      "screenId": "SCR-STUDENT-HOME",
+      "context": "복습 진입 CTA",
+      "text": "바로 복습하기",
+      "toneRule": "버튼은 다음 행동을 분명하게 보여줍니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "바로 복습 가능",
+        "rationale": "즉시 진입 행동을 CTA로 구체화했습니다."
+      }
+    },
+    {
+      "id": "COPY-008",
+      "screenId": "SCR-STUDENT-CONTENT-DETAIL",
+      "context": "영상 재생 버튼 라벨",
+      "text": "재생하기",
+      "toneRule": "익숙한 행동 표현을 사용합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "재생 버튼은 일반적인 영상 서비스처럼",
+        "rationale": "중앙 재생 버튼에 사용할 수 있는 기본 라벨을 추론했습니다."
+      }
+    },
+    {
+      "id": "COPY-009",
+      "screenId": "SCR-UNIFIED-SEARCH",
+      "context": "검색 입력 플레이스홀더",
+      "text": "강의, 강사, 학원, VOD를 검색해 보세요.",
+      "toneRule": "검색 범위를 한 문장으로 명확하게 안내합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강의, 강사, 학원, VOD 등을 한 번에 검색",
+        "rationale": "통합 검색 범위를 플레이스홀더 문구로 변환했습니다."
+      }
+    },
+    {
+      "id": "COPY-010",
+      "screenId": "SCR-UNIFIED-SEARCH",
+      "context": "결과 없음 메시지",
+      "text": "검색 결과가 없어요. 다른 검색어나 필터를 시도해 보세요.",
+      "toneRule": "오류/빈 상태 문구는 다음 행동을 함께 안내합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "통합 검색",
+        "rationale": "검색 화면에는 빈 결과 안내가 필요하다고 보아 문구를 제안했습니다."
+      }
+    },
+    {
+      "id": "COPY-011",
+      "screenId": "SCR-ADMIN-NOTICE-MANAGEMENT",
+      "context": "공지 등록 버튼",
+      "text": "공지 등록하기",
+      "toneRule": "운영자 버튼도 행동 중심으로 작성합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "공지사항 등록",
+        "rationale": "기능명을 CTA 형태로 정리했습니다."
+      }
+    },
+    {
+      "id": "COPY-012",
+      "screenId": "SCR-ADMIN-BANNER-MANAGEMENT",
+      "context": "배너 등록 버튼",
+      "text": "배너 등록하기",
+      "toneRule": "버튼은 현재 수행할 작업을 직접 표현합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "배너 등록",
+        "rationale": "원문 기능명을 CTA 문구로 변환했습니다."
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "라이트 시안을 중심으로 메인 디자인 방향 정리",
+      "status": "done",
+      "priority": "high",
+      "relatedIds": [
+        "REQ-020"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "1. 라이트 시안을 중심으로 메인 디자인 방향 정리",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "전체 시안 방향을 라이트 톤 우선으로 정리합니다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "SCR-TEACHER-DASHBOARD",
+        "SCR-LEARNING-HUB-HOME"
+      ],
+      "relatedRequirementIds": [
+        "REQ-020"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-002",
+      "title": "콘텐츠 에디터 우측 드로어형 블록 추가 방식 검토",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "REQ-019",
+        "Q-006"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "2. 콘텐츠 에디터의 우측 드로어형 블록 추가 방식 검토",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "플로팅 버튼 대비 우측 고정 드로어 방식의 장단점을 정리하고 우선안으로 구체화합니다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "SCR-TEACHER-CONTENT-EDITOR"
+      ],
+      "relatedRequirementIds": [
+        "REQ-019"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-003",
+      "title": "PC 메인 화면 배너 크기 및 노출 방식 보완",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [
+        "REQ-021"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "3. PC 메인 화면의 배너 크기 및 노출 방식 보완",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "배너의 존재감, 크기, 위치를 조정해 운영/수익 활용 가능성을 고려합니다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "SCR-TEACHER-DASHBOARD",
+        "SCR-LEARNING-HUB-HOME"
+      ],
+      "relatedRequirementIds": [
+        "REQ-021"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-004",
+      "title": "강의 영상 중앙 재생 버튼 등 익숙한 인터랙션 패턴 반영",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [
+        "REQ-026"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "4. 강의 영상 중앙 재생 버튼 등 익숙한 인터랙션 패턴 반영",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "영상 소비 경험에서 일반적 패턴을 우선 적용합니다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "SCR-STUDENT-CONTENT-DETAIL"
+      ],
+      "relatedRequirementIds": [
+        "REQ-026"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-005",
+      "title": "강의 회차 증가 시 아코디언·스크롤 처리 검토",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [
+        "REQ-027"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "5. 강의 회차가 많아지는 경우의 아코디언·스크롤 처리 검토",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "회차 수 증가에 따른 정보 구조와 탐색 방식을 검토합니다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "SCR-STUDENT-CONTENT-DETAIL",
+        "SCR-TEACHER-COURSE-DETAIL"
+      ],
+      "relatedRequirementIds": [
+        "REQ-027"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-006",
+      "title": "모바일 콘텐츠 등록 및 편집 기능 범위 정리",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "REQ-029",
+        "Q-004"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "6. 모바일 콘텐츠 등록 및 편집 기능 범위 정리",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "모바일에서 업로드/임시저장/편집 중 어디까지 허용할지 정의합니다.",
+      "dueDate": null,
+      "blockerReason": "모바일 지원 범위가 아직 확정되지 않았습니다.",
+      "relatedScreenIds": [
+        "SCR-MOBILE-TEACHER-DASHBOARD-PROPOSAL"
+      ],
+      "relatedRequirementIds": [
+        "REQ-029"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-007",
+      "title": "대표 보고용 시안별 디자인 의도와 질문 항목 정리",
+      "status": "done",
+      "priority": "high",
+      "relatedIds": [
+        "Q-001",
+        "Q-002"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "7. 대표 보고용 시안별 디자인 의도와 질문 항목 정리",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "기능 상세보다 라이트/다크, 대시보드/콘텐츠 중심, 배너, 편집 방식 등의 의사결정 항목을 정리합니다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "SCR-TEACHER-DASHBOARD",
+        "SCR-TEACHER-CONTENT-EDITOR",
+        "SCR-LEARNING-HUB-HOME"
+      ],
+      "relatedRequirementIds": [
+        "REQ-036"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-008",
+      "title": "Figma 프레임 간 간단한 프로토타입 연결",
+      "status": "done",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "8. Figma 프레임 간 간단한 프로토타입 연결",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "복잡한 인터랙션보다 화면 전환 중심으로 프로토타입을 구성합니다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "SCR-TEACHER-DASHBOARD",
+        "SCR-TEACHER-CONTENT-EDITOR",
+        "SCR-STUDENT-HOME",
+        "SCR-STUDENT-CONTENT-DETAIL"
+      ],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-009",
+      "title": "세부 기능과 타임라인은 화면 설계 및 기획 확정 후 추가 검토",
+      "status": "in-progress",
+      "priority": "medium",
+      "relatedIds": [
+        "Q-001"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "9. 세부 기능과 타임라인은 화면 설계 및 기획 확정 후 추가 검토",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "범위 확정 이후에 일정과 상세 기능 구현 계획을 정리합니다.",
+      "dueDate": null,
+      "blockerReason": "보고용 시안 범위와 세부 기능이 아직 확정되지 않았습니다.",
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "REQ-036"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-010",
+      "title": "기존 프로젝트/Figma 파일 구조를 회의 내용 기준으로 수정",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "기존 프로젝트/Figma 파일 구조를 이번 회의 내용 기준으로 수정",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "웹 우선, 모바일 proposal, 역할별 화면 구조를 반영해 파일 구조를 재정리합니다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-011",
+      "title": "강사/수강생 동일 우선순위로 브리프 업데이트",
+      "status": "done",
+      "priority": "medium",
+      "relatedIds": [
+        "REQ-002"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강사/수강생 동일 우선순위로 Brief 업데이트",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "핵심 사용자 우선순위를 문서와 시안 설명에 반영합니다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "SCR-TEACHER-DASHBOARD",
+        "SCR-STUDENT-HOME"
+      ],
+      "relatedRequirementIds": [
+        "REQ-002"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-012",
+      "title": "Responsive & Adaptive Policy 섹션 추가",
+      "status": "done",
+      "priority": "medium",
+      "relatedIds": [
+        "REQ-030",
+        "REQ-031"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Responsive & Adaptive Policy 섹션 추가",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "반응형 기반과 적응형 대상 화면 정책을 문서화합니다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "SCR-TEACHER-CONTENT-EDITOR",
+        "SCR-UNIFIED-SEARCH",
+        "SCR-TEACHER-CALENDAR"
+      ],
+      "relatedRequirementIds": [
+        "REQ-030",
+        "REQ-031"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-013",
+      "title": "Web/Mobile 컴포넌트 매핑표 추가",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [
+        "REQ-035"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Web/Mobile 컴포넌트 매핑표 추가",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "공통 토큰과 웹/모바일 분리 컴포넌트 매핑 기준을 정리합니다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "REQ-035"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-014",
+      "title": "과장님과 보고용 시안 범위 재확인",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "Q-001",
+        "Q-002"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "과장님과 보고용 시안 범위 재확인",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "현재 기획 중심인지 러닝 허브 확장 방향까지 포함하는지 범위를 재확인합니다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "SCR-LEARNING-HUB-HOME",
+        "SCR-UNIFIED-SEARCH"
+      ],
+      "relatedRequirementIds": [
+        "REQ-036"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-015",
+      "title": "개발팀과 반응형/적응형 대응 가능 범위 확인",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "Q-008"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "개발팀과 반응형/적응형 대응 가능 범위 확인",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "모바일 전환 구조, 컴포넌트 분리, 에디터 플로우 차이를 개발 관점에서 검토합니다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "SCR-TEACHER-CONTENT-EDITOR",
+        "SCR-UNIFIED-SEARCH",
+        "SCR-MOBILE-SEARCH-PROPOSAL"
+      ],
+      "relatedRequirementIds": [
+        "REQ-030",
+        "REQ-031"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-001",
+      "title": "기존 프로젝트/Figma 파일 구조 수정",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "기존 프로젝트/Figma 파일 구조를 이번 회의 내용 기준으로 수정",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "회의에서 정리된 웹 우선, 모바일 Proposal 분리, 사용자 우선순위를 반영해 파일 구조를 재정리한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "REQ-001",
+        "REQ-006",
+        "REQ-024"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-002",
+      "title": "강사/수강생 동일 우선순위로 Brief 업데이트",
+      "status": "done",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강사/수강생 동일 우선순위로 Brief 업데이트",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "핵심 사용자 우선순위를 동일하게 명시하도록 브리프를 수정한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "screen-web-student-feed",
+        "screen-web-teacher-dashboard"
+      ],
+      "relatedRequirementIds": [
+        "REQ-002"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-003",
+      "title": "Learning Hub 중심으로 Design Directions 재정리",
+      "status": "done",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Design Directions를 Learning Hub 중심으로 재정리",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "단순 LMS 인상이 아니라 러닝 허브 방향성을 전달하도록 디자인 방향 문서를 정리한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "screen-web-learning-hub-home"
+      ],
+      "relatedRequirementIds": [
+        "REQ-004"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-004",
+      "title": "웹 우선 화면 구조로 Web Screens 우선순위 재배치",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "웹 우선 화면 구조로 Web Screens 우선순위 재배치",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "1차 필수 웹 화면 기준으로 화면 제작 순서를 재정의한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "screen-web-learning-hub-home",
+        "screen-web-student-feed",
+        "screen-web-student-content-detail",
+        "screen-web-teacher-dashboard",
+        "screen-web-teacher-content-editor"
+      ],
+      "relatedRequirementIds": [
+        "REQ-001",
+        "REQ-005"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-005",
+      "title": "모바일 화면을 Proposal 상태로 분리 관리",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "모바일 화면은 Proposal 상태로 분리 관리",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "모바일 시안을 확정안과 구분해 별도 섹션 또는 페이지로 관리한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "screen-mobile-learning-hub-home-proposal",
+        "screen-mobile-student-content-detail-proposal",
+        "screen-mobile-teacher-dashboard-proposal",
+        "screen-mobile-search-proposal"
+      ],
+      "relatedRequirementIds": [
+        "REQ-006",
+        "REQ-027"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-006",
+      "title": "Responsive & Adaptive Policy 섹션 추가",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Responsive & Adaptive Policy 섹션 추가",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "반응형 기본 + 주요 화면 적응형 원칙을 문서와 파일에 반영한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "REQ-022",
+        "REQ-023"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-007",
+      "title": "Web/Mobile 컴포넌트 매핑표 추가",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Web/Mobile 컴포넌트 매핑표 추가",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "동일 기능의 Web/Mobile 컴포넌트 대응 방식을 정리한 매핑표를 추가한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "REQ-025"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-008",
+      "title": "KEG Design System 참고하여 공통 토큰 보완",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "KEG Design System 참고하여 공통 토큰 보완",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "공통 토큰 구조를 검토하고 이번 시안에 필요한 최소 토큰을 보완한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "REQ-024",
+        "REQ-026"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-009",
+      "title": "Review Notes에 기획/개발/디자인 확인 필요 항목 추가",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [
+        "Q-001",
+        "Q-002",
+        "Q-003",
+        "Q-004",
+        "Q-005",
+        "Q-006",
+        "Q-007",
+        "Q-008",
+        "Q-009"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Review Notes에 기획/개발/디자인 확인 필요 항목 추가",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "원문에 정리된 미확정 사항을 리뷰 노트에 구조화해 추가한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "task-010",
+      "title": "Decision Log에 결정 사항과 미결정 사항 기록",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Decision Log에 결정 사항과 미결정 사항 기록",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "현재 결정된 내용과 질문 항목을 분리해 의사결정 로그를 남긴다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "task-011",
+      "title": "과장님과 보고용 시안 범위 재확인",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "Q-001",
+        "Q-002",
+        "Q-003",
+        "Q-006"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "과장님과 보고용 시안 범위 재확인",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "현 기획 범위 vs 러닝 허브 확장 범위, 어드민 포함 여부, 화면 수 제한을 확인한다.",
+      "dueDate": null,
+      "blockerReason": "범위가 확정되지 않으면 화면 제작 우선순위와 일정 산정이 어렵다.",
+      "relatedScreenIds": [
+        "screen-web-learning-hub-home",
+        "screen-web-student-feed",
+        "screen-web-student-content-detail",
+        "screen-web-teacher-dashboard",
+        "screen-web-teacher-content-editor"
+      ],
+      "relatedRequirementIds": [
+        "REQ-005"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-012",
+      "title": "개발팀과 반응형/적응형 대응 가능 범위 확인",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "Q-009",
+        "Q-005"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "개발팀과 반응형/적응형 대응 가능 범위 확인",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "반응형 기반 + 주요 적응형, Web/Mobile 컴포넌트 분리, 모바일 강사 플로우 허용 범위를 확인한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "screen-web-teacher-content-editor",
+        "screen-mobile-search-proposal",
+        "screen-mobile-teacher-dashboard-proposal"
+      ],
+      "relatedRequirementIds": [
+        "REQ-023",
+        "REQ-024"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-013",
+      "title": "피그마 파일 공유 및 커뮤니케이션 채널 개설",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "디자이너와 기획자 간 커뮤니케이션 채널 카카오톡 단체방 개설\n- 피그마 파일 공유 (화면 설계서 포함)",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "디자이너와 기획자가 동일 파일과 대화 채널에서 협업할 수 있도록 준비한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "task-014",
+      "title": "디자인 시안 일정 논의 후 2~3개 시안 제작",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "태연 씨가 디자인 시안 일정 논의 후 2~3개 시안 제작",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "보고용 검토가 가능한 수준의 디자인 시안을 2~3안 준비한다.",
+      "dueDate": null,
+      "blockerReason": "보고용 범위와 화면 수가 확정되어야 시안 수와 밀도를 정하기 쉽다.",
+      "relatedScreenIds": [
+        "screen-web-learning-hub-home"
+      ],
+      "relatedRequirementIds": [
+        "REQ-004",
+        "REQ-005"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-015",
+      "title": "차주 보고용 모바일 레이아웃 준비",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "Q-004"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "차주 사장님·부사장님 보고를 위한 모바일 레이아웃 준비",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "최소한의 모바일 레이아웃 또는 축약안을 준비해 보고 자료에 활용한다.",
+      "dueDate": null,
+      "blockerReason": "모바일 포함 수준이 미정이다.",
+      "relatedScreenIds": [
+        "screen-mobile-learning-hub-home-proposal",
+        "screen-mobile-student-content-detail-proposal"
+      ],
+      "relatedRequirementIds": [
+        "REQ-006",
+        "REQ-027"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-016",
+      "title": "에디터 도구 선정 논의 및 영상 업로드 제약사항 기획서 반영",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [
+        "Q-008"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "에디터 도구 선정 부장님과 논의\n- 파일 용량·인코딩 등 영상 업로드 제약사항 기획서에 추가 기재",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "콘텐츠 에디터 구현 방식과 영상 업로드 제한 조건을 후속 문서에 정리한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "screen-web-teacher-content-editor"
+      ],
+      "relatedRequirementIds": [
+        "REQ-013",
+        "REQ-014"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-1",
+      "title": "기존 프로젝트/Figma 파일 구조를 회의 내용 기준으로 수정",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "기존 프로젝트/Figma 파일 구조를 이번 회의 내용 기준으로 수정",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "회의에서 정리된 웹 우선, 모바일 Proposal 분리, 역할별 구조를 반영해 파일 구조를 재정비한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "req-1",
+        "req-6",
+        "req-24"
+      ],
+      "deletedAt": "2026-06-22T07:05:59.716Z"
+    },
+    {
+      "id": "task-2",
+      "title": "강사/수강생 동일 우선순위로 Brief 업데이트",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "강사/수강생 동일 우선순위로 Brief 업데이트",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "핵심 사용자 우선순위 문서를 강사와 수강생 동등 기준으로 수정한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "screen-web-student-feed",
+        "screen-web-teacher-dashboard"
+      ],
+      "relatedRequirementIds": [
+        "req-2"
+      ],
+      "deletedAt": "2026-06-22T07:16:08.949Z"
+    },
+    {
+      "id": "task-3",
+      "title": "Design Directions를 Learning Hub 중심으로 재정리",
+      "status": "done",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Design Directions를 Learning Hub 중심으로 재정리",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "단순 복습 서비스가 아닌 러닝 허브형 플랫폼 인상을 반영하도록 방향성을 재정리한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "screen-web-learning-hub-home"
+      ],
+      "relatedRequirementIds": [
+        "req-3",
+        "req-4"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-4",
+      "title": "웹 우선 화면 구조로 Web Screens 우선순위 재배치",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "웹 우선 화면 구조로 Web Screens 우선순위 재배치",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "보고용 핵심 웹 화면 순서를 정리하고 우선순위를 반영한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "screen-web-learning-hub-home",
+        "screen-web-student-feed",
+        "screen-web-student-detail",
+        "screen-web-teacher-dashboard",
+        "screen-web-teacher-editor"
+      ],
+      "relatedRequirementIds": [
+        "req-1",
+        "req-5"
+      ],
+      "deletedAt": "2026-06-22T07:06:03.430Z"
+    },
+    {
+      "id": "task-5",
+      "title": "모바일 화면을 Proposal 상태로 분리 관리",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "모바일 화면은 Proposal 상태로 분리 관리",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "모바일 산출물을 확정 디자인과 분리해 Proposal/Draft 영역으로 관리한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "screen-mobile-learning-hub-home-proposal",
+        "screen-mobile-student-detail-proposal",
+        "screen-mobile-teacher-dashboard-proposal",
+        "screen-mobile-search-proposal"
+      ],
+      "relatedRequirementIds": [
+        "req-6"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-6",
+      "title": "Responsive & Adaptive Policy 섹션 추가",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Responsive & Adaptive Policy 섹션 추가",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "반응형 기반 + 주요 화면 적응형 원칙과 적용 대상을 문서화한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "req-8",
+        "req-9",
+        "req-10"
+      ],
+      "deletedAt": "2026-06-22T07:06:05.793Z"
+    },
+    {
+      "id": "task-7",
+      "title": "Web/Mobile 컴포넌트 매핑표 추가",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Web/Mobile 컴포넌트 매핑표 추가",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "동일 기능 컴포넌트의 웹/모바일 대응 관계를 표로 정리한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "req-24",
+        "req-25"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-8",
+      "title": "KEG Design System 참고하여 공통 토큰 보완",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "KEG Design System 참고하여 공통 토큰 보완",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "Color, Typography, Spacing 등 공통 토큰 정의를 보완한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "req-27"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-9",
+      "title": "Review Notes에 기획/개발/디자인 확인 필요 항목 추가",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [
+        "q-1",
+        "q-2",
+        "q-3",
+        "q-8",
+        "q-9"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Review Notes에 기획/개발/디자인 확인 필요 항목 추가",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "미결정 질문과 개발 확인 항목을 리뷰 문서에 반영한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "req-28"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-10",
+      "title": "Decision Log에 결정 사항과 미결정 사항 기록",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Decision Log에 결정 사항과 미결정 사항 기록",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "이번 회의에서 확정된 내용과 향후 확인이 필요한 내용을 분리 기록한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "req-28"
+      ],
+      "deletedAt": "2026-06-22T07:16:14.588Z"
+    },
+    {
+      "id": "task-11",
+      "title": "과장님과 보고용 시안 범위 재확인",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "q-1",
+        "q-2",
+        "q-4",
+        "q-5"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "과장님과 보고용 시안 범위 재확인",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "현재 기획서 기준인지 러닝 허브 방향 포함인지, 포함 범위와 화면 수를 재확인한다.",
+      "dueDate": null,
+      "blockerReason": "범위 미확정 시 작업량과 일정 리스크가 커진다.",
+      "relatedScreenIds": [
+        "screen-web-learning-hub-home",
+        "screen-web-student-feed",
+        "screen-web-student-detail",
+        "screen-web-teacher-dashboard",
+        "screen-web-teacher-editor"
+      ],
+      "relatedRequirementIds": [
+        "req-28"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-12",
+      "title": "개발팀과 반응형/적응형 대응 가능 범위 확인",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "q-8"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "개발팀과 반응형/적응형 대응 가능 범위 확인",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "컴포넌트 분리, 플로우 분기, 모바일 적응형 전환 가능 범위를 확인한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [
+        "screen-web-teacher-editor",
+        "screen-mobile-search-proposal",
+        "screen-mobile-teacher-dashboard-proposal"
+      ],
+      "relatedRequirementIds": [
+        "req-8",
+        "req-10",
+        "req-24"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-13",
+      "title": "피그마 파일 공유 및 화면 설계서 전달",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "피그마 파일 공유 (화면 설계서 포함)",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "보고용 리뷰를 위해 복수의 시안 방향을 준비한다.",
+      "dueDate": null,
+      "blockerReason": "보고용 시안 범위 확정 필요",
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "task-14",
+      "title": "웹/앱 컴포넌트 분리하여 디자인 시스템 구성",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "웹/앱 컴포넌트 분리하여 디자인 시스템 구성",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "빠른 화면 리뷰와 산출물 전달을 위한 커뮤니케이션 채널을 만든다.",
+      "dueDate": null,
+      "blockerReason": "모바일 포함 범위와 화면 수가 아직 확정되지 않았다.",
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "req-24",
+        "req-25",
+        "req-27"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-15",
+      "title": "차주 보고를 위한 모바일 레이아웃 준비",
+      "status": "done",
+      "priority": "medium",
+      "relatedIds": [
+        "q-3"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "차주 사장님·부사장님 보고를 위한 모바일 레이아웃 준비",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "기존 설계안과 참고 파일을 디자인 작업에 사용할 수 있도록 공유한다.",
+      "dueDate": null,
+      "blockerReason": "에디터 도구와 업로드 제약사항이 아직 확정되지 않았다.",
+      "relatedScreenIds": [
+        "screen-mobile-learning-hub-home-proposal",
+        "screen-mobile-student-detail-proposal"
+      ],
+      "relatedRequirementIds": [
+        "req-6",
+        "req-29"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-16",
+      "title": "에디터 도구 선정 논의",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "에디터 도구 선정 부장님과 논의",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "공통 토큰은 공유하되 웹과 앱 컴포넌트는 분리해 구조를 만든다.",
+      "dueDate": null,
+      "blockerReason": "보고용 범위 확정 필요.",
+      "relatedScreenIds": [
+        "screen-web-teacher-editor"
+      ],
+      "relatedRequirementIds": [
+        "req-12"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-17",
+      "title": "영상 업로드 제약사항을 기획서에 추가 기재",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "q-7"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "파일 용량·인코딩 등 영상 업로드 제약사항 기획서에 추가 기재",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "모바일 확정 기획은 없지만 보고용으로 최소 레이아웃 수준의 제안안을 준비한다.",
+      "dueDate": null,
+      "blockerReason": "모바일 포함 범위 미확정",
+      "relatedScreenIds": [
+        "screen-web-teacher-editor"
+      ],
+      "relatedRequirementIds": [
+        "req-12"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-18",
+      "title": "디자인 시스템·컴포넌트 기반 작업 방식을 프론트 엔지니어팀에 리뷰 공유",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "디자인 시스템·컴포넌트 기반 작업 방식 프론트 엔지니어팀에 리뷰 공유",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "무료 옵션 포함 검토 중인 에디터 도구 후보를 정리하고 논의한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "req-24",
+        "req-25"
+      ],
+      "deletedAt": null
+    },
+    {
+      "id": "task-19",
+      "title": "프론트 엔지니어팀에 디자인 시스템/컴포넌트 기반 작업 방식 리뷰 공유",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "디자인 시스템·컴포넌트 기반 작업 방식 프론트 엔지니어팀에 리뷰 공유",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "파일 용량, 인코딩 등 업로드 제약사항을 추후 기획 문서에 추가한다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "req-23",
+        "req-26",
+        "req-27"
+      ],
+      "deletedAt": "2026-06-23T02:47:07.122Z"
+    },
+    {
+      "id": "task-20",
+      "title": "프론트 엔지니어팀에 디자인 시스템/컴포넌트 기반 작업 방식 리뷰 공유",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "디자인 시스템·컴포넌트 기반 작업 방식 프론트 엔지니어팀에 리뷰 공유",
+        "rationale": null
+      },
+      "source": "user",
+      "description": "컴포넌트 베이스 방식과 분리 구조를 개발팀과 공유해 초기 정렬을 맞춘다.",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [
+        "req-27",
+        "req-28"
+      ],
+      "deletedAt": "2026-06-23T02:47:03.238Z"
+    }
+  ],
+  "suppressedTaskKeys": [],
+  "dailyReport": {
+    "date": "2026-06-23",
+    "summary": "온앤오프 러닝 서비스 관련 회의록을 바탕으로 웹 우선의 제품·UX 디자인 명세 초안을 정리했습니다. 강사/수강생/어드민 역할, 핵심 화면, 콘텐츠 에디터 구조, 통합 검색 제안, 모바일 제안형 방향, 반응형/적응형 정책, 보고용 범위 리스크를 구조화했습니다.",
+    "completed": [
+      "브리프 초안 정리",
+      "핵심 요구사항 구조화",
+      "역할 및 권한 초안 정리",
+      "핵심 화면 및 상태 정의",
+      "보고 전 확인 질문 도출",
+      "후속 작업 목록 정리"
+    ],
+    "next": [
+      "보고용 시안 범위 확정",
+      "에디터 필수 입력값 의미 확인",
+      "모바일 강사 기능 범위 결정",
+      "반응형/적응형 개발 가능 범위 확인",
+      "대표 보고용 프로토타입 연결"
+    ],
+    "blockers": [
+      "현재 기획서 기준인지 러닝 허브 확장 포함인지 범위 미확정",
+      "모바일 편집 범위 미확정",
+      "에디터 도구 및 일부 필드 정의 미확정"
+    ]
+  },
+  "figmaMapping": {
+    "fileUrl": "https://www.figma.com/design/aRH57HzSB7cKcAQXNet1uI/%EC%98%A8%EC%95%A4%EC%98%A4%ED%94%84-%EB%B8%8C%EB%9E%9C%EB%94%94%EB%93%9C-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8?node-id=1-5&t=zHuskFijJLW9Fdcn-1",
+    "fileKey": "aRH57HzSB7cKcAQXNet1uI",
+    "libraryName": "Figma Library",
+    "recommendations": [
+      {
+        "screenId": "screen-web-learning-hub-home",
+        "screenName": "Web / Learning Hub Home",
+        "recommendations": [
+          {
+            "element": "글로벌 헤더/상단 네비게이션",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "라이브러리에 등록된 컴포넌트가 없어 웹 홈 화면용 글로벌 헤더/브랜드 영역/메뉴/유틸 액션을 신규 제작해야 합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "메인 히어로 섹션",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "홈 화면의 방향성과 브랜드 인상을 전달하는 핵심 레이아웃 영역으로, 재사용 가능한 단일 UI 컴포넌트라기보다 화면 전용 구조로 보는 것이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "메인 CTA 버튼 - 콘텐츠 둘러보기",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "기본 버튼 컴포넌트조차 라이브러리에 없으므로 대표 CTA 버튼을 신규 제작해야 합니다.",
+            "missingStates": [
+              "hover",
+              "pressed",
+              "disabled",
+              "focus"
+            ]
+          },
+          {
+            "element": "검색 진입 입력창/검색 바",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "검색/VOD/피드형 탐색 방향성을 반영하는 핵심 입력 요소이지만 활용 가능한 기존 입력 컴포넌트가 없습니다.",
+            "missingStates": [
+              "default",
+              "focus",
+              "filled",
+              "error",
+              "disabled"
+            ]
+          },
+          {
+            "element": "콘텐츠 유형 소개 영역(VOD/복습/온라인 강의)",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "홈 화면 메시지와 탐색 방향을 설명하는 편집형 섹션으로, 개별 카드나 배지 컴포넌트로 분리될 수는 있으나 현재 명세 기준으로는 화면 전용 구성에 가깝습니다.",
+            "missingStates": []
+          },
+          {
+            "element": "콘텐츠 섹션 탭/필터/카테고리 전환",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "콘텐츠 섹션 탐색을 위한 탭 또는 필터 UI가 필요하지만 라이브러리에 관련 컴포넌트가 없습니다.",
+            "missingStates": [
+              "default",
+              "selected",
+              "hover",
+              "disabled",
+              "focus"
+            ]
+          },
+          {
+            "element": "콘텐츠 카드(피드형/강의형/VOD형)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "러닝 허브 인상을 전달하는 핵심 반복 요소이나 카드 컴포넌트가 전혀 없으므로 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "pressed",
+              "selected"
+            ]
+          },
+          {
+            "element": "콘텐츠 섹션 리스트/그리드 레이아웃",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "카드 자체보다는 화면 내 배치 규칙과 구성 방식에 해당하므로 우선은 화면 전용 레이아웃으로 분류하는 것이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "섹션 제목 + 더보기 링크",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "반복 사용 가능성이 높은 작은 조합형 UI이지만 현재 라이브러리에는 텍스트 링크/섹션 헤더 컴포넌트가 없습니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "focus"
+            ]
+          },
+          {
+            "element": "캐러셀/가로 스크롤 탐색 컨트롤",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "홈에서 다양한 콘텐츠 묶음을 탐색시키기 위한 좌우 컨트롤 또는 페이지네이션이 필요할 수 있으나 관련 컴포넌트가 없습니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "disabled",
+              "focus"
+            ]
+          },
+          {
+            "element": "하단 푸터",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "웹 서비스 공통 영역으로 재사용 가능성이 높지만 라이브러리 컴포넌트가 없으므로 신규 제작이 필요합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "배경 비주얼/장식 일러스트 영역",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "러닝 허브의 인상과 브랜딩을 전달하는 시각 연출 요소로, 범용 컴포넌트보다는 화면 전용 자산에 가깝습니다.",
+            "missingStates": []
+          }
+        ]
+      },
+      {
+        "screenId": "screen-web-student-feed",
+        "screenName": "Web / Student / Content Feed or Home",
+        "recommendations": [
+          {
+            "element": "상단 글로벌 네비게이션",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "Figma 라이브러리에 등록된 컴포넌트가 없어 웹용 글로벌 네비게이션을 신규 제작해야 합니다. 로고, 메뉴, 사용자 진입점 등 조회 중심 학습 화면의 공통 프레임 역할을 합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "페이지 헤더/환영 영역",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "화면 맥락에 따라 제목, 설명, 현재 학습 상태를 조합하는 레이아웃 성격이 강하며, 현재는 재사용 가능한 라이브러리 컴포넌트가 없습니다. 우선 화면 전용 레이아웃으로 정의하는 것이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "검색 입력창",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "콘텐츠 탐색의 핵심 인터랙션 요소이지만 라이브러리 내 입력 컴포넌트가 전혀 없어 신규 제작이 필요합니다. 웹 환경에 맞는 placeholder, 아이콘, 포커스 상태 등을 포함해야 합니다.",
+            "missingStates": [
+              "default",
+              "focus",
+              "typing",
+              "filled",
+              "error",
+              "disabled"
+            ]
+          },
+          {
+            "element": "탐색 카테고리/필터 탭",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "과목, 복습 자료, 최신 업로드 등 탐색 분기를 제공하는 핵심 UI이나 현재 매칭 가능한 탭/필터 컴포넌트가 없습니다. 재사용 가능성이 높아 라이브러리 컴포넌트로 신규 제작하는 것이 적절합니다.",
+            "missingStates": [
+              "default",
+              "selected",
+              "hover",
+              "disabled"
+            ]
+          },
+          {
+            "element": "수강 중인 과목 섹션",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "섹션 제목, 정렬, 목록 배치 등은 화면 구조에 가까운 레이아웃 요소입니다. 개별 카드와 분리하여 화면 전용 블록으로 다루는 것이 적합합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "과목 카드",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "수강 중인 과목명, 진도/상태, 썸네일, 진입 CTA를 담는 반복형 정보 단위이므로 카드 컴포넌트로 신규 제작이 필요합니다. 홈/피드 화면 전반에서 재사용될 가능성이 높습니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "selected",
+              "empty-thumbnail"
+            ]
+          },
+          {
+            "element": "새로 업로드된 복습 콘텐츠 섹션",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "섹션 타이틀과 리스트/캐러셀 배치 등 레이아웃 중심 요소이며, 현재는 라이브러리 컴포넌트보다 화면 구조 정의가 우선입니다.",
+            "missingStates": []
+          },
+          {
+            "element": "복습 콘텐츠 카드",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "업로드된 자료의 제목, 업로드 시점, 과목 정보, 콘텐츠 유형, CTA를 담는 핵심 반복 유닛입니다. 기존 컴포넌트가 없으므로 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "new-badge",
+              "completed",
+              "disabled"
+            ]
+          },
+          {
+            "element": "콘텐츠 보기 CTA 버튼",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "명시된 핵심 CTA이며 버튼 컴포넌트 자체가 라이브러리에 존재하지 않습니다. 우선순위가 높은 공통 액션 컴포넌트로 신규 제작해야 합니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "pressed",
+              "disabled",
+              "loading"
+            ]
+          },
+          {
+            "element": "더보기 링크/텍스트 버튼",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "섹션별 추가 탐색 진입을 위한 보조 액션이 필요하지만 대응 가능한 링크/텍스트 버튼 컴포넌트가 없습니다. 웹 탐색 패턴에 맞는 보조 버튼으로 신규 제작이 적절합니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "visited",
+              "disabled"
+            ]
+          },
+          {
+            "element": "콘텐츠 리스트/그리드 영역",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "카드들을 배열하는 화면 전용 레이아웃 구조입니다. 공통 컴포넌트라기보다 반응형 배치 규칙 정의가 중요하므로 screen-only가 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "빈 상태 안내",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "검색 결과 없음, 업로드 자료 없음 등 조회 중심 화면에서 빈 상태가 중요하지만 라이브러리 컴포넌트가 없습니다. 안내 문구와 보조 액션을 포함한 empty state 컴포넌트로 신규 제작이 필요합니다.",
+            "missingStates": [
+              "no-content",
+              "no-search-result",
+              "no-enrollment"
+            ]
+          },
+          {
+            "element": "페이지네이션 또는 더 불러오기 컨트롤",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "콘텐츠 목록이 많을 경우 탐색 흐름을 이어주는 제어 요소가 필요합니다. 현재 라이브러리 공통 컴포넌트가 없으므로 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "disabled",
+              "current-page"
+            ]
+          }
+        ]
+      },
+      {
+        "screenId": "screen-web-student-content-detail",
+        "screenName": "Web / Student / Content Detail",
+        "recommendations": [
+          {
+            "element": "페이지 전체 레이아웃",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "콘텐츠 상세 화면의 2단/단일 컬럼 구성, 섹션 배치, 여백 체계는 화면 맥락에 종속된 레이아웃이므로 라이브러리 컴포넌트보다 화면 전용 구조로 보는 것이 적절합니다. 또한 제공된 라이브러리에 컴포넌트가 없습니다.",
+            "missingStates": []
+          },
+          {
+            "element": "상단 브레드크럼 또는 뒤로가기 영역",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "콘텐츠 목록이나 검색 결과에서 상세 진입한 맥락을 보여주는 탐색 요소가 필요하지만, 현재 라이브러리에 활용 가능한 네비게이션 컴포넌트가 없습니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "focus",
+              "current/disabled"
+            ]
+          },
+          {
+            "element": "콘텐츠 제목/메타 정보 헤더",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "제목, 강의 정보, 공개 상태, 학습 정보 조합은 콘텐츠 도메인 데이터에 따라 달라지는 정보 배치 성격이 강해 화면 전용 표현으로 처리하는 것이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "대표 썸네일/히어로 미디어 영역",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "VOD 또는 복습 콘텐츠의 대표 이미지를 보여주는 미디어 영역이 필요하지만, 현재 라이브러리에 대응 가능한 미디어/썸네일 컴포넌트가 없습니다.",
+            "missingStates": [
+              "default",
+              "loading",
+              "error",
+              "unavailable"
+            ]
+          },
+          {
+            "element": "복습 시작하기 CTA 버튼",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "이 화면의 핵심 행동을 담당하는 주요 버튼이 필요하나, 기존 버튼 컴포넌트가 전혀 없습니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "pressed",
+              "focus",
+              "disabled",
+              "loading"
+            ]
+          },
+          {
+            "element": "미래 강의 비공개 상태 배지/안내",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "미래 강의는 공개되지 않는 규칙을 시각적으로 반영할 상태 표현이 필요하지만, 배지나 상태 안내용 컴포넌트가 없습니다.",
+            "missingStates": [
+              "hidden/private",
+              "scheduled",
+              "unavailable reason"
+            ]
+          },
+          {
+            "element": "탭 네비게이션(예: 자료/영상/텍스트/FAQ)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "상세 화면 내 여러 콘텐츠 유형을 전환하기 위한 탭 UI가 필요하나, 현재 라이브러리에 탭 컴포넌트가 존재하지 않습니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "active",
+              "focus",
+              "disabled"
+            ]
+          },
+          {
+            "element": "영상 플레이어 영역",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "VOD 소비 경험의 핵심 요소이지만, 재생 UI를 포함한 플레이어 관련 컴포넌트가 라이브러리에 없습니다.",
+            "missingStates": [
+              "idle",
+              "playing",
+              "paused",
+              "loading",
+              "error",
+              "restricted/unavailable"
+            ]
+          },
+          {
+            "element": "텍스트 본문 콘텐츠 영역",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "학습용 본문, 설명, 요약 등은 타이포그래피와 콘텐츠 구조 중심의 화면 표현으로, 개별 라이브러리 컴포넌트보다는 화면 레이아웃/스타일 가이드에 가깝습니다.",
+            "missingStates": []
+          },
+          {
+            "element": "자료 다운로드/첨부파일 리스트",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "강의 자료를 나열하고 다운로드 상태를 보여주는 리스트 또는 아이템 컴포넌트가 필요하지만 라이브러리에 없습니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "downloading",
+              "downloaded",
+              "disabled",
+              "empty"
+            ]
+          },
+          {
+            "element": "FAQ 아코디언",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "질문/답변을 접고 펼치는 구조가 필요하나, 아코디언 형태의 기존 컴포넌트가 없습니다.",
+            "missingStates": [
+              "collapsed",
+              "expanded",
+              "hover",
+              "focus",
+              "disabled"
+            ]
+          },
+          {
+            "element": "섹션 카드/콘텐츠 블록 컨테이너",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "영상, 텍스트, 자료, FAQ를 구획하는 공통 컨테이너가 있으면 재사용성이 높지만, 현재 라이브러리에 카드/패널 컴포넌트가 없습니다.",
+            "missingStates": [
+              "default",
+              "selected",
+              "disabled"
+            ]
+          },
+          {
+            "element": "에러/비공개/빈 상태 안내 영역",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "비공개 콘텐츠, 아직 공개 전인 강의, 자료 없음 등의 상태를 사용자에게 설명하는 피드백 컴포넌트가 필요하지만 기존 자산이 없습니다.",
+            "missingStates": [
+              "empty",
+              "error",
+              "private",
+              "scheduled",
+              "network failure"
+            ]
+          }
+        ]
+      },
+      {
+        "screenId": "screen-web-teacher-dashboard",
+        "screenName": "Web / Teacher / Dashboard",
+        "recommendations": [
+          {
+            "element": "상단 글로벌 헤더/강사용 내비게이션",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "라이브러리에 컴포넌트가 전혀 없어 강사용 웹 대시보드의 글로벌 헤더 및 주요 내비게이션은 신규 제작이 필요합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "업로드 필요 강의 수 요약 배너/상태 카드",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "업로드 필요 상태를 강조하는 요약 배너 또는 상태 카드는 핵심 도메인 정보와 상태 표현을 포함하므로 신규 컴포넌트 정의가 필요합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "CTA 버튼 - 강의 자료 등록하기",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "주요 행동을 유도하는 기본 버튼 컴포넌트가 라이브러리에 없으므로 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "pressed",
+              "disabled",
+              "loading"
+            ]
+          },
+          {
+            "element": "과목/강의 뷰 전환 탭",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "과목 리스트와 강의 리스트의 두 가지 뷰를 명확히 구분하는 탭/세그먼트 전환 UI가 필요하지만 기존 컴포넌트가 없습니다.",
+            "missingStates": [
+              "default",
+              "selected",
+              "hover",
+              "disabled"
+            ]
+          },
+          {
+            "element": "과목 리스트 영역",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "과목 리스트를 배치하는 화면 레이아웃 자체는 대시보드 전용 구성으로 보는 것이 적절하며, 내부 아이템은 별도 컴포넌트화 대상입니다.",
+            "missingStates": []
+          },
+          {
+            "element": "과목 리스트 아이템/행",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "과목명, 진행 정보, 상태 요약 등을 담는 반복 리스트 아이템은 재사용 가능성이 높지만 현재 라이브러리에 없어 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "selected",
+              "disabled"
+            ]
+          },
+          {
+            "element": "강의 리스트 영역",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "강의 리스트 컨테이너와 전체 배치 구조는 본 화면 맥락에 종속적인 레이아웃이므로 화면 전용으로 처리하는 것이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "강의 리스트 아이템/강의 카드",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "강의명, 업로드 필요 여부, 자료 등록 진입 액션 등 강의 상태를 보여주는 핵심 반복 요소이며 라이브러리에 없어 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "selected",
+              "disabled"
+            ]
+          },
+          {
+            "element": "강의 상태 배지/라벨",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "QA 기준에 있는 상태 색상 일관성을 위해 상태 배지는 독립 컴포넌트로 관리하는 것이 적합하며, 현재는 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "success",
+              "warning",
+              "danger",
+              "neutral"
+            ]
+          },
+          {
+            "element": "강의 자료 등록 진입용 보조 버튼/링크",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "리스트 내부 또는 카드 내부에서 사용하는 보조 액션 역시 재사용 가능한 액션 컴포넌트이나 라이브러리에 없습니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "pressed",
+              "disabled"
+            ]
+          },
+          {
+            "element": "캘린더 위젯",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "일정 확인을 위한 캘린더는 구조가 복합적이고 재사용성이 있어 컴포넌트 또는 컴포지트 패턴으로 신규 제작해야 합니다.",
+            "missingStates": [
+              "default",
+              "date-selected",
+              "today",
+              "has-event",
+              "disabled"
+            ]
+          },
+          {
+            "element": "대시보드 메인 레이아웃",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "요약 영역, 리스트 영역, 캘린더 영역을 배치하는 전체 웹 대시보드 레이아웃은 화면 전용 구조로 보는 것이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "빈 상태 안내 영역",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "업로드 필요 강의가 없거나 리스트가 비어 있을 때의 안내 UI는 다양한 화면에서 재사용 가능하지만 현재 라이브러리에 없어 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default"
+            ]
+          }
+        ]
+      },
+      {
+        "screenId": "screen-web-teacher-content-editor",
+        "screenName": "Web / Teacher / Content Editor",
+        "recommendations": [
+          {
+            "element": "상단 페이지 헤더(화면 제목, 강의 맥락, 저장하기 CTA)",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "현재 라이브러리에 컴포넌트가 전혀 없으므로 재사용 가능한 개별 컴포넌트로 연결할 수 없다. 이 요소는 여러 하위 요소의 조합으로 구성된 화면 전용 상단 레이아웃 성격이 강하다.",
+            "missingStates": []
+          },
+          {
+            "element": "저장하기 버튼",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "핵심 CTA 버튼이 필요하지만 라이브러리에 버튼 컴포넌트가 없다. 저장 가능/불가, 로딩 등 상태를 포함한 버튼 컴포넌트를 신규 제작해야 한다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "pressed",
+              "disabled",
+              "loading",
+              "focus"
+            ]
+          },
+          {
+            "element": "강의 제목/자료명 입력창",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "필수 입력값 검증이 필요한 텍스트 필드가 필요하지만 기존 입력 컴포넌트가 없다. 라벨, 플레이스홀더, 에러 메시지를 포함하는 입력 컴포넌트 신규 제작이 적절하다.",
+            "missingStates": [
+              "default",
+              "focus",
+              "filled",
+              "error",
+              "disabled",
+              "readonly"
+            ]
+          },
+          {
+            "element": "설명/요약 입력 영역(멀티라인)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "강의 자료 설명 입력을 위한 textarea 계열 컴포넌트가 필요하나 라이브러리가 비어 있다. 멀티라인 입력 전용 컴포넌트 신규 제작이 필요하다.",
+            "missingStates": [
+              "default",
+              "focus",
+              "filled",
+              "error",
+              "disabled",
+              "resize"
+            ]
+          },
+          {
+            "element": "콘텐츠 블록 목록 영역",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "여러 블록 아이템과 제어 요소를 배치하는 편집 캔버스 영역으로, 개별 재사용 컴포넌트보다 화면 구조에 가까운 레이아웃이다.",
+            "missingStates": []
+          },
+          {
+            "element": "콘텐츠 블록 카드/패널",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "각 블록을 구분하고 편집 액션을 담는 카드형 컨테이너가 필요하지만 대응 컴포넌트가 없다. 블록 타입별 확장이 가능한 패널 컴포넌트 신규 제작이 적절하다.",
+            "missingStates": [
+              "default",
+              "selected",
+              "hover",
+              "dragging",
+              "collapsed",
+              "error"
+            ]
+          },
+          {
+            "element": "블록 추가 버튼",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "콘텐츠 블록 추가 흐름의 핵심 액션이지만 버튼/아이콘 버튼 계열 컴포넌트가 없다. 추가 아이콘 결합 여부를 포함한 신규 버튼 컴포넌트가 필요하다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "pressed",
+              "disabled",
+              "focus"
+            ]
+          },
+          {
+            "element": "블록 삭제 버튼",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "파괴적 액션을 위한 버튼 또는 아이콘 버튼이 필요하나 라이브러리에 없다. 경고 성격의 destructive variant를 포함한 신규 컴포넌트 제작이 필요하다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "pressed",
+              "disabled",
+              "focus",
+              "danger"
+            ]
+          },
+          {
+            "element": "블록 타입 선택 메뉴/드롭다운",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "추가할 콘텐츠 블록 유형을 선택하는 선택형 입력이 필요하지만 드롭다운/셀렉트 컴포넌트가 없다. 옵션 리스트와 확장 상태를 갖는 신규 컴포넌트가 필요하다.",
+            "missingStates": [
+              "default",
+              "open",
+              "selected",
+              "hover",
+              "disabled",
+              "error",
+              "focus"
+            ]
+          },
+          {
+            "element": "미리보기 패널",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "수강생 화면을 확인하기 위한 우측 또는 하단의 미리보기 영역은 여러 콘텐츠의 렌더링 결과를 담는 화면 전용 구조이다. 라이브러리 단일 컴포넌트보다 레이아웃 단위로 보는 것이 적절하다.",
+            "missingStates": []
+          },
+          {
+            "element": "탭 또는 뷰 전환(편집/미리보기)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "편집과 미리보기 전환을 직관적으로 제공하려면 탭/세그먼트드 컨트롤이 필요하나 라이브러리에 없다. 상태 전환형 네비게이션 컴포넌트 신규 제작이 필요하다.",
+            "missingStates": [
+              "default",
+              "active",
+              "hover",
+              "disabled",
+              "focus"
+            ]
+          },
+          {
+            "element": "필수값 에러 메시지/도움말 텍스트",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "저장 불가 조건을 명확히 안내하려면 입력 하단의 검증 메시지 컴포넌트가 필요하다. 현재 라이브러리가 비어 있어 텍스트 피드백 컴포넌트를 새로 정의해야 한다.",
+            "missingStates": [
+              "info",
+              "error",
+              "success",
+              "warning"
+            ]
+          },
+          {
+            "element": "저장 성공/실패 피드백 토스트 또는 배너",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "저장 결과를 즉시 알려주는 피드백 요소가 필요하지만 대응 컴포넌트가 없다. 글로벌 알림용 토스트 또는 인라인 배너 컴포넌트 신규 제작이 필요하다.",
+            "missingStates": [
+              "success",
+              "error",
+              "warning",
+              "info"
+            ]
+          }
+        ]
+      },
+      {
+        "screenId": "screen-mobile-learning-hub-home-proposal",
+        "screenName": "Mobile / Learning Hub Home / Proposal",
+        "recommendations": [
+          {
+            "element": "상단 모바일 헤더/네비게이션",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "라이브러리에 등록된 컴포넌트가 없으므로 모바일용 헤더/네비게이션을 재사용 가능한 형태로 신규 제작해야 합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "검색 진입 영역",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "주요 행동에 검색 진입이 포함되어 있으나 연결 가능한 입력창/검색 컴포넌트가 라이브러리에 없습니다. 모바일 축약 화면에 맞는 검색 진입 UI를 신규 제작해야 합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "메인 CTA 버튼(콘텐츠 둘러보기)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "버튼 컴포넌트가 전혀 없으므로 대표 CTA 버튼을 신규 제작해야 합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "핵심 콘텐츠 섹션 카드/리스트",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "핵심 콘텐츠 탐색을 위한 카드 또는 리스트형 요약 컴포넌트가 필요하지만 라이브러리에 유사 자산이 없습니다.",
+            "missingStates": []
+          },
+          {
+            "element": "섹션 제목 및 요약 블록",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "제안형 모바일 화면의 정보 구조를 설명하는 레이아웃성 텍스트 블록으로 볼 수 있으며, 현재는 공용 컴포넌트보다 화면 전용 구성으로 처리하는 것이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "Proposal 구분 배지/라벨",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "제안형 화면임을 관리상 구분해야 하므로 상태성 라벨/배지가 필요하지만 이를 연결할 기존 컴포넌트가 없습니다.",
+            "missingStates": []
+          },
+          {
+            "element": "전체 모바일 축약 레이아웃",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "웹 구조를 모바일에 맞게 축약 재구성한 화면 전체 레이아웃은 특정 화면 맥락에 종속되므로 라이브러리 컴포넌트보다는 화면 전용 레이아웃으로 보는 것이 적절합니다.",
+            "missingStates": []
+          }
+        ]
+      },
+      {
+        "screenId": "screen-mobile-student-content-detail-proposal",
+        "screenName": "Mobile / Student / Content Detail / Proposal",
+        "recommendations": [
+          {
+            "element": "상단 네비게이션 바",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "라이브러리에 컴포넌트가 없어 모바일 화면의 상단 제목/뒤로가기/보조 액션을 포함하는 네비게이션 바는 신규 제작이 필요합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "콘텐츠 상세 헤더 영역",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "화면의 제목, 설명, 메타 정보 등을 조합한 상세 헤더는 개별 공용 컴포넌트라기보다 이 화면 문맥에 맞춘 레이아웃 성격이 강해 화면 전용 구성으로 보는 것이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "강의 자료 보기 액션 버튼",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "핵심 행동 중 하나인 자료 보기 버튼은 반복 사용 가능성이 높은 기본 버튼 유형이지만 현재 라이브러리에 버튼 컴포넌트가 없으므로 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "pressed",
+              "disabled"
+            ]
+          },
+          {
+            "element": "복습하기 메인 CTA 버튼",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "화면의 주요 CTA로서 모바일 하단 또는 본문 내 강조 버튼이 필요하나 라이브러리 내 기존 버튼 자산이 없어 신규 컴포넌트 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "pressed",
+              "disabled"
+            ]
+          },
+          {
+            "element": "콘텐츠 정보 카드",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "썸네일, 제목, 진행 정보 등 콘텐츠 소비 경험을 요약하는 카드형 UI가 필요할 가능성이 높지만 대응 가능한 기존 카드 컴포넌트가 없으므로 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default"
+            ]
+          },
+          {
+            "element": "복습 유도 섹션",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "설명 텍스트, 보조 카피, CTA 배치를 포함한 복습 유도 영역은 이 제안 화면의 목적 중심 레이아웃으로 공용 단일 컴포넌트보다는 화면 전용 섹션으로 판단됩니다.",
+            "missingStates": []
+          },
+          {
+            "element": "스크롤형 본문 섹션 레이아웃",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "모바일 가독성과 스크롤 흐름을 만족하기 위한 세로 스택형 레이아웃은 라이브러리 컴포넌트보다는 화면 구조 설계에 해당합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "구분선 및 간격 시스템",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "섹션 분리와 모바일 가독성을 위한 divider/spacer 토큰성 요소가 필요하지만 현재 라이브러리가 비어 있어 신규 정의가 필요합니다.",
+            "missingStates": [
+              "default"
+            ]
+          }
+        ]
+      },
+      {
+        "screenId": "screen-mobile-teacher-dashboard-proposal",
+        "screenName": "Mobile / Teacher / Dashboard / Proposal",
+        "recommendations": [
+          {
+            "element": "상단 모바일 헤더/내비게이션",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "라이브러리에 등록된 컴포넌트가 없으므로 모바일 화면의 기본 헤더/내비게이션도 신규 제작이 필요합니다. 제안 화면 특성상 제목, 뒤로가기 또는 메뉴 진입 등 최소 구조를 포함하는 모바일 전용 헤더가 적합합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "강의 확인하기 CTA 버튼",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "라이브러리 내 버튼 컴포넌트가 없으므로 주요 행동을 담당하는 CTA 버튼은 신규 제작이 필요합니다. 모바일 화면에서 가장 중요한 액션이므로 우선순위 높은 기본 버튼으로 정의하는 것이 적절합니다.",
+            "missingStates": [
+              "default",
+              "pressed",
+              "disabled",
+              "loading"
+            ]
+          },
+          {
+            "element": "업로드 필요 강의 요약 카드",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "업로드가 필요한 강의를 한눈에 보여주는 핵심 정보 블록이지만 이를 대응할 카드/리스트 컴포넌트가 라이브러리에 없습니다. 강의명, 상태, 액션 유도 정보를 담는 요약 카드 컴포넌트로 신규 제작하는 것이 적절합니다.",
+            "missingStates": [
+              "default",
+              "empty",
+              "urgent/emphasis"
+            ]
+          },
+          {
+            "element": "강의 상태 확인 카드 또는 리스트 아이템",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "강의별 상태를 확인하는 반복 구조 요소가 필요하지만 기존 리스트/셀/카드 컴포넌트가 전혀 없습니다. 상태 라벨과 보조 정보를 포함하는 모바일용 리스트 아이템 또는 카드로 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "in-review",
+              "needs-upload",
+              "completed"
+            ]
+          },
+          {
+            "element": "강의 상태 배지/라벨",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "강의의 현재 상태를 짧게 표시하는 시맨틱 요소가 필요하나 라이브러리에 배지/태그 계열 컴포넌트가 없습니다. 상태 전달이 핵심이므로 별도 배지 컴포넌트 신규 제작이 적합합니다.",
+            "missingStates": [
+              "default",
+              "info",
+              "warning",
+              "success"
+            ]
+          },
+          {
+            "element": "대시보드 요약 레이아웃",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "이 화면은 웹 대시보드의 핵심 정보만 축약 전달하는 제안용 모바일 레이아웃입니다. 전체 섹션 배치와 정보 우선순위 구성은 화면 문맥 의존성이 크므로 우선 화면 전용 레이아웃으로 보는 것이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "빈 상태/축약 안내 영역",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "모바일 지원 범위가 미정이므로 데이터 부족, 미지원, 축약 제공 등의 안내 영역이 필요할 가능성이 높습니다. 이를 대응할 empty state 또는 안내 컴포넌트가 없어 신규 제작이 필요합니다.",
+            "missingStates": [
+              "empty",
+              "unsupported-scope",
+              "no-lecture-needing-action"
+            ]
+          }
+        ]
+      },
+      {
+        "screenId": "screen-mobile-search-proposal",
+        "screenName": "Mobile / Search / Proposal",
+        "recommendations": [
+          {
+            "element": "모바일 상단 네비게이션 바",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "라이브러리에 등록된 컴포넌트가 없으므로 모바일 검색 화면의 상단 앱바/네비게이션 바를 재사용 가능한 컴포넌트로 신규 제작해야 합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "검색 입력창",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "검색어 입력이 핵심 행동이며 입력 필드와 검색 아이콘, placeholder, 입력 상태 등을 포함한 검색 전용 입력 컴포넌트가 필요하지만 기존 라이브러리가 비어 있어 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "focused",
+              "typing",
+              "filled",
+              "error",
+              "disabled"
+            ]
+          },
+          {
+            "element": "필터 버튼",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "모바일에서 필터를 여는 주요 트리거로 사용되며 버튼 또는 아이콘 버튼 형태의 공통 컴포넌트가 필요하지만 기존 자산이 없어 신규 제작이 적절합니다.",
+            "missingStates": [
+              "default",
+              "pressed",
+              "disabled",
+              "badge-applied"
+            ]
+          },
+          {
+            "element": "검색 CTA 버튼",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "'검색하기' CTA는 반복 사용 가능한 기본 버튼 컴포넌트로 관리하는 것이 적절하나 현재 라이브러리에 컴포넌트가 없어 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "pressed",
+              "loading",
+              "disabled"
+            ]
+          },
+          {
+            "element": "필터 Bottom Sheet",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "QA 기준상 웹 필터 패널을 모바일에서는 Bottom Sheet로 전환 가능한 구조가 필요합니다. 라이브러리에 대응 컴포넌트가 없으므로 모바일용 오버레이/바텀시트 컴포넌트를 신규 제작해야 합니다.",
+            "missingStates": [
+              "collapsed",
+              "expanded",
+              "dragging",
+              "dismissed"
+            ]
+          },
+          {
+            "element": "검색 결과 리스트",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "검색 결과를 세로로 배치하는 리스트 레이아웃 자체는 화면 맥락에 강하게 종속되므로 라이브러리 컴포넌트보다는 화면 전용 구조로 다루는 것이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "검색 결과 카드",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "탐색 경험의 핵심 단위로 반복 노출될 가능성이 높지만 현재 라이브러리에 유사 카드 컴포넌트가 전혀 없어 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "pressed",
+              "saved",
+              "disabled"
+            ]
+          },
+          {
+            "element": "필터 선택 칩/태그",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "적용된 필터를 간결하게 표시하고 해제할 수 있는 칩/태그 UI가 필요하지만 기존 라이브러리가 비어 있으므로 신규 제작이 적절합니다.",
+            "missingStates": [
+              "default",
+              "selected",
+              "removable",
+              "disabled"
+            ]
+          },
+          {
+            "element": "로딩/빈 결과 상태 영역",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "검색 과정에서 로딩 및 결과 없음 상태를 일관되게 보여줄 피드백 컴포넌트가 필요하나 라이브러리에 관련 자산이 없습니다.",
+            "missingStates": [
+              "loading",
+              "empty",
+              "error"
+            ]
+          }
+        ]
+      },
+      {
+        "screenId": "screen-admin-notice-management",
+        "screenName": "Admin / Notice Management",
+        "recommendations": [
+          {
+            "element": "페이지 헤더 (화면 제목, 설명, 우측 CTA 영역)",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "라이브러리 컴포넌트가 전혀 없으므로 기존 매핑은 불가하며, 해당 구조는 화면 문맥에 강하게 결합된 관리 화면 상단 레이아웃이어서 우선 화면 전용으로 처리하는 것이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "공지 등록하기 버튼",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "CTA 버튼에 대응할 기존 라이브러리 컴포넌트가 없습니다. 어드민 전반에서 재사용 가능성이 높은 기본 버튼 컴포넌트로 신규 제작하는 것이 적절합니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "pressed",
+              "disabled",
+              "loading"
+            ]
+          },
+          {
+            "element": "공지 목록 테이블/리스트",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "공지 목록 조회를 위한 행/열 구조의 데이터 표시 컴포넌트가 필요하지만 라이브러리에 유사 컴포넌트가 없습니다. 어드민 목록형 화면에 반복 사용될 가능성이 높아 신규 컴포넌트 또는 데이터 그리드 패턴 정의가 필요합니다.",
+            "missingStates": [
+              "empty",
+              "loading",
+              "row-selected",
+              "sortable",
+              "pagination"
+            ]
+          },
+          {
+            "element": "검색/필터 영역",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "필터 바 자체는 개별 입력요소들의 조합으로 구성되는 레이아웃 성격이 강합니다. 현재 라이브러리가 비어 있으므로 우선 화면 전용 섹션으로 보고, 내부 입력요소는 별도 컴포넌트화하는 접근이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "공지 제목 입력창",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "공지 등록/수정에 필요한 단일행 텍스트 입력이 필요하나 기존 컴포넌트가 없습니다. 폼 전반에 재사용 가능한 텍스트 필드 컴포넌트 신규 제작이 적절합니다.",
+            "missingStates": [
+              "default",
+              "focus",
+              "error",
+              "disabled",
+              "readonly",
+              "with-helper-text"
+            ]
+          },
+          {
+            "element": "공지 내용 입력 영역",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "공지 본문 작성을 위한 다중행 입력 또는 에디터 영역이 필요하지만 대응 컴포넌트가 없습니다. 재사용 가능한 textarea 또는 editor 계열 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "focus",
+              "error",
+              "disabled",
+              "readonly"
+            ]
+          },
+          {
+            "element": "공지 대상 선택",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "대상 설정은 드롭다운, 체크박스 그룹, 라디오 그룹 중 하나의 선택 UI가 필요하며 현재 라이브러리에 어떤 선택 컴포넌트도 없습니다. QA 핵심 항목이므로 선택 계열 컴포넌트 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "selected",
+              "unselected",
+              "disabled",
+              "error"
+            ]
+          },
+          {
+            "element": "게시 여부 토글",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "게시 여부를 명확히 제어하기 위한 스위치 또는 라디오/체크 UI가 필요하지만 기존 컴포넌트가 없습니다. 상태 표현이 중요한 제어 컴포넌트로 신규 제작이 적절합니다.",
+            "missingStates": [
+              "on",
+              "off",
+              "disabled",
+              "focus"
+            ]
+          },
+          {
+            "element": "상단고정 여부 토글",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "상단고정 여부 역시 명확한 이진 제어가 필요하므로 스위치/체크박스 계열 컴포넌트가 필요합니다. 라이브러리가 없으므로 신규 제작이 필요합니다.",
+            "missingStates": [
+              "on",
+              "off",
+              "disabled",
+              "focus"
+            ]
+          },
+          {
+            "element": "등록/수정 폼 컨테이너",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "폼 섹션 배치, 라벨 정렬, 액션 버튼 위치 등은 이 화면의 편집 레이아웃에 가까우며 현재는 공용화보다 화면 전용 구성으로 두는 것이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "저장/수정/취소 액션 버튼 그룹",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "버튼 그룹 배치는 화면 레이아웃 요소이며, 개별 버튼 자체는 별도 컴포넌트화 대상입니다. 현재 단계에서는 그룹 구조를 화면 전용으로 관리하는 것이 적합합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "페이지네이션",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "공지 목록이 다건일 가능성이 높아 페이지 이동 제어가 필요합니다. 라이브러리에 대응 컴포넌트가 없으므로 신규 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "selected",
+              "disabled"
+            ]
+          },
+          {
+            "element": "빈 결과/데이터 없음 상태",
+            "pattern": "extend-variant",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "엄밀히는 목록 컴포넌트의 상태 변형으로 관리하는 것이 적절합니다. 다만 현재 기본 목록 컴포넌트 자체가 없으므로 추후 목록/테이블 신규 컴포넌트에 empty variant를 추가하는 형태가 필요합니다.",
+            "missingStates": [
+              "empty-state"
+            ]
+          },
+          {
+            "element": "로딩 상태",
+            "pattern": "extend-variant",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "목록 조회 및 저장 처리에서 로딩 표현이 필요합니다. 현재는 매핑할 기존 컴포넌트가 없지만, 향후 버튼과 목록 컴포넌트에 loading 상태 variant를 추가해야 합니다.",
+            "missingStates": [
+              "loading-state"
+            ]
+          },
+          {
+            "element": "성공/실패 피드백 메시지",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "등록/수정 결과를 사용자에게 명확히 알려줄 토스트, 인라인 메시지, 배너 중 하나가 필요하지만 라이브러리에 관련 컴포넌트가 없습니다. 재사용 가능한 피드백 컴포넌트 신규 제작이 적절합니다.",
+            "missingStates": [
+              "success",
+              "error",
+              "warning",
+              "info"
+            ]
+          }
+        ]
+      },
+      {
+        "screenId": "screen-admin-banner-management",
+        "screenName": "Admin / Banner Management",
+        "recommendations": [
+          {
+            "element": "페이지 헤더(Admin / Banner Management)",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "라이브러리에 등록된 컴포넌트가 없으므로 화면 제목과 설명을 포함한 상단 헤더 영역은 우선 화면 전용 레이아웃으로 관리하는 것이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "CTA 버튼(배너 등록하기)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "버튼 컴포넌트가 라이브러리에 전혀 없으므로 대표 CTA 버튼은 신규 컴포넌트 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "pressed",
+              "disabled",
+              "loading"
+            ]
+          },
+          {
+            "element": "배너 목록 테이블/리스트",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "배너명, 대상, 노출 기간, 순서, 상태 등을 조회하는 데이터 리스트 구조가 필요하지만 기존 테이블/리스트 컴포넌트가 없습니다.",
+            "missingStates": [
+              "default",
+              "empty",
+              "loading",
+              "row-hover",
+              "pagination"
+            ]
+          },
+          {
+            "element": "배너 목록 행(Row)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "각 배너 항목을 표현하는 반복 행 컴포넌트가 없으므로 썸네일, 대상, 기간, 순서 조작, 액션을 담는 행 단위 컴포넌트가 필요합니다.",
+            "missingStates": [
+              "default",
+              "selected",
+              "disabled",
+              "dragging"
+            ]
+          },
+          {
+            "element": "노출 대상 구분값(수강생용/강사용)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "대상 구분은 배지, 세그먼트, 셀렉트 등으로 표현될 수 있으나 해당 기본 컴포넌트가 없어 신규 제작이 필요합니다.",
+            "missingStates": [
+              "student",
+              "instructor",
+              "mixed",
+              "disabled"
+            ]
+          },
+          {
+            "element": "노출 기간 입력(Date range)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "시작일/종료일 설정을 위한 날짜 입력 또는 기간 선택 컴포넌트가 라이브러리에 없습니다.",
+            "missingStates": [
+              "default",
+              "focused",
+              "with-value",
+              "error",
+              "disabled",
+              "calendar-open"
+            ]
+          },
+          {
+            "element": "순서 변경 컨트롤",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "순서 변경은 드래그 핸들, 스텝퍼, 위/아래 이동 버튼 등 상호작용 요소가 필요하지만 관련 컴포넌트가 없습니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "dragging",
+              "disabled"
+            ]
+          },
+          {
+            "element": "배너 등록/수정 폼",
+            "pattern": "screen-only",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "현재 라이브러리 공백 상태에서는 등록 화면 전체를 즉시 공통 컴포넌트화하기보다 화면 전용 폼 레이아웃으로 구성하고, 내부 입력 요소는 추후 공통화하는 방식이 적절합니다.",
+            "missingStates": []
+          },
+          {
+            "element": "입력 필드(배너명, 링크 등)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "텍스트 입력 컴포넌트가 없으므로 배너 메타데이터 입력을 위한 기본 필드 제작이 필요합니다.",
+            "missingStates": [
+              "default",
+              "focused",
+              "filled",
+              "error",
+              "disabled",
+              "readonly"
+            ]
+          },
+          {
+            "element": "드롭다운/셀렉트(노출 대상 선택 등)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "대상 선택이나 상태 선택에 필요한 셀렉트 컴포넌트가 존재하지 않습니다.",
+            "missingStates": [
+              "default",
+              "opened",
+              "selected",
+              "error",
+              "disabled"
+            ]
+          },
+          {
+            "element": "토글/스위치(노출 여부)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "배너의 노출 상태를 빠르게 제어할 수 있는 스위치 또는 토글 컴포넌트가 없으므로 신규 제작이 필요합니다.",
+            "missingStates": [
+              "on",
+              "off",
+              "disabled",
+              "loading"
+            ]
+          },
+          {
+            "element": "썸네일/이미지 업로드 영역",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "배너 이미지 등록과 미리보기를 위한 업로드 UI가 필요하지만 대응 컴포넌트가 없습니다.",
+            "missingStates": [
+              "empty",
+              "uploading",
+              "uploaded",
+              "error",
+              "disabled"
+            ]
+          },
+          {
+            "element": "페이지네이션 또는 목록 하단 탐색",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "배너 목록이 많아질 경우 페이지 이동이 필요할 수 있으나 관련 내비게이션 컴포넌트가 없습니다.",
+            "missingStates": [
+              "default",
+              "hover",
+              "selected",
+              "disabled"
+            ]
+          },
+          {
+            "element": "빈 상태(등록된 배너 없음)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "초기 운영이나 필터 결과 없음 상황을 안내하는 Empty State 컴포넌트가 없습니다.",
+            "missingStates": [
+              "no-data",
+              "no-search-result"
+            ]
+          },
+          {
+            "element": "로딩 상태(목록 조회 중)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "목록 조회 및 저장 처리 중 사용자 피드백을 주기 위한 로딩 표현 컴포넌트가 없습니다.",
+            "missingStates": [
+              "spinner",
+              "skeleton-table",
+              "overlay-loading"
+            ]
+          },
+          {
+            "element": "확인/경고 모달(삭제, 순서 변경 확인 등)",
+            "pattern": "new-component",
+            "componentKey": null,
+            "componentName": null,
+            "rationale": "중요 액션 확인을 위한 다이얼로그 계열 컴포넌트가 라이브러리에 존재하지 않습니다.",
+            "missingStates": [
+              "default",
+              "warning",
+              "destructive",
+              "loading"
+            ]
+          }
+        ]
+      }
+    ],
+    "analyzedAt": "2026-06-22T07:08:45.820Z",
+    "status": "completed",
+    "error": null
+  }
+}

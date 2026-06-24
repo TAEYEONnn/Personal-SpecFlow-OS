@@ -1,0 +1,1607 @@
+{
+  "brief": {
+    "title": "SpecFlow OS 다음 구현 일정 명세",
+    "purpose": "입력된 구현 일정을 실행 가능한 제품·UX 디자인 명세로 구조화해 단계별 기능, 화면, 검증 기준, 작업 항목을 정리합니다.",
+    "problem": "SpecFlow OS MVP를 실제 업무에서 안정적으로 운영 가능한 수준으로 연결하고, 이후 변경 영향도 분석, 외부 연동, 전달 확장, Figma 디자인 시스템 매핑까지 순차적으로 확장해야 합니다.",
+    "successCriteria": [
+      "실제 계정으로 로그인하고 10개 샘플을 반복 컴파일해도 기존 문서가 유실되지 않습니다.",
+      "요구사항 하나를 변경하면 영향받은 화면, 상태, 문서가 이유와 함께 표시됩니다.",
+      "PDF 기획서를 넣고 페이지 근거가 포함된 명세를 Notion으로 전달할 수 있습니다.",
+      "새 화면 명세마다 사용할 기존 컴포넌트와 부족한 상태가 근거와 함께 제안됩니다."
+    ],
+    "audience": [
+      "프로덕트 디자이너",
+      "개발자",
+      "QA",
+      "프로덕트 매니저"
+    ],
+    "scope": [
+      "1주차 운영 연결과 품질 기준",
+      "2주차 변경 영향도와 버전 비교",
+      "3주차 입력과 전달 확장",
+      "4주차 이후 Figma 디자인 시스템 매핑 방향 정리"
+    ],
+    "outOfScope": [
+      "초기 단계에서 Figma 파일 자동 수정",
+      "원문에 없는 세부 기술 구현 방식 확정",
+      "세부 권한 정책의 확정"
+    ],
+    "constraints": [
+      "원문에 명시된 순서대로 MVP 안정화 후 확장합니다.",
+      "운영 화면에서 모델명, 프롬프트 버전, 처리 시간, 실패 유형을 확인할 수 있어야 합니다.",
+      "변경 영향도는 요구사항·화면·상태·문구 단위의 안정적인 엔티티 ID 정책을 전제로 합니다.",
+      "PDF 지원 시 페이지 번호 기반 출처를 지원해야 합니다.",
+      "Figma 단계 초기에는 추천과 주석 생성만 지원합니다."
+    ],
+    "userEditedFields": []
+  },
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "content": "Supabase Production 프로젝트와 Vercel Preview/Production 환경을 연결할 수 있어야 합니다.",
+      "category": "integration",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Supabase Production 프로젝트와 Vercel Preview/Production 환경을 연결합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-LOGIN",
+        "SCR-OPERATIONS"
+      ]
+    },
+    {
+      "id": "REQ-002",
+      "content": "실제 OpenAI 호출로 대표 업무 샘플 10개를 컴파일할 수 있어야 합니다.",
+      "category": "ai-processing",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "실제 OpenAI 호출로 대표 업무 샘플 10개를 컴파일합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-COMPILER",
+        "SCR-OPERATIONS"
+      ]
+    },
+    {
+      "id": "REQ-003",
+      "content": "원문·추론 혼합, 누락 질문, 잘못된 화면 분해를 평가하는 fixture와 회귀 테스트를 제공해야 합니다.",
+      "category": "quality",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "원문·추론 혼합, 누락 질문, 잘못된 화면 분해를 평가하는 fixture와 회귀 테스트를 만듭니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": []
+    },
+    {
+      "id": "REQ-004",
+      "content": "운영 화면에서 모델명, 프롬프트 버전, 처리 시간, 실패 유형을 확인할 수 있어야 합니다.",
+      "category": "operations",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "모델명, 프롬프트 버전, 처리 시간, 실패 유형을 운영 화면에서 확인할 수 있게 합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-OPERATIONS"
+      ]
+    },
+    {
+      "id": "REQ-005",
+      "content": "실제 계정으로 로그인할 수 있어야 합니다.",
+      "category": "authentication",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "완료 기준: 실제 계정으로 로그인하고",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-LOGIN"
+      ]
+    },
+    {
+      "id": "REQ-006",
+      "content": "샘플을 반복 컴파일해도 기존 문서가 유실되지 않아야 합니다.",
+      "category": "data-integrity",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "10개 샘플을 반복 컴파일해도 기존 문서가 유실되지 않습니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-COMPILER",
+        "SCR-REVISION-COMPARE"
+      ]
+    },
+    {
+      "id": "REQ-007",
+      "content": "요구사항·화면·상태·문구에 대해 안정적인 엔티티 ID 정책을 제공해야 합니다.",
+      "category": "data-model",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "요구사항·화면·상태·문구의 안정적인 엔티티 ID 정책을 추가합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-REVISION-COMPARE",
+        "SCR-IMPACT-ANALYSIS"
+      ]
+    },
+    {
+      "id": "REQ-008",
+      "content": "새 입력이 기존 요구사항과 충돌하거나 영향을 주는 화면을 계산할 수 있어야 합니다.",
+      "category": "impact-analysis",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "새 입력이 기존 요구사항과 충돌하거나 영향을 주는 화면을 계산합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-IMPACT-ANALYSIS"
+      ]
+    },
+    {
+      "id": "REQ-009",
+      "content": "이전 revision과 현재 revision을 비교하는 변경 내역 화면을 구현해야 합니다.",
+      "category": "versioning",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "이전 revision과 현재 revision을 비교하는 변경 내역 화면을 구현합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-REVISION-COMPARE"
+      ]
+    },
+    {
+      "id": "REQ-010",
+      "content": "전체 재컴파일 외에 선택 산출물만 다시 생성하는 기능을 제공해야 합니다.",
+      "category": "regeneration",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "전체 재컴파일 외에 선택 산출물만 다시 생성하는 기능을 추가합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-COMPILER",
+        "SCR-REVISION-COMPARE"
+      ]
+    },
+    {
+      "id": "REQ-011",
+      "content": "요구사항 하나를 변경하면 영향받은 화면, 상태, 문서가 이유와 함께 표시되어야 합니다.",
+      "category": "impact-analysis",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "완료 기준: 요구사항 하나를 변경하면 영향받은 화면, 상태, 문서가 이유와 함께 표시됩니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-IMPACT-ANALYSIS"
+      ]
+    },
+    {
+      "id": "REQ-012",
+      "content": "PDF 텍스트 추출을 지원해야 합니다.",
+      "category": "input",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "PDF 텍스트 추출과 페이지 번호 기반 출처를 지원합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-INPUT-SOURCES"
+      ]
+    },
+    {
+      "id": "REQ-013",
+      "content": "페이지 번호 기반 출처를 지원해야 합니다.",
+      "category": "traceability",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "PDF 텍스트 추출과 페이지 번호 기반 출처를 지원합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-INPUT-SOURCES",
+        "SCR-SPEC-OUTPUT"
+      ]
+    },
+    {
+      "id": "REQ-014",
+      "content": "Notion OAuth를 지원해야 합니다.",
+      "category": "integration",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Notion OAuth와 프로젝트 문서 내보내기를 추가합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-NOTION-EXPORT"
+      ]
+    },
+    {
+      "id": "REQ-015",
+      "content": "프로젝트 문서를 Notion으로 내보낼 수 있어야 합니다.",
+      "category": "export",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Notion OAuth와 프로젝트 문서 내보내기를 추가합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-NOTION-EXPORT"
+      ]
+    },
+    {
+      "id": "REQ-016",
+      "content": "내보내기 템플릿을 화면 정의서, QA 체크리스트, 일일보고로 분리해야 합니다.",
+      "category": "export",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "내보내기 템플릿을 화면 정의서, QA 체크리스트, 일일보고로 분리합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-NOTION-EXPORT",
+        "SCR-SPEC-OUTPUT"
+      ]
+    },
+    {
+      "id": "REQ-017",
+      "content": "긴 문서의 분할 처리를 지원해야 합니다.",
+      "category": "input",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "긴 문서의 분할 처리와 비용 예상치를 표시합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-INPUT-SOURCES"
+      ]
+    },
+    {
+      "id": "REQ-018",
+      "content": "긴 문서 처리 시 비용 예상치를 표시해야 합니다.",
+      "category": "cost-visibility",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "긴 문서의 분할 처리와 비용 예상치를 표시합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-INPUT-SOURCES"
+      ]
+    },
+    {
+      "id": "REQ-019",
+      "content": "PDF 기획서를 넣고 페이지 근거가 포함된 명세를 Notion으로 전달할 수 있어야 합니다.",
+      "category": "end-to-end",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "완료 기준: PDF 기획서를 넣고 페이지 근거가 포함된 명세를 Notion으로 전달할 수 있습니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-INPUT-SOURCES",
+        "SCR-NOTION-EXPORT",
+        "SCR-SPEC-OUTPUT"
+      ]
+    },
+    {
+      "id": "REQ-020",
+      "content": "Figma 라이브러리의 컴포넌트, Variant, 변수와 설명을 읽을 수 있어야 합니다.",
+      "category": "figma-integration",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Figma 라이브러리의 컴포넌트, Variant, 변수와 설명을 읽습니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-FIGMA-MAPPING"
+      ]
+    },
+    {
+      "id": "REQ-021",
+      "content": "화면 요소와 기존 컴포넌트를 추천 연결할 수 있어야 합니다.",
+      "category": "figma-integration",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "화면 요소와 기존 컴포넌트를 추천 연결합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-FIGMA-MAPPING"
+      ]
+    },
+    {
+      "id": "REQ-022",
+      "content": "기존 컴포넌트 확장, Variant 추가, 신규 컴포넌트, 화면 전용 패턴을 구분해 제안해야 합니다.",
+      "category": "figma-integration",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "기존 컴포넌트 확장, Variant 추가, 신규 컴포넌트, 화면 전용 패턴을 구분합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-FIGMA-MAPPING"
+      ]
+    },
+    {
+      "id": "REQ-023",
+      "content": "초기 Figma 지원 단계에서는 파일 자동 수정 없이 추천과 주석 생성만 지원해야 합니다.",
+      "category": "figma-safety",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "초기에는 Figma 파일을 자동 수정하지 않고 추천과 주석 생성만 지원합니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-FIGMA-MAPPING"
+      ]
+    },
+    {
+      "id": "REQ-024",
+      "content": "새 화면 명세마다 사용할 기존 컴포넌트와 부족한 상태를 근거와 함께 제안해야 합니다.",
+      "category": "figma-integration",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "완료 기준: 새 화면 명세마다 사용할 기존 컴포넌트와 부족한 상태가 근거와 함께 제안됩니다.",
+        "rationale": null
+      },
+      "affectedScreenIds": [
+        "SCR-FIGMA-MAPPING"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "Q-001",
+      "question": "운영 화면의 주 사용자는 누구이며, 읽기 전용인지 운영 제어 액션도 포함해야 하나요?",
+      "priority": "should-decide",
+      "context": "운영 화면에 어떤 정보와 액션을 배치할지 사용자 역할에 따라 달라집니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "모델명, 프롬프트 버전, 처리 시간, 실패 유형을 운영 화면에서 확인할 수 있게 합니다.",
+        "rationale": "운영 화면의 조회 대상은 명시되었지만 누가 사용하고 어떤 수준의 제어 권한을 가지는지는 원문에 없습니다."
+      },
+      "resolved": false,
+      "answer": null,
+      "answeredAt": null,
+      "answeredBy": null
+    },
+    {
+      "id": "Q-002",
+      "question": "선택 재생성의 대상 산출물 범위는 무엇인가요? 예: 요구사항, 화면, 상태, 문구, 보고서",
+      "priority": "should-decide",
+      "context": "부분 재생성 UI와 영향도 계산 범위를 정의하려면 대상 단위를 확정해야 합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "전체 재컴파일 외에 선택 산출물만 다시 생성하는 기능을 추가합니다.",
+        "rationale": "선택 산출물이라는 표현은 있으나 구체적인 선택 단위는 원문에 명시되지 않았습니다."
+      },
+      "resolved": false,
+      "answer": null,
+      "answeredAt": null,
+      "answeredBy": null
+    },
+    {
+      "id": "Q-003",
+      "question": "변경 내역 화면에서 비교할 revision의 선택 방식은 무엇인가요? 최근 2개 자동 비교인지, 임의 선택 비교인지 결정이 필요합니다.",
+      "priority": "assumable",
+      "context": "비교 화면의 정보 구조와 컨트롤 설계에 영향을 줍니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "이전 revision과 현재 revision을 비교하는 변경 내역 화면을 구현합니다.",
+        "rationale": "비교 대상이 이전과 현재라고 되어 있으나 화면에서 사용자가 선택할 수 있는지 여부는 명시되지 않았습니다."
+      },
+      "resolved": false,
+      "answer": null,
+      "answeredAt": null,
+      "answeredBy": null
+    },
+    {
+      "id": "Q-004",
+      "question": "Notion 내보내기 시 단일 데이터베이스/페이지 구조를 사용할지, 템플릿별 별도 페이지 구조를 사용할지 결정이 필요합니다.",
+      "priority": "should-decide",
+      "context": "내보내기 정보 구조와 UX 흐름에 직접 영향을 줍니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Notion OAuth와 프로젝트 문서 내보내기를 추가합니다.\n- 내보내기 템플릿을 화면 정의서, QA 체크리스트, 일일보고로 분리합니다.",
+        "rationale": "Notion으로 내보낸다는 사실은 명시됐지만 정보 구조는 정해져 있지 않습니다."
+      },
+      "resolved": false,
+      "answer": null,
+      "answeredAt": null,
+      "answeredBy": null
+    },
+    {
+      "id": "Q-005",
+      "question": "PDF 페이지 근거 표시는 최종 명세의 모든 항목에 필요한가요, 아니면 일부 산출물에만 필요한가요?",
+      "priority": "should-decide",
+      "context": "출처 UI 밀도와 데이터 모델 설계 범위에 영향을 줍니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "PDF 텍스트 추출과 페이지 번호 기반 출처를 지원합니다.\n완료 기준: PDF 기획서를 넣고 페이지 근거가 포함된 명세를 Notion으로 전달할 수 있습니다.",
+        "rationale": "페이지 근거 지원은 명시됐지만 어느 수준까지 전 항목에 표시해야 하는지는 명확하지 않습니다."
+      },
+      "resolved": false,
+      "answer": null,
+      "answeredAt": null,
+      "answeredBy": null
+    }
+  ],
+  "roles": [
+    {
+      "id": "ROLE-001",
+      "name": "실제 계정 사용자",
+      "description": "로그인 후 문서를 입력하고 컴파일 결과를 사용하는 사용자입니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "완료 기준: 실제 계정으로 로그인하고 10개 샘플을 반복 컴파일해도",
+        "rationale": "실제 계정으로 로그인한다는 문장에서 일반 사용자의 존재를 추론했습니다."
+      }
+    },
+    {
+      "id": "ROLE-002",
+      "name": "운영자",
+      "description": "운영 화면에서 모델명, 프롬프트 버전, 처리 시간, 실패 유형을 확인하는 사용자입니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "모델명, 프롬프트 버전, 처리 시간, 실패 유형을 운영 화면에서 확인할 수 있게 합니다.",
+        "rationale": "운영 화면을 확인하는 별도 운영 역할이 필요하다고 추론했습니다."
+      }
+    },
+    {
+      "id": "ROLE-003",
+      "name": "디자인 시스템 관리자",
+      "description": "Figma 라이브러리 매핑 추천 결과를 검토하는 사용자입니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Figma 라이브러리의 컴포넌트, Variant, 변수와 설명을 읽습니다.\n- 화면 요소와 기존 컴포넌트를 추천 연결합니다.",
+        "rationale": "Figma 매핑 결과를 확인할 사용자가 필요하다고 추론했습니다."
+      }
+    }
+  ],
+  "permissions": [
+    {
+      "id": "PERM-001",
+      "roleId": "ROLE-001",
+      "capability": "로그인하고 문서를 컴파일한다",
+      "allowed": true,
+      "note": "실제 계정 사용자의 기본 기능으로 추정됩니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "실제 계정으로 로그인하고 10개 샘플을 반복 컴파일해도",
+        "rationale": "로그인과 컴파일 수행이 같은 사용자 흐름에 포함되어 있다고 추론했습니다."
+      }
+    },
+    {
+      "id": "PERM-002",
+      "roleId": "ROLE-001",
+      "capability": "선택 산출물을 다시 생성한다",
+      "allowed": true,
+      "note": "부분 재생성 기능 사용 주체로 가정했습니다.",
+      "evidence": {
+        "type": "assumption",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "전체 재컴파일 외에 선택 산출물만 다시 생성하는 기능을 추가합니다.",
+        "rationale": "누가 이 기능을 사용하는지 원문에 없어 일반 사용자 기능으로 임시 가정했습니다."
+      }
+    },
+    {
+      "id": "PERM-003",
+      "roleId": "ROLE-002",
+      "capability": "운영 지표를 조회한다",
+      "allowed": true,
+      "note": "조회 권한만 명시적으로 반영했습니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "운영 화면에서 확인할 수 있게 합니다.",
+        "rationale": "운영 화면의 존재로부터 운영자 조회 권한을 추론했습니다."
+      }
+    },
+    {
+      "id": "PERM-004",
+      "roleId": "ROLE-002",
+      "capability": "운영 설정을 수정한다",
+      "allowed": null,
+      "note": "원문에 수정 권한 여부가 없습니다.",
+      "evidence": {
+        "type": "assumption",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "운영 화면에서 확인할 수 있게 합니다.",
+        "rationale": "운영 화면이 조회 전용인지 수정 가능한지 원문에 없어 미정으로 남깁니다."
+      }
+    },
+    {
+      "id": "PERM-005",
+      "roleId": "ROLE-003",
+      "capability": "Figma 매핑 추천 결과를 조회한다",
+      "allowed": true,
+      "note": "추천 및 근거 확인 중심입니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "새 화면 명세마다 사용할 기존 컴포넌트와 부족한 상태가 근거와 함께 제안됩니다.",
+        "rationale": "추천 결과를 검토하는 역할의 조회 권한을 추론했습니다."
+      }
+    },
+    {
+      "id": "PERM-006",
+      "roleId": "ROLE-003",
+      "capability": "Figma 파일을 자동 수정한다",
+      "allowed": false,
+      "note": "초기 단계에서는 지원하지 않습니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "초기에는 Figma 파일을 자동 수정하지 않고 추천과 주석 생성만 지원합니다.",
+        "rationale": null
+      }
+    }
+  ],
+  "screens": [
+    {
+      "id": "SCR-LOGIN",
+      "name": "로그인 화면",
+      "description": "실제 계정으로 로그인해 시스템 기능에 접근하는 진입 화면입니다.",
+      "entryConditions": [
+        "비로그인 상태입니다."
+      ],
+      "primaryActions": [
+        "계정으로 로그인한다"
+      ],
+      "requiredData": [
+        "계정 인증 정보"
+      ],
+      "nextScreenIds": [
+        "SCR-COMPILER"
+      ],
+      "cta": "로그인해요",
+      "qaCriteria": [
+        "실제 계정으로 로그인할 수 있어야 합니다.",
+        "로그인 성공 후 컴파일 화면으로 이동해야 합니다."
+      ],
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "완료 기준: 실제 계정으로 로그인하고",
+        "rationale": "실제 계정 로그인 요구를 충족하려면 별도 로그인 진입 화면이 필요하다고 추론했습니다."
+      },
+      "position": {
+        "x": 40,
+        "y": 904.5
+      }
+    },
+    {
+      "id": "SCR-COMPILER",
+      "name": "컴파일 실행 화면",
+      "description": "업무 원문 또는 입력 소스를 바탕으로 전체 컴파일 또는 선택 산출물 재생성을 실행하는 화면입니다.",
+      "entryConditions": [
+        "로그인되어 있습니다.",
+        "컴파일할 입력이 준비되어 있습니다."
+      ],
+      "primaryActions": [
+        "전체 컴파일을 실행한다",
+        "선택 산출물만 다시 생성한다",
+        "샘플 컴파일 결과를 확인한다"
+      ],
+      "requiredData": [
+        "입력 원문 또는 소스",
+        "컴파일 대상 프로젝트",
+        "선택 산출물 목록"
+      ],
+      "nextScreenIds": [
+        "SCR-OPERATIONS",
+        "SCR-REVISION-COMPARE",
+        "SCR-SPEC-OUTPUT"
+      ],
+      "cta": "컴파일해요",
+      "qaCriteria": [
+        "실제 OpenAI 호출로 샘플을 컴파일할 수 있어야 합니다.",
+        "반복 컴파일 후 기존 문서가 유실되지 않아야 합니다.",
+        "전체 재컴파일과 선택 재생성을 구분해 실행할 수 있어야 합니다."
+      ],
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "실제 OpenAI 호출로 대표 업무 샘플 10개를 컴파일합니다.\n- 전체 재컴파일 외에 선택 산출물만 다시 생성하는 기능을 추가합니다.",
+        "rationale": "컴파일과 부분 재생성 기능을 수행할 주요 작업 화면이 필요하다고 추론했습니다."
+      },
+      "position": {
+        "x": 316,
+        "y": 552
+      }
+    },
+    {
+      "id": "SCR-OPERATIONS",
+      "name": "운영 화면",
+      "description": "모델명, 프롬프트 버전, 처리 시간, 실패 유형 등 운영 지표를 확인하는 화면입니다.",
+      "entryConditions": [
+        "로그인되어 있습니다.",
+        "운영 정보 조회 권한이 있습니다."
+      ],
+      "primaryActions": [
+        "운영 지표를 확인한다",
+        "실패 유형을 검토한다"
+      ],
+      "requiredData": [
+        "모델명",
+        "프롬프트 버전",
+        "처리 시간",
+        "실패 유형"
+      ],
+      "nextScreenIds": [
+        "SCR-COMPILER"
+      ],
+      "cta": "운영 현황을 확인해요",
+      "qaCriteria": [
+        "모델명, 프롬프트 버전, 처리 시간, 실패 유형이 표시되어야 합니다.",
+        "반복 컴파일 운영 상태를 확인할 수 있어야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "모델명, 프롬프트 버전, 처리 시간, 실패 유형을 운영 화면에서 확인할 수 있게 합니다.",
+        "rationale": null
+      },
+      "position": {
+        "x": 592,
+        "y": 700
+      }
+    },
+    {
+      "id": "SCR-REVISION-COMPARE",
+      "name": "변경 내역 비교 화면",
+      "description": "이전 revision과 현재 revision의 차이를 비교해 변경된 산출물을 확인하는 화면입니다.",
+      "entryConditions": [
+        "비교 가능한 revision이 2개 이상 있습니다."
+      ],
+      "primaryActions": [
+        "revision 차이를 비교한다",
+        "변경된 산출물을 확인한다",
+        "선택 산출물을 다시 생성한다"
+      ],
+      "requiredData": [
+        "이전 revision",
+        "현재 revision",
+        "산출물별 변경 내역",
+        "안정적인 엔티티 ID"
+      ],
+      "nextScreenIds": [
+        "SCR-IMPACT-ANALYSIS",
+        "SCR-SPEC-OUTPUT"
+      ],
+      "cta": "변경 내역을 비교해요",
+      "qaCriteria": [
+        "이전 revision과 현재 revision의 차이가 표시되어야 합니다.",
+        "산출물 단위 변경 여부를 식별할 수 있어야 합니다.",
+        "선택 산출물 재생성으로 이어질 수 있어야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "이전 revision과 현재 revision을 비교하는 변경 내역 화면을 구현합니다.",
+        "rationale": null
+      },
+      "position": {
+        "x": 592,
+        "y": 442.5
+      }
+    },
+    {
+      "id": "SCR-IMPACT-ANALYSIS",
+      "name": "변경 영향도 화면",
+      "description": "요구사항 변경 시 영향받는 화면, 상태, 문서와 그 이유를 보여주는 화면입니다.",
+      "entryConditions": [
+        "기존 요구사항과 새 입력 또는 변경된 요구사항이 있습니다."
+      ],
+      "primaryActions": [
+        "영향받는 화면을 확인한다",
+        "영향 이유를 확인한다",
+        "충돌 여부를 검토한다"
+      ],
+      "requiredData": [
+        "변경된 요구사항",
+        "영향받은 화면 목록",
+        "영향받은 상태 목록",
+        "영향받은 문서 목록",
+        "영향 이유"
+      ],
+      "nextScreenIds": [
+        "SCR-REVISION-COMPARE",
+        "SCR-SPEC-OUTPUT"
+      ],
+      "cta": "영향도를 확인해요",
+      "qaCriteria": [
+        "요구사항 변경 시 영향받은 화면, 상태, 문서가 보여야 합니다.",
+        "각 영향 항목에 이유가 함께 표시되어야 합니다.",
+        "새 입력과 기존 요구사항의 충돌 또는 영향 여부를 계산해야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "새 입력이 기존 요구사항과 충돌하거나 영향을 주는 화면을 계산합니다.\n완료 기준: 요구사항 하나를 변경하면 영향받은 화면, 상태, 문서가 이유와 함께 표시됩니다.",
+        "rationale": null
+      },
+      "position": {
+        "x": 316,
+        "y": 259
+      }
+    },
+    {
+      "id": "SCR-INPUT-SOURCES",
+      "name": "입력 소스 처리 화면",
+      "description": "PDF 업로드, 텍스트 추출, 페이지 번호 기반 출처, 긴 문서 분할 처리와 비용 예상치를 확인하는 화면입니다.",
+      "entryConditions": [
+        "입력 소스를 추가하려는 상태입니다."
+      ],
+      "primaryActions": [
+        "PDF를 업로드한다",
+        "텍스트 추출 결과를 확인한다",
+        "페이지 근거를 확인한다",
+        "분할 처리 방식을 확인한다"
+      ],
+      "requiredData": [
+        "PDF 파일",
+        "추출 텍스트",
+        "페이지 번호 출처",
+        "분할 처리 결과",
+        "비용 예상치"
+      ],
+      "nextScreenIds": [
+        "SCR-COMPILER",
+        "SCR-SPEC-OUTPUT"
+      ],
+      "cta": "입력 소스를 준비해요",
+      "qaCriteria": [
+        "PDF 텍스트 추출이 가능해야 합니다.",
+        "페이지 번호 기반 출처가 표시되어야 합니다.",
+        "긴 문서 분할 처리와 비용 예상치가 보여야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "PDF 텍스트 추출과 페이지 번호 기반 출처를 지원합니다.\n- 긴 문서의 분할 처리와 비용 예상치를 표시합니다.",
+        "rationale": null
+      },
+      "position": {
+        "x": 40,
+        "y": 250
+      }
+    },
+    {
+      "id": "SCR-SPEC-OUTPUT",
+      "name": "명세 출력 화면",
+      "description": "생성된 명세와 출처 근거를 확인하고 전달 가능한 산출물 형태를 검토하는 화면입니다.",
+      "entryConditions": [
+        "컴파일 결과가 생성되어 있습니다."
+      ],
+      "primaryActions": [
+        "생성된 명세를 확인한다",
+        "페이지 근거를 확인한다",
+        "내보내기 전 산출물을 검토한다"
+      ],
+      "requiredData": [
+        "생성된 명세",
+        "출처 근거",
+        "산출물 템플릿 구분"
+      ],
+      "nextScreenIds": [
+        "SCR-NOTION-EXPORT",
+        "SCR-FIGMA-MAPPING"
+      ],
+      "cta": "명세를 검토해요",
+      "qaCriteria": [
+        "명세에 출처 근거를 연결해 확인할 수 있어야 합니다.",
+        "화면 정의서, QA 체크리스트, 일일보고 구분을 확인할 수 있어야 합니다."
+      ],
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "페이지 번호 기반 출처를 지원합니다.\n- 내보내기 템플릿을 화면 정의서, QA 체크리스트, 일일보고로 분리합니다.",
+        "rationale": "출처 근거와 템플릿 분리를 확인할 중간 검토 화면이 필요하다고 추론했습니다."
+      },
+      "position": {
+        "x": 868,
+        "y": 208
+      }
+    },
+    {
+      "id": "SCR-NOTION-EXPORT",
+      "name": "Notion 내보내기 화면",
+      "description": "Notion OAuth 연결 후 프로젝트 문서를 템플릿별로 내보내는 화면입니다.",
+      "entryConditions": [
+        "내보낼 명세가 준비되어 있습니다."
+      ],
+      "primaryActions": [
+        "Notion 계정을 연결한다",
+        "내보내기 템플릿을 선택한다",
+        "프로젝트 문서를 Notion으로 내보낸다"
+      ],
+      "requiredData": [
+        "Notion OAuth 연결 상태",
+        "내보내기 대상 문서",
+        "내보내기 템플릿"
+      ],
+      "nextScreenIds": [
+        "SCR-SPEC-OUTPUT"
+      ],
+      "cta": "Notion으로 내보내요",
+      "qaCriteria": [
+        "Notion OAuth 연결이 가능해야 합니다.",
+        "프로젝트 문서를 Notion으로 내보낼 수 있어야 합니다.",
+        "화면 정의서, QA 체크리스트, 일일보고 템플릿을 구분해 내보낼 수 있어야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Notion OAuth와 프로젝트 문서 내보내기를 추가합니다.\n- 내보내기 템플릿을 화면 정의서, QA 체크리스트, 일일보고로 분리합니다.",
+        "rationale": null
+      },
+      "position": {
+        "x": 614.0127645781187,
+        "y": 72.50322269737833
+      }
+    },
+    {
+      "id": "SCR-FIGMA-MAPPING",
+      "name": "Figma 디자인 시스템 매핑 화면",
+      "description": "새 화면 명세를 기준으로 기존 Figma 컴포넌트와 부족한 상태를 추천하고 근거를 보여주는 화면입니다.",
+      "entryConditions": [
+        "화면 명세가 준비되어 있습니다.",
+        "Figma 라이브러리 정보에 접근할 수 있습니다."
+      ],
+      "primaryActions": [
+        "Figma 라이브러리 정보를 불러온다",
+        "기존 컴포넌트 추천을 확인한다",
+        "부족한 상태와 패턴 제안을 검토한다",
+        "주석 생성을 확인한다"
+      ],
+      "requiredData": [
+        "Figma 컴포넌트",
+        "Variant",
+        "변수",
+        "설명",
+        "화면 요소",
+        "추천 근거"
+      ],
+      "nextScreenIds": [],
+      "cta": "매핑 제안을 확인해요",
+      "qaCriteria": [
+        "Figma 라이브러리의 컴포넌트, Variant, 변수와 설명을 읽을 수 있어야 합니다.",
+        "화면 요소와 기존 컴포넌트 추천 연결이 보여야 합니다.",
+        "기존 컴포넌트 확장, Variant 추가, 신규 컴포넌트, 화면 전용 패턴이 구분되어야 합니다.",
+        "자동 수정 없이 추천과 주석 생성만 제공해야 합니다."
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Figma 라이브러리의 컴포넌트, Variant, 변수와 설명을 읽습니다.\n- 화면 요소와 기존 컴포넌트를 추천 연결합니다.\n- 기존 컴포넌트 확장, Variant 추가, 신규 컴포넌트, 화면 전용 패턴을 구분합니다.\n- 초기에는 Figma 파일을 자동 수정하지 않고 추천과 주석 생성만 지원합니다.",
+        "rationale": null
+      },
+      "position": {
+        "x": 1144,
+        "y": 208
+      }
+    }
+  ],
+  "states": [
+    {
+      "id": "STATE-001",
+      "screenId": "SCR-LOGIN",
+      "name": "로그인 기본 상태",
+      "kind": "default",
+      "description": "사용자가 계정 인증 정보를 입력할 수 있는 상태입니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "실제 계정으로 로그인하고",
+        "rationale": "로그인 화면의 기본 입력 상태를 추론했습니다."
+      },
+      "position": {
+        "x": 337,
+        "y": 963
+      }
+    },
+    {
+      "id": "STATE-002",
+      "screenId": "SCR-COMPILER",
+      "name": "컴파일 실행 중",
+      "kind": "loading",
+      "description": "실제 OpenAI 호출로 컴파일을 처리 중인 상태입니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "실제 OpenAI 호출로 대표 업무 샘플 10개를 컴파일합니다.",
+        "rationale": "실제 호출 기반 컴파일에는 처리 중 상태가 필요하다고 추론했습니다."
+      },
+      "position": {
+        "x": 613,
+        "y": 848
+      }
+    },
+    {
+      "id": "STATE-003",
+      "screenId": "SCR-COMPILER",
+      "name": "반복 컴파일 중 문서 보존 확인 실패",
+      "kind": "error",
+      "description": "반복 컴파일 후 기존 문서 유실 위험이 감지된 상태입니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "10개 샘플을 반복 컴파일해도 기존 문서가 유실되지 않습니다.",
+        "rationale": "완료 기준의 반대 상황을 검증하기 위한 오류 상태를 추론했습니다."
+      },
+      "position": {
+        "x": 613,
+        "y": 974
+      }
+    },
+    {
+      "id": "STATE-004",
+      "screenId": "SCR-OPERATIONS",
+      "name": "운영 지표 조회 기본 상태",
+      "kind": "default",
+      "description": "모델명, 프롬프트 버전, 처리 시간, 실패 유형이 표시되는 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "모델명, 프롬프트 버전, 처리 시간, 실패 유형을 운영 화면에서 확인할 수 있게 합니다.",
+        "rationale": null
+      },
+      "position": {
+        "x": 889,
+        "y": 711
+      }
+    },
+    {
+      "id": "STATE-005",
+      "screenId": "SCR-REVISION-COMPARE",
+      "name": "비교 결과 있음",
+      "kind": "default",
+      "description": "이전 revision과 현재 revision의 변경 내역이 표시되는 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "이전 revision과 현재 revision을 비교하는 변경 내역 화면을 구현합니다.",
+        "rationale": null
+      },
+      "position": {
+        "x": 889,
+        "y": 585
+      }
+    },
+    {
+      "id": "STATE-006",
+      "screenId": "SCR-IMPACT-ANALYSIS",
+      "name": "영향도 결과 표시",
+      "kind": "default",
+      "description": "영향받은 화면, 상태, 문서와 이유가 표시되는 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "영향받은 화면, 상태, 문서가 이유와 함께 표시됩니다.",
+        "rationale": null
+      },
+      "position": {
+        "x": 613,
+        "y": 316.5
+      }
+    },
+    {
+      "id": "STATE-007",
+      "screenId": "SCR-INPUT-SOURCES",
+      "name": "긴 문서 분할 처리 중",
+      "kind": "loading",
+      "description": "긴 문서를 분할 처리하고 비용 예상치를 계산하는 상태입니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "긴 문서의 분할 처리와 비용 예상치를 표시합니다.",
+        "rationale": "분할 처리 계산 중 상태가 필요하다고 추론했습니다."
+      },
+      "position": {
+        "x": 337,
+        "y": 700
+      }
+    },
+    {
+      "id": "STATE-008",
+      "screenId": "SCR-INPUT-SOURCES",
+      "name": "PDF 추출 실패",
+      "kind": "error",
+      "description": "PDF 텍스트 추출에 실패해 다시 업로드나 재시도를 안내하는 상태입니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "PDF 텍스트 추출과 페이지 번호 기반 출처를 지원합니다.",
+        "rationale": "PDF 추출 기능에는 실패 상태가 필요하다고 추론했습니다."
+      },
+      "position": {
+        "x": 337,
+        "y": 826
+      }
+    },
+    {
+      "id": "STATE-009",
+      "screenId": "SCR-NOTION-EXPORT",
+      "name": "Notion 연결 필요",
+      "kind": "disabled",
+      "description": "Notion OAuth 연결 전이라 내보내기 버튼을 사용할 수 없는 상태입니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Notion OAuth와 프로젝트 문서 내보내기를 추가합니다.",
+        "rationale": "OAuth 연결 전 내보내기 비활성 상태가 필요하다고 추론했습니다."
+      },
+      "position": {
+        "x": 889,
+        "y": 51
+      }
+    },
+    {
+      "id": "STATE-010",
+      "screenId": "SCR-FIGMA-MAPPING",
+      "name": "자동 수정 비지원 안내",
+      "kind": "permission-denied",
+      "description": "초기 단계에서는 Figma 파일 자동 수정이 지원되지 않고 추천과 주석 생성만 가능한 상태입니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "초기에는 Figma 파일을 자동 수정하지 않고 추천과 주석 생성만 지원합니다.",
+        "rationale": null
+      },
+      "position": {
+        "x": 1420,
+        "y": 219
+      }
+    }
+  ],
+  "uxCopy": [
+    {
+      "id": "COPY-001",
+      "screenId": "SCR-LOGIN",
+      "context": "로그인 버튼",
+      "text": "로그인해요",
+      "toneRule": "행동을 직접 표현하는 자연스러운 해요체를 사용합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "실제 계정으로 로그인하고",
+        "rationale": "로그인 CTA가 필요하다고 보고 버튼 문구를 제안했습니다."
+      }
+    },
+    {
+      "id": "COPY-002",
+      "screenId": "SCR-COMPILER",
+      "context": "전체 컴파일 버튼",
+      "text": "전체 명세를 컴파일해요",
+      "toneRule": "사용자가 실행할 행동을 분명하게 보여줍니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "대표 업무 샘플 10개를 컴파일합니다.",
+        "rationale": "컴파일 실행 행동을 위한 버튼 문구를 제안했습니다."
+      }
+    },
+    {
+      "id": "COPY-003",
+      "screenId": "SCR-COMPILER",
+      "context": "선택 재생성 버튼",
+      "text": "선택한 산출물만 다시 만들어요",
+      "toneRule": "기능 차이를 쉽게 이해할 수 있는 쉬운 표현을 사용합니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "선택 산출물만 다시 생성하는 기능",
+        "rationale": null
+      }
+    },
+    {
+      "id": "COPY-004",
+      "screenId": "SCR-OPERATIONS",
+      "context": "운영 화면 안내 문구",
+      "text": "모델 정보와 처리 결과를 한눈에 확인해요.",
+      "toneRule": "정보 확인 목적을 짧고 명확하게 안내합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "모델명, 프롬프트 버전, 처리 시간, 실패 유형을 운영 화면에서 확인",
+        "rationale": "운영 화면의 목적을 설명하는 안내 문구를 제안했습니다."
+      }
+    },
+    {
+      "id": "COPY-005",
+      "screenId": "SCR-INPUT-SOURCES",
+      "context": "PDF 추출 실패 오류 문구",
+      "text": "PDF에서 텍스트를 읽지 못했어요. 파일을 다시 올리거나 다른 PDF로 시도해 주세요.",
+      "toneRule": "문제와 다음 행동을 함께 안내합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "PDF 텍스트 추출",
+        "rationale": "PDF 추출 실패 상태에 필요한 오류 문구를 제안했습니다."
+      }
+    },
+    {
+      "id": "COPY-006",
+      "screenId": "SCR-IMPACT-ANALYSIS",
+      "context": "영향도 결과 섹션 제목",
+      "text": "무엇이 왜 바뀌는지 확인해요",
+      "toneRule": "복잡한 기능도 사용자가 이해하기 쉬운 표현으로 설명합니다.",
+      "evidence": {
+        "type": "inference",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "영향받은 화면, 상태, 문서가 이유와 함께 표시됩니다.",
+        "rationale": "영향도 화면의 핵심 가치를 설명하는 문구를 제안했습니다."
+      }
+    },
+    {
+      "id": "COPY-007",
+      "screenId": "SCR-NOTION-EXPORT",
+      "context": "내보내기 버튼",
+      "text": "Notion으로 내보내요",
+      "toneRule": "대상과 행동을 함께 명확히 표현합니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "프로젝트 문서 내보내기",
+        "rationale": null
+      }
+    },
+    {
+      "id": "COPY-008",
+      "screenId": "SCR-FIGMA-MAPPING",
+      "context": "자동 수정 비지원 안내",
+      "text": "지금은 Figma 파일을 자동으로 바꾸지 않아요. 추천 결과와 주석만 확인할 수 있어요.",
+      "toneRule": "제한 사항을 부드럽고 분명하게 설명합니다.",
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "자동 수정하지 않고 추천과 주석 생성만 지원합니다.",
+        "rationale": null
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "운영 환경 연결 설계 및 검증",
+      "status": "in-progress",
+      "priority": "high",
+      "relatedIds": [
+        "REQ-001",
+        "REQ-005",
+        "SCR-LOGIN",
+        "SCR-OPERATIONS"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "1주차 — 운영 연결과 품질 기준\n- Supabase Production 프로젝트와 Vercel Preview/Production 환경을 연결합니다.",
+        "rationale": null
+      },
+      "source": "ai",
+      "description": "",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-002",
+      "title": "실제 OpenAI 기반 샘플 10개 컴파일 플로우 설계",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "REQ-002",
+        "REQ-006",
+        "SCR-COMPILER"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "실제 OpenAI 호출로 대표 업무 샘플 10개를 컴파일합니다.",
+        "rationale": null
+      },
+      "source": "ai",
+      "description": "",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-003",
+      "title": "품질 fixture 및 회귀 테스트 기준 정의",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "REQ-003"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "원문·추론 혼합, 누락 질문, 잘못된 화면 분해를 평가하는 fixture와 회귀 테스트를 만듭니다.",
+        "rationale": null
+      },
+      "source": "ai",
+      "description": "",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-004",
+      "title": "운영 화면 정보 구조와 지표 UI 설계",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "REQ-004",
+        "SCR-OPERATIONS"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "모델명, 프롬프트 버전, 처리 시간, 실패 유형을 운영 화면에서 확인할 수 있게 합니다.",
+        "rationale": null
+      },
+      "source": "ai",
+      "description": "",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-005",
+      "title": "안정적인 엔티티 ID 정책 반영",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "REQ-007",
+        "SCR-REVISION-COMPARE",
+        "SCR-IMPACT-ANALYSIS"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "요구사항·화면·상태·문구의 안정적인 엔티티 ID 정책을 추가합니다.",
+        "rationale": null
+      },
+      "source": "ai",
+      "description": "",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-006",
+      "title": "변경 영향도 계산 및 표시 UX 설계",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "REQ-008",
+        "REQ-011",
+        "SCR-IMPACT-ANALYSIS"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "새 입력이 기존 요구사항과 충돌하거나 영향을 주는 화면을 계산합니다.\n완료 기준: 요구사항 하나를 변경하면 영향받은 화면, 상태, 문서가 이유와 함께 표시됩니다.",
+        "rationale": null
+      },
+      "source": "ai",
+      "description": "",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-007",
+      "title": "revision 비교 화면 설계",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "REQ-009",
+        "SCR-REVISION-COMPARE"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "이전 revision과 현재 revision을 비교하는 변경 내역 화면을 구현합니다.",
+        "rationale": null
+      },
+      "source": "ai",
+      "description": "",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-008",
+      "title": "선택 산출물 재생성 UX 정의",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [
+        "REQ-010",
+        "SCR-COMPILER",
+        "Q-002"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "선택 산출물만 다시 생성하는 기능을 추가합니다.",
+        "rationale": null
+      },
+      "source": "ai",
+      "description": "",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-009",
+      "title": "PDF 입력 및 페이지 근거 UI 설계",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "REQ-012",
+        "REQ-013",
+        "REQ-017",
+        "REQ-018",
+        "SCR-INPUT-SOURCES"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "PDF 텍스트 추출과 페이지 번호 기반 출처를 지원합니다.\n- 긴 문서의 분할 처리와 비용 예상치를 표시합니다.",
+        "rationale": null
+      },
+      "source": "ai",
+      "description": "",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-010",
+      "title": "Notion OAuth 및 템플릿별 내보내기 설계",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "REQ-014",
+        "REQ-015",
+        "REQ-016",
+        "SCR-NOTION-EXPORT",
+        "Q-004"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "Notion OAuth와 프로젝트 문서 내보내기를 추가합니다.\n- 내보내기 템플릿을 화면 정의서, QA 체크리스트, 일일보고로 분리합니다.",
+        "rationale": null
+      },
+      "source": "ai",
+      "description": "",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-011",
+      "title": "페이지 근거 포함 명세 전달 흐름 검증",
+      "status": "todo",
+      "priority": "high",
+      "relatedIds": [
+        "REQ-019",
+        "SCR-INPUT-SOURCES",
+        "SCR-SPEC-OUTPUT",
+        "SCR-NOTION-EXPORT"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "완료 기준: PDF 기획서를 넣고 페이지 근거가 포함된 명세를 Notion으로 전달할 수 있습니다.",
+        "rationale": null
+      },
+      "source": "ai",
+      "description": "",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    },
+    {
+      "id": "TASK-012",
+      "title": "Figma 디자인 시스템 매핑 추천 화면 설계",
+      "status": "todo",
+      "priority": "medium",
+      "relatedIds": [
+        "REQ-020",
+        "REQ-021",
+        "REQ-022",
+        "REQ-023",
+        "REQ-024",
+        "SCR-FIGMA-MAPPING"
+      ],
+      "evidence": {
+        "type": "original",
+        "reviewStatus": "needs-review",
+        "sourceId": "source-1",
+        "sourceExcerpt": "4주차 이후 — Figma 디자인 시스템 매핑\n- Figma 라이브러리의 컴포넌트, Variant, 변수와 설명을 읽습니다.\n- 화면 요소와 기존 컴포넌트를 추천 연결합니다.\n- 기존 컴포넌트 확장, Variant 추가, 신규 컴포넌트, 화면 전용 패턴을 구분합니다.\n- 초기에는 Figma 파일을 자동 수정하지 않고 추천과 주석 생성만 지원합니다.",
+        "rationale": null
+      },
+      "source": "ai",
+      "description": "",
+      "dueDate": null,
+      "blockerReason": null,
+      "relatedScreenIds": [],
+      "relatedRequirementIds": [],
+      "deletedAt": null
+    }
+  ],
+  "suppressedTaskKeys": [],
+  "dailyReport": {
+    "date": "2026-06-21",
+    "summary": "SpecFlow OS의 다음 구현 일정을 제품·UX 디자인 명세로 구조화했습니다. 운영 연결, 품질 기준, 변경 영향도, 버전 비교, PDF/Notion 확장, Figma 매핑까지 단계별 요구사항과 화면 흐름을 정리했고, 불확실한 항목은 확인 질문으로 분리했습니다.",
+    "completed": [
+      "입력 원문을 주차별 목표와 완료 기준으로 분해했습니다.",
+      "요구사항 24개를 원문 근거와 함께 구조화했습니다.",
+      "주요 화면 9개와 연결 관계를 정의했습니다.",
+      "핵심 상태, UX 문구, 후속 작업 항목을 정리했습니다."
+    ],
+    "next": [
+      "운영 화면 사용자와 권한 범위를 확인합니다.",
+      "선택 산출물 재생성 범위를 결정합니다.",
+      "Notion 내보내기 정보 구조를 확정합니다.",
+      "PDF 페이지 근거 표시 범위를 확정합니다."
+    ],
+    "blockers": [
+      "운영 화면의 사용자 역할과 제어 범위가 확정되지 않았습니다.",
+      "선택 재생성 대상 산출물 범위가 명시되지 않았습니다.",
+      "Notion 내보내기 구조가 정해지지 않았습니다."
+    ]
+  },
+  "figmaMapping": {
+    "fileUrl": "",
+    "fileKey": null,
+    "libraryName": null,
+    "recommendations": [],
+    "analyzedAt": null,
+    "status": "idle",
+    "error": null
+  }
+}

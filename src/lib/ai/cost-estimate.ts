@@ -9,6 +9,7 @@ const MODEL_PRICING: Record<string, { input: number; output: number }> = {
   "gpt-4o-mini": { input: 0.15, output: 0.6 },
   "gpt-4.5": { input: 75.0, output: 150.0 },
   "gpt-5.4": { input: 30.0, output: 60.0 },
+  "gpt-5.4-mini": { input: 1.5, output: 6.0 },
   "o3": { input: 10.0, output: 40.0 },
   "o4-mini": { input: 1.1, output: 4.4 },
 };

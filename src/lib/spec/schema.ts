@@ -1,5 +1,153 @@
 import { z } from "zod";
 
+// ---------------------------------------------------------------------------
+// AI Output Schema -- strict, no .catch()/.optional()/.default()
+// Used exclusively with Output.object() so OpenAI strict structured-outputs
+// doesn't reject the schema. Every property must be in `required`.
+// figmaMapping and suppressedTaskKeys are excluded (defaults added in compiler).
+// ---------------------------------------------------------------------------
+
+const aiEvidenceSchema = z.object({
+  type: z.enum(["original", "inference", "assumption"]),
+  reviewStatus: z.enum(["confirmed", "needs-review", "conflict"]),
+  sourceId: z.string().min(1),
+  sourceExcerpt: z.string().min(1),
+  rationale: z.string().nullable(),
+});
+
+const aiRequirementSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  category: z.string(),
+  evidence: aiEvidenceSchema,
+  affectedScreenIds: z.array(z.string()),
+});
+
+const aiQuestionSchema = z.object({
+  id: z.string(),
+  question: z.string(),
+  priority: z.enum(["blocking", "should-decide", "assumable"]),
+  context: z.string(),
+  evidence: aiEvidenceSchema,
+  resolved: z.boolean(),
+  answer: z.string().nullable(),
+  answeredAt: z.string().nullable(),
+  answeredBy: z.string().nullable(),
+});
+
+const aiRoleSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  evidence: aiEvidenceSchema,
+});
+
+const aiPermissionSchema = z.object({
+  id: z.string(),
+  roleId: z.string(),
+  capability: z.string(),
+  allowed: z.boolean().nullable(),
+  note: z.string(),
+  evidence: aiEvidenceSchema,
+});
+
+const aiScreenSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  entryConditions: z.array(z.string()),
+  primaryActions: z.array(z.string()),
+  requiredData: z.array(z.string()),
+  nextScreenIds: z.array(z.string()),
+  cta: z.string(),
+  qaCriteria: z.array(z.string()),
+  evidence: aiEvidenceSchema,
+  position: z.object({ x: z.number(), y: z.number() }),
+});
+
+const aiScreenStateSchema = z.object({
+  id: z.string(),
+  screenId: z.string(),
+  name: z.string(),
+  kind: z.enum([
+    "default",
+    "loading",
+    "empty",
+    "error",
+    "disabled",
+    "permission-denied",
+    "network-failure",
+    "timeout",
+    "validation-error",
+    "partial-completion",
+    "duplicate-action",
+    "session-expiration",
+    "unsaved-changes",
+  ]),
+  description: z.string(),
+  evidence: aiEvidenceSchema,
+  position: z.object({ x: z.number(), y: z.number() }).nullable(),
+});
+
+const aiUxCopySchema = z.object({
+  id: z.string(),
+  screenId: z.string(),
+  context: z.string(),
+  text: z.string(),
+  toneRule: z.string(),
+  evidence: aiEvidenceSchema,
+});
+
+const aiTaskSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  status: z.enum(["inbox", "todo", "in-progress", "blocked", "done"]),
+  priority: z.enum(["high", "medium", "low"]),
+  relatedIds: z.array(z.string()),
+  evidence: aiEvidenceSchema,
+  source: z.enum(["ai", "user"]),
+  description: z.string(),
+  dueDate: z.string().nullable(),
+  blockerReason: z.string().nullable(),
+  relatedScreenIds: z.array(z.string()),
+  relatedRequirementIds: z.array(z.string()),
+  deletedAt: z.string().nullable(),
+});
+
+export const aiSpecDocumentSchema = z.object({
+  brief: z.object({
+    title: z.string(),
+    purpose: z.string(),
+    problem: z.string(),
+    successCriteria: z.array(z.string()),
+    audience: z.array(z.string()),
+    scope: z.array(z.string()),
+    outOfScope: z.array(z.string()),
+    constraints: z.array(z.string()),
+    userEditedFields: z.array(z.string()),
+  }),
+  requirements: z.array(aiRequirementSchema),
+  questions: z.array(aiQuestionSchema),
+  roles: z.array(aiRoleSchema),
+  permissions: z.array(aiPermissionSchema),
+  screens: z.array(aiScreenSchema),
+  states: z.array(aiScreenStateSchema),
+  uxCopy: z.array(aiUxCopySchema),
+  tasks: z.array(aiTaskSchema),
+  dailyReport: z.object({
+    date: z.string(),
+    summary: z.string(),
+    completed: z.array(z.string()),
+    next: z.array(z.string()),
+    blockers: z.array(z.string()),
+  }),
+});
+
+// ---------------------------------------------------------------------------
+// Runtime / stored-document schema -- keeps .catch() fallbacks for backward
+// compatibility when parsing existing saved documents.
+// ---------------------------------------------------------------------------
+
 export const evidenceSchema = z.object({
   type: z.enum(["original", "inference", "assumption"]),
   reviewStatus: z.enum(["confirmed", "needs-review", "conflict"]),

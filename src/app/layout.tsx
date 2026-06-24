@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { GlobalWorkspaceShell } from "@/components/workspace-global/workspace-shell";
 
 export const metadata: Metadata = {
   title: "SpecFlow OS",
@@ -13,7 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        <GlobalWorkspaceShell>{children}</GlobalWorkspaceShell>
+      </body>
     </html>
   );
 }

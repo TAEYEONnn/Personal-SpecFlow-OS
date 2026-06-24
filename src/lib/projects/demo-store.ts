@@ -2,6 +2,9 @@ import { randomUUID } from "node:crypto";
 import { COMPILER_PROMPT_VERSION } from "@/lib/ai/compiler";
 import { assertRevision } from "@/lib/projects/revision";
 import type { SpecDocument } from "@/lib/spec/schema";
+import { specDocumentSchema } from "@/lib/spec/schema";
+import specflowJson from "@/lib/spec/seeds/specflow.json" with { type: "json" };
+import onanoffJson from "@/lib/spec/seeds/onanoff.json" with { type: "json" };
 
 export type DemoSource = {
   id: string;
@@ -39,9 +42,45 @@ type DemoGlobal = typeof globalThis & {
   __specflowDemoProjects?: Map<string, DemoProject>;
 };
 
+const SEED_PROJECTS: Array<{ name: string; json: unknown }> = [
+  { name: "SpecFlow OS -- 다음 구현 일정", json: specflowJson },
+  { name: "온앤오프 블렌디드 러닝 서비스", json: onanoffJson },
+];
+
+function createSeedProject(name: string, json: unknown): DemoProject {
+  const document = specDocumentSchema.parse(json);
+  const now = new Date().toISOString();
+  const id = randomUUID();
+  const run: DemoRun = {
+    id: randomUUID(),
+    status: "completed",
+    model: process.env.OPENAI_MODEL ?? "gpt-5.4",
+    promptVersion: COMPILER_PROMPT_VERSION,
+    durationMs: 0,
+    createdAt: now,
+    finishedAt: now,
+  };
+  return {
+    id,
+    name,
+    revision: 1,
+    document,
+    sources: [],
+    runs: [run],
+    updatedAt: now,
+    needsRecompile: false,
+  };
+}
+
 function store() {
   const global = globalThis as DemoGlobal;
-  global.__specflowDemoProjects ??= new Map<string, DemoProject>();
+  if (!global.__specflowDemoProjects) {
+    global.__specflowDemoProjects = new Map<string, DemoProject>();
+    for (const { name, json } of SEED_PROJECTS) {
+      const project = createSeedProject(name, json);
+      global.__specflowDemoProjects.set(project.id, project);
+    }
+  }
   return global.__specflowDemoProjects;
 }
 
