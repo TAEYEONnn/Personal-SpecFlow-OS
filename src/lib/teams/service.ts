@@ -16,6 +16,8 @@ export type TeamMemberView = {
   id: string;
   userId: string;
   email: string;
+  username: string;
+  displayName: string;
   role: TeamRole;
 };
 
@@ -23,6 +25,7 @@ export type InvitationView = {
   id: string;
   token: string;
   email: string;
+  username: string;
   role: TeamRole;
   status: "pending" | "accepted" | "rejected";
   expiresAt: string;
@@ -242,15 +245,15 @@ export async function getTeam(
   const isMember = (members ?? []).some((m) => m.user_id === auth.userId);
   if (!isMember) throw new Error("접근 권한이 없습니다.");
 
-  // Get emails from profiles
+  // Get member profile labels
   const userIds = (members ?? []).map((m) => m.user_id);
   const admin = createAdminClient();
   const { data: profiles } = await admin
     .from("profiles")
-    .select("user_id, internal_email")
+    .select("user_id, username, display_name, internal_email")
     .in("user_id", userIds);
-  const emailMap = new Map(
-    (profiles ?? []).map((p) => [p.user_id, p.internal_email]),
+  const profileMap = new Map(
+    (profiles ?? []).map((p) => [p.user_id, p]),
   );
 
   return {
@@ -260,7 +263,12 @@ export async function getTeam(
     members: (members ?? []).map((m) => ({
       id: m.id,
       userId: m.user_id,
-      email: emailMap.get(m.user_id) ?? "",
+      email: profileMap.get(m.user_id)?.internal_email ?? "",
+      username: profileMap.get(m.user_id)?.username ?? "",
+      displayName:
+        profileMap.get(m.user_id)?.display_name ??
+        profileMap.get(m.user_id)?.username ??
+        "",
       role: m.role as TeamRole,
     })),
   };
@@ -268,9 +276,9 @@ export async function getTeam(
 
 export async function inviteMember(
   teamId: string,
-  email: string,
+  username: string,
   role: "admin" | "member" = "member",
-): Promise<{ token: string; email: string; expiresAt: string; id: string }> {
+): Promise<{ token: string; email: string; username: string; expiresAt: string; id: string }> {
   await assertManager(teamId, "팀 소유자 또는 관리자만 초대할 수 있습니다.");
   const auth = await requireAuthContext();
   const admin = createAdminClient();
@@ -278,11 +286,11 @@ export async function inviteMember(
   // Check if account exists
   const { data: profile } = await admin
     .from("profiles")
-    .select("user_id")
-    .eq("internal_email", email)
+    .select("user_id, username, internal_email")
+    .eq("username", username)
     .maybeSingle();
   if (!profile)
-    throw new Error("등록된 계정이 없는 이메일이에요. 먼저 가입을 안내해 주세요.");
+    throw new Error("등록된 계정이 없는 아이디예요. 먼저 가입을 안내해 주세요.");
 
   // Already a member?
   const supabase = await createClient();
@@ -299,7 +307,7 @@ export async function inviteMember(
     .from("team_invitations")
     .select("id")
     .eq("team_id", teamId)
-    .eq("email", email)
+    .eq("email", profile.internal_email)
     .eq("status", "pending")
     .maybeSingle();
   if (pending) throw new Error("이미 초대가 발송됐습니다.");
@@ -311,7 +319,7 @@ export async function inviteMember(
     .from("team_invitations")
     .insert({
       team_id: teamId,
-      email,
+      email: profile.internal_email,
       role,
       token,
       status: "pending",
@@ -322,7 +330,7 @@ export async function inviteMember(
     .single();
   if (error || !inv) throw new Error("초대 생성에 실패했습니다.");
 
-  return { token, email, expiresAt, id: inv.id };
+  return { token, email: profile.internal_email, username: profile.username, expiresAt, id: inv.id };
 }
 
 export async function cancelInvitation(invitationId: string): Promise<void> {
@@ -347,11 +355,18 @@ export async function getInvitation(token: string): Promise<InvitationView> {
     .single();
   if (!inv) throw new Error("초대를 찾을 수 없습니다.");
 
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("username")
+    .eq("internal_email", inv.email)
+    .maybeSingle();
+
   const team = inv.teams as unknown as { name: string };
   return {
     id: inv.id,
     token: inv.token,
     email: inv.email,
+    username: profile?.username ?? inv.email,
     role: inv.role as TeamRole,
     status: inv.status as "pending" | "accepted" | "rejected",
     expiresAt: inv.expires_at,
@@ -454,7 +469,7 @@ export async function removeMember(
 export async function listPendingInvitations(
   teamId: string,
 ): Promise<
-  Array<{ id: string; email: string; role: TeamRole; token: string; expiresAt: string }>
+  Array<{ id: string; email: string; username: string; role: TeamRole; token: string; expiresAt: string }>
 > {
   await getTeam(teamId); // auth check
   const supabase = await createClient();
@@ -466,9 +481,22 @@ export async function listPendingInvitations(
     .eq("status", "pending")
     .limit(100);
 
+  const emails = (data ?? []).map((inv) => inv.email);
+  const admin = createAdminClient();
+  const { data: profiles } = emails.length
+    ? await admin
+        .from("profiles")
+        .select("internal_email, username")
+        .in("internal_email", emails)
+    : { data: [] };
+  const usernameMap = new Map(
+    (profiles ?? []).map((profile) => [profile.internal_email, profile.username]),
+  );
+
   return (data ?? []).map((inv) => ({
     id: inv.id,
     email: inv.email,
+    username: usernameMap.get(inv.email) ?? inv.email,
     role: inv.role as TeamRole,
     token: inv.token,
     expiresAt: inv.expires_at,

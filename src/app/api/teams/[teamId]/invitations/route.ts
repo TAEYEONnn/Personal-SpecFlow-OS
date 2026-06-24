@@ -4,7 +4,7 @@ import { apiError } from "@/lib/api/response";
 import { inviteMember, listPendingInvitations } from "@/lib/teams/service";
 
 const inviteSchema = z.object({
-  email: z.string().email(),
+  username: z.string().trim().min(3).max(32),
   role: z.enum(["admin", "member"]).default("member"),
 });
 
@@ -27,11 +27,11 @@ export async function POST(
   try {
     const { teamId } = await params;
     const body = inviteSchema.parse(await request.json());
-    const invitation = await inviteMember(teamId, body.email, body.role);
+    const invitation = await inviteMember(teamId, body.username, body.role);
     return NextResponse.json({ invitation }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "이메일을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "아이디를 확인해 주세요." }, { status: 422 });
     }
     return apiError(error);
   }

@@ -4,8 +4,22 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import type { TeamRole } from "@/lib/teams/service";
 
-type Member = { id: string; userId: string; email: string; role: TeamRole };
-type Invitation = { id: string; email: string; role: TeamRole; token: string; expiresAt: string };
+type Member = {
+  id: string;
+  userId: string;
+  email: string;
+  username: string;
+  displayName: string;
+  role: TeamRole;
+};
+type Invitation = {
+  id: string;
+  email: string;
+  username: string;
+  role: TeamRole;
+  token: string;
+  expiresAt: string;
+};
 
 export function TeamSettings({
   teamId,
@@ -27,7 +41,7 @@ export function TeamSettings({
   const router = useRouter();
   const [members, setMembers] = useState<Member[]>(initialMembers);
   const [invitations, setInvitations] = useState<Invitation[]>(initialInvitations);
-  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteUsername, setInviteUsername] = useState("");
   const [inviteRole, setInviteRole] = useState<"admin" | "member">("member");
   const [inviteError, setInviteError] = useState("");
   const [invitePending, setInvitePending] = useState(false);
@@ -101,20 +115,22 @@ export function TeamSettings({
 
   async function handleInvite(event: FormEvent) {
     event.preventDefault();
-    if (invitePending || !inviteEmail.trim()) return;
+    if (invitePending || !inviteUsername.trim()) return;
     setInviteError(""); setInviteLink(""); setInvitePending(true);
     try {
       const res = await fetch(`/api/teams/${teamId}/invitations`, {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: inviteEmail.trim(), role: inviteRole }),
+        body: JSON.stringify({ username: inviteUsername.trim(), role: inviteRole }),
       });
       const data = await res.json();
       if (!res.ok) { setInviteError(data.error ?? "초대를 보내지 못했어요."); return; }
       const token: string = data.invitation?.token ?? "";
       const link = `${window.location.origin}/invitations/${token}`;
-      setInviteLink(link); setInviteEmail("");
+      setInviteLink(link); setInviteUsername("");
       setInvitations((prev) => [...prev, {
-        id: data.invitation.id ?? "", email: inviteEmail.trim(),
+        id: data.invitation.id ?? "",
+        email: data.invitation.email ?? "",
+        username: data.invitation.username ?? inviteUsername.trim(),
         role: inviteRole, token, expiresAt: data.invitation.expiresAt ?? "",
       }]);
     } catch { setInviteError("네트워크 연결을 확인해 주세요."); }
@@ -150,9 +166,11 @@ export function TeamSettings({
   async function handleTransfer(event: FormEvent) {
     event.preventDefault();
     if (!transferTo.trim()) return;
-    const target = members.find((m) => m.email === transferTo.trim() || m.userId === transferTo.trim());
-    if (!target) { setTransferError("현재 팀 멤버의 이메일을 입력해 주세요."); return; }
-    if (!confirm(`"${target.email}"에게 소유권을 이전할까요? 이전 후에는 되돌리기 어렵습니다.`)) return;
+    const target = members.find((m) =>
+      m.username === transferTo.trim() || m.userId === transferTo.trim()
+    );
+    if (!target) { setTransferError("현재 팀 멤버의 아이디를 입력해 주세요."); return; }
+    if (!confirm(`"${target.displayName || target.username}"에게 소유권을 이전할까요? 이전 후에는 되돌리기 어렵습니다.`)) return;
     setTransferPending(true); setTransferError("");
     try {
       const res = await fetch(`/api/teams/${teamId}/transfer-ownership`, {
@@ -237,7 +255,10 @@ export function TeamSettings({
         <ul className="member-list">
           {members.map((m) => (
             <li key={m.id} className="member-item">
-              <span className="member-email">{m.email}</span>
+              <span className="member-email">{m.displayName || m.username}</span>
+              {m.displayName && m.displayName !== m.username ? (
+                <span className="member-role">@{m.username}</span>
+              ) : null}
               {isOwner && m.role !== "owner" ? (
                 <select
                   className="member-role-select"
@@ -258,7 +279,7 @@ export function TeamSettings({
               )}
               {isOwner && m.role !== "owner" && (
                 <button className="button button-ghost button-sm"
-                  onClick={() => { setTransferTo(m.email); setShowTransfer(true); }}>
+                  onClick={() => { setTransferTo(m.username); setShowTransfer(true); }}>
                   소유권 이전
                 </button>
               )}
@@ -272,8 +293,8 @@ export function TeamSettings({
         <section className="team-section">
           <h2>팀원 초대</h2>
           <form className="invite-form" onSubmit={handleInvite}>
-            <input className="field" type="email" placeholder="초대할 이메일 주소"
-              value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)}
+            <input className="field" placeholder="초대할 아이디"
+              value={inviteUsername} onChange={(e) => setInviteUsername(e.target.value)}
               disabled={invitePending} required />
             <select className="field invite-role-select" value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value as "admin" | "member")}
@@ -307,7 +328,7 @@ export function TeamSettings({
           <ul className="member-list">
             {invitations.map((inv) => (
               <li key={inv.id} className="member-item">
-                <span className="member-email">{inv.email}</span>
+                <span className="member-email">{inv.username}</span>
                 <span className="member-role member-role--pending">대기 중</span>
                 <span className={`member-role member-role--${inv.role}`}>{roleLabel[inv.role]}</span>
                 {isManager && (
@@ -325,13 +346,13 @@ export function TeamSettings({
         <div className="modal-backdrop">
           <div className="modal-box">
             <h2>소유권 이전</h2>
-            <p>소유권을 이전할 멤버의 이메일을 입력하세요.</p>
+            <p>소유권을 이전할 멤버의 아이디를 입력하세요.</p>
             <form onSubmit={handleTransfer} style={{ marginTop: 16 }}>
-              <input className="field" list="member-emails" value={transferTo}
-                onChange={(e) => setTransferTo(e.target.value)} placeholder="team@example.com" required />
-              <datalist id="member-emails">
+              <input className="field" list="member-usernames" value={transferTo}
+                onChange={(e) => setTransferTo(e.target.value)} placeholder="아이디 입력" required />
+              <datalist id="member-usernames">
                 {members.filter((m) => m.role !== "owner").map((m) => (
-                  <option key={m.userId} value={m.email} />
+                  <option key={m.userId} value={m.username} />
                 ))}
               </datalist>
               {transferError && <p className="form-error">{transferError}</p>}

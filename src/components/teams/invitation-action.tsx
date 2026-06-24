@@ -7,6 +7,7 @@ type InvitationView = {
   id: string;
   token: string;
   email: string;
+  username: string;
   status: "pending" | "accepted" | "rejected";
   role: "owner" | "admin" | "member";
   expiresAt: string;
@@ -84,7 +85,7 @@ export function InvitationAction({
       <>
         <h2>{invitation.teamName} 팀 초대</h2>
         <p>
-          <strong>{invitation.email}</strong>으로 초대가 왔어요.
+          <strong>{invitation.username}</strong> 아이디로 초대가 왔어요.
           수락하려면 먼저 로그인해 주세요.
         </p>
         <Link
@@ -137,7 +138,7 @@ export function InvitationAction({
     <>
       <h2>{invitation.teamName} 팀 초대</h2>
       <p>
-        <strong>{invitation.email}</strong>으로 초대가 왔어요.
+        <strong>{invitation.username}</strong> 아이디로 초대가 왔어요.
         팀에 합류하시겠어요?
       </p>
       {error && <p className="form-error">{error}</p>}
