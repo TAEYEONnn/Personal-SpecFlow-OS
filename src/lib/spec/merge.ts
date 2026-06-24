@@ -1,10 +1,14 @@
 import type { Evidence, Question, Screen, SpecDocument, Task, UxCopy } from "@/lib/spec/schema";
 
-type MergeStats = {
+export type MergeStats = {
   added: number;
   proposedUpdates: number;
   preserved: number;
   conflicts: number;
+  deduplicated: number;
+  preservedCompletedTasks: number;
+  preservedAnsweredQuestions: number;
+  preservedScreenPositions: number;
 };
 
 export type MergeCompiledResult = {
@@ -12,10 +16,21 @@ export type MergeCompiledResult = {
   stats: MergeStats;
 };
 
+// ─── text normalization ───────────────────────────────────────────────────────
+
 function normalizeText(value: string) {
   return value
     .toLowerCase()
     .replace(/[^\p{L}\p{N}]+/gu, "")
+    .trim();
+}
+
+function normalizeTaskTitle(value: string): string {
+  return value
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[.,!?()[\]{}:;'"`]/g, "")
     .trim();
 }
 
@@ -32,6 +47,40 @@ function similarity(a: string, b: string) {
   return union ? intersection / union : 0;
 }
 
+// ─── task identity ────────────────────────────────────────────────────────────
+
+function taskSemanticKey(task: Task): string {
+  const relIds = [
+    ...(task.relatedRequirementIds ?? []),
+    ...(task.relatedScreenIds ?? []),
+  ].sort();
+  return `${normalizeTaskTitle(task.title)}|${relIds.join(",")}`;
+}
+
+function findMatchingTask(aiTask: Task, candidates: Task[]): Task | undefined {
+  const byId = candidates.find((t) => t.id === aiTask.id);
+  if (byId) return byId;
+  const aiKey = taskSemanticKey(aiTask);
+  return candidates.find((t) => taskSemanticKey(t) === aiKey);
+}
+
+/**
+ * An unmatched previous task is preserved when the user has actively touched it:
+ * completed, started work, or manually created it. Pure-AI todo/inbox tasks that
+ * the new compile no longer generates are dropped.
+ */
+function shouldPreserveUnmatchedTask(task: Task): boolean {
+  if (task.deletedAt) return false;
+  if (task.source === "user") return true;
+  return task.status === "done" || task.status === "in-progress" || task.status === "blocked";
+}
+
+// ─── per-entity merge functions ───────────────────────────────────────────────
+
+function mergeEvidence(next: Evidence, previous?: Evidence): Evidence {
+  return previous ? { ...next, reviewStatus: previous.reviewStatus } : next;
+}
+
 function findMatchingQuestion(question: Question, previous: Question[]) {
   const byId = previous.find((candidate) => candidate.id === question.id);
   if (byId) return byId;
@@ -44,16 +93,16 @@ function findMatchingQuestion(question: Question, previous: Question[]) {
     .sort((a, b) => b.score - a.score)[0]?.candidate;
 }
 
-function mergeEvidence(next: Evidence, previous?: Evidence) {
-  return previous
-    ? { ...next, reviewStatus: previous.reviewStatus }
-    : next;
-}
-
-function mergeQuestion(next: Question, previous: Question | undefined, stats: MergeStats): Question {
+function mergeQuestion(
+  next: Question,
+  previous: Question | undefined,
+  stats: MergeStats,
+): Question {
   if (!previous) return next;
   const answer = previous.answer?.trim() ? previous.answer : next.answer;
-  if (answer && answer === previous.answer) stats.preserved += 1;
+  if (answer && answer === previous.answer) {
+    stats.preservedAnsweredQuestions += 1;
+  }
   return {
     ...next,
     evidence: mergeEvidence(next.evidence, previous.evidence),
@@ -66,7 +115,7 @@ function mergeQuestion(next: Question, previous: Question | undefined, stats: Me
 
 function mergeScreen(next: Screen, previous: Screen | undefined, stats: MergeStats): Screen {
   if (!previous) return next;
-  stats.preserved += 1;
+  stats.preservedScreenPositions += 1;
   return {
     ...next,
     position: previous.position,
@@ -74,17 +123,21 @@ function mergeScreen(next: Screen, previous: Screen | undefined, stats: MergeSta
   };
 }
 
-function mergeTask(next: Task, previous: Task | undefined, stats: MergeStats): Task {
-  if (!previous) return next;
-  stats.preserved += 1;
+function mergeTask(next: Task, previous: Task, stats: MergeStats): Task {
+  if (previous.status === "done") {
+    stats.preservedCompletedTasks += 1;
+  } else {
+    stats.preserved += 1;
+  }
   return {
     ...next,
+    id: previous.id,
     status: previous.status,
-    priority: previous.priority,
-    description: previous.description ?? next.description,
+    source: previous.source,
+    priority: previous.source === "user" ? previous.priority : next.priority,
+    description: previous.description || next.description,
     dueDate: previous.dueDate ?? next.dueDate,
     blockerReason: previous.blockerReason ?? next.blockerReason,
-    source: previous.source ?? next.source,
     deletedAt: previous.deletedAt ?? next.deletedAt ?? null,
     evidence: mergeEvidence(next.evidence, previous.evidence),
   };
@@ -101,6 +154,32 @@ function mergeUxCopy(next: UxCopy, previous: UxCopy | undefined, stats: MergeSta
   };
 }
 
+// ─── brief field preservation ─────────────────────────────────────────────────
+
+type BriefShape = SpecDocument["brief"];
+
+function mergeBrief(previous: BriefShape, compiled: BriefShape): BriefShape {
+  const userEditedFields = previous.userEditedFields ?? [];
+  const merged: BriefShape = { ...compiled, userEditedFields };
+  for (const field of userEditedFields) {
+    const key = field as keyof BriefShape;
+    if (key !== "userEditedFields" && key in previous) {
+      (merged as Record<string, unknown>)[key] = previous[key];
+    }
+  }
+  // Always preserve problem and successCriteria if user wrote them
+  // (legacy: before userEditedFields was tracked)
+  if (!userEditedFields.includes("problem") && previous.problem) {
+    merged.problem = previous.problem;
+  }
+  if (!userEditedFields.includes("successCriteria") && previous.successCriteria.length > 0) {
+    merged.successCriteria = previous.successCriteria;
+  }
+  return merged;
+}
+
+// ─── main merge ───────────────────────────────────────────────────────────────
+
 export function mergeCompiledDocument(
   previous: SpecDocument | null,
   compiled: SpecDocument,
@@ -113,6 +192,10 @@ export function mergeCompiledDocument(
         proposedUpdates: 0,
         preserved: 0,
         conflicts: 0,
+        deduplicated: 0,
+        preservedCompletedTasks: 0,
+        preservedAnsweredQuestions: 0,
+        preservedScreenPositions: 0,
       },
     };
   }
@@ -122,63 +205,91 @@ export function mergeCompiledDocument(
     proposedUpdates: 0,
     preserved: 0,
     conflicts: 0,
+    deduplicated: 0,
+    preservedCompletedTasks: 0,
+    preservedAnsweredQuestions: 0,
+    preservedScreenPositions: 0,
   };
 
   const previousScreens = new Map(previous.screens.map((item) => [item.id, item]));
-  const previousTasks = new Map(previous.tasks.map((item) => [item.id, item]));
   const previousUxCopy = new Map(previous.uxCopy.map((item) => [item.id, item]));
   const previousStates = new Map(previous.states.map((item) => [item.id, item]));
   const previousRequirements = new Map(previous.requirements.map((item) => [item.id, item]));
 
+  // ── questions ──
   const questions = compiled.questions.map((question) =>
     mergeQuestion(question, findMatchingQuestion(question, previous.questions), stats),
   );
-  const matchedQuestionIds = new Set(questions.map((question) => question.id));
+  const matchedQuestionIds = new Set(questions.map((q) => q.id));
   const orphanedAnswers = previous.questions.filter(
-    (question) => question.answer?.trim() && !matchedQuestionIds.has(question.id),
+    (q) => q.answer?.trim() && !matchedQuestionIds.has(q.id),
+  );
+
+  // ── tasks — semantic dedup ──
+  const previousTasksList = previous.tasks;
+  const matchedPreviousTaskIds = new Set<string>();
+
+  const mergedAiTasks = compiled.tasks.map((aiTask) => {
+    const candidates = previousTasksList.filter((t) => !matchedPreviousTaskIds.has(t.id));
+    const match = findMatchingTask(aiTask, candidates);
+    if (match) {
+      matchedPreviousTaskIds.add(match.id);
+      if (match.id !== aiTask.id) stats.deduplicated += 1;
+      return mergeTask(aiTask, match, stats);
+    }
+    stats.added += 1;
+    return aiTask;
+  });
+
+  // Preserve previous tasks the user has actively worked on but AI didn't regenerate
+  const unmatchedPreservedTasks = previousTasksList.filter(
+    (t) => !matchedPreviousTaskIds.has(t.id) && shouldPreserveUnmatchedTask(t),
+  );
+  for (const t of unmatchedPreservedTasks) {
+    if (t.status === "done") stats.preservedCompletedTasks += 1;
+    else stats.preserved += 1;
+  }
+
+  const allTasks = [...mergedAiTasks, ...unmatchedPreservedTasks].filter(
+    (task, index, arr) => arr.findIndex((t) => t.id === task.id) === index,
   );
 
   return {
     document: {
       ...compiled,
-      brief: {
-        ...compiled.brief,
-        problem: previous.brief.problem || compiled.brief.problem,
-        successCriteria: previous.brief.successCriteria.length
-          ? previous.brief.successCriteria
-          : compiled.brief.successCriteria,
-      },
+      brief: mergeBrief(previous.brief, compiled.brief),
+      suppressedTaskKeys: previous.suppressedTaskKeys ?? [],
       requirements: compiled.requirements.map((requirement) => {
-        const previousRequirement = previousRequirements.get(requirement.id);
-        return previousRequirement
+        const prev = previousRequirements.get(requirement.id);
+        return prev
           ? {
               ...requirement,
-              content: previousRequirement.content,
-              category: previousRequirement.category,
-              evidence: mergeEvidence(requirement.evidence, previousRequirement.evidence),
+              content: prev.content,
+              category: prev.category,
+              evidence: mergeEvidence(requirement.evidence, prev.evidence),
             }
           : requirement;
       }),
       questions: [
         ...questions,
-        ...orphanedAnswers.map((question) => ({
-          ...question,
-          resolved: question.resolved,
-          context: `${question.context}\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.`,
+        ...orphanedAnswers.map((q) => ({
+          ...q,
+          resolved: q.resolved,
+          context: `${q.context}\n\n새 정리 결과와 자동 매칭되지 않아 답변을 보존했어요.`,
         })),
       ],
       roles: compiled.roles.map((role) => ({
         ...role,
         evidence: mergeEvidence(
           role.evidence,
-          previous.roles.find((candidate) => candidate.id === role.id)?.evidence,
+          previous.roles.find((r) => r.id === role.id)?.evidence,
         ),
       })),
       permissions: compiled.permissions.map((permission) => ({
         ...permission,
         evidence: mergeEvidence(
           permission.evidence,
-          previous.permissions.find((candidate) => candidate.id === permission.id)?.evidence,
+          previous.permissions.find((p) => p.id === permission.id)?.evidence,
         ),
       })),
       screens: compiled.screens.map((screen) =>
@@ -197,15 +308,7 @@ export function mergeCompiledDocument(
       uxCopy: compiled.uxCopy.map((copy) =>
         mergeUxCopy(copy, previousUxCopy.get(copy.id), stats),
       ),
-      tasks: [
-        ...compiled.tasks.map((task) =>
-          mergeTask(task, previousTasks.get(task.id), stats),
-        ),
-        ...previous.tasks.filter((task) => task.source === "user"),
-      ].filter(
-        (task, index, tasks) =>
-          tasks.findIndex((candidate) => candidate.id === task.id) === index,
-      ),
+      tasks: allTasks,
       figmaMapping: previous.figmaMapping,
     },
     stats,

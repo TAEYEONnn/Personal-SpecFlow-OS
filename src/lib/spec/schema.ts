@@ -157,6 +157,7 @@ export const specDocumentSchema = z.object({
     scope: z.array(z.string()),
     outOfScope: z.array(z.string()),
     constraints: z.array(z.string()),
+    userEditedFields: z.array(z.string()).catch([]),
   }),
   requirements: z.array(requirementSchema),
   questions: z.array(questionSchema),
@@ -166,6 +167,7 @@ export const specDocumentSchema = z.object({
   states: z.array(screenStateSchema),
   uxCopy: z.array(uxCopySchema),
   tasks: z.array(taskSchema),
+  suppressedTaskKeys: z.array(z.string()).catch([]),
   dailyReport: z.object({
     date: z.string(),
     summary: z.string(),

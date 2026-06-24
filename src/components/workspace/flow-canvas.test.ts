@@ -219,7 +219,7 @@ describe("FlowCanvas", () => {
     });
 
     expect(onPositionUpdate).toHaveBeenCalledTimes(1);
-    expect(onPositionUpdate).toHaveBeenCalledWith("a", { x: 80, y: 120 });
+    expect(onPositionUpdate).toHaveBeenCalledWith("a", { x: 80, y: 120 }, "screen");
   });
 
   it("uses a saved state-node position after remounting", () => {
@@ -268,7 +268,7 @@ describe("FlowCanvas", () => {
     const view = render(createElement(FlowCanvas, props));
 
     fireEvent.click(screen.getByRole("button", { name: "자동 정렬" }));
-    expect(screen.getByTestId("node-a")).toHaveAttribute("data-x", "40");
+    expect(screen.getByTestId("node-a")).toHaveAttribute("data-x", "48");
 
     fireEvent.click(screen.getByRole("button", { name: "자동 정렬 실행 취소" }));
     view.rerender(
@@ -291,6 +291,6 @@ describe("FlowCanvas", () => {
     );
 
     expect(screen.getByTestId("node-a")).toHaveAttribute("data-x", "24");
-    expect(onPositionUpdate).toHaveBeenCalledWith("a", { x: 24, y: 0 });
+    expect(onPositionUpdate).toHaveBeenCalledWith("a", { x: 24, y: 0 }, "screen");
   });
 });
