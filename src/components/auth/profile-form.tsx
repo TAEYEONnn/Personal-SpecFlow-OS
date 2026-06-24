@@ -73,7 +73,7 @@ export function ProfileForm({ initialDisplayName, email }: { initialDisplayName:
         <h2>기본 정보</h2>
         <form onSubmit={handleNameSave}>
           <label className="field-label">
-            이메일
+            아이디
             <input className="field" value={email} disabled readOnly />
           </label>
           <label className="field-label">

@@ -23,7 +23,7 @@ export async function proxy(request: NextRequest) {
 
   if (isDevelopmentDemo) {
     if (request.cookies.get("specflow-demo-session")) return NextResponse.next();
-    return NextResponse.redirect(new URL("/signup", request.url));
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   if (!hasSupabaseEnv) {
@@ -52,7 +52,7 @@ export async function proxy(request: NextRequest) {
   );
   const { data } = await supabase.auth.getClaims();
   if (!data?.claims) {
-    return NextResponse.redirect(new URL("/signup", request.url));
+    return NextResponse.redirect(new URL("/login", request.url));
   }
   return response;
 }

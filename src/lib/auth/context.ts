@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 export type AuthContext = {
   userId: string;
   username: string;
+  displayName: string;
   demo: boolean;
 };
 
@@ -24,6 +25,7 @@ export async function getAuthContext(): Promise<AuthContext | null> {
     return {
       userId: "00000000-0000-0000-0000-000000000001",
       username: "designer",
+      displayName: "디자이너",
       demo: true,
     };
   }
@@ -33,13 +35,15 @@ export async function getAuthContext(): Promise<AuthContext | null> {
   if (!data.user) return null;
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username")
+    .select("username, display_name")
     .eq("user_id", data.user.id)
     .single();
+  const username = profile?.username ?? "designer";
 
   return {
     userId: data.user.id,
-    username: profile?.username ?? "designer",
+    username,
+    displayName: profile?.display_name ?? username,
     demo: false,
   };
 }

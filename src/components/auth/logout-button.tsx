@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 export function LogoutButton({
   compact = false,
   className,
-  redirectTo = "/signup",
+  redirectTo = "/login",
 }: {
   compact?: boolean;
   className?: string;

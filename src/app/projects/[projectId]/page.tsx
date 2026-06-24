@@ -14,5 +14,5 @@ export default async function ProjectPage({
   const project = await getProject(projectId, auth);
   if (!project?.document) notFound();
 
-  return <WorkspaceShell project={{ ...project, document: project.document }} username={auth.username} />;
+  return <WorkspaceShell project={{ ...project, document: project.document }} username={auth.displayName} />;
 }

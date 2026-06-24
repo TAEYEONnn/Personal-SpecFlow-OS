@@ -6,7 +6,7 @@ import { useState } from "react";
 
 export function SignupForm({ next }: { next?: string }) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
@@ -26,7 +26,7 @@ export function SignupForm({ next }: { next?: string }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: email.trim(), password }),
+        body: JSON.stringify({ username: username.trim(), password }),
       });
       const contentType = res.headers.get("content-type") ?? "";
       const data = contentType.includes("application/json") ? await res.json() : null;
@@ -46,17 +46,16 @@ export function SignupForm({ next }: { next?: string }) {
   return (
     <form className="login-form" onSubmit={handleSubmit} noValidate>
       <label className="field-label">
-        이메일
+        아이디
         <input
           className="field"
-          name="email"
-          type="email"
-          autoComplete="email"
+          name="username"
+          autoComplete="username"
           required
-          placeholder="you@example.com"
+          placeholder="아이디 입력"
           disabled={pending}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
         />
       </label>
       <label className="field-label">

@@ -80,7 +80,7 @@ export function LoginForm({
           name="username"
           autoComplete="username"
           required
-          placeholder="designer"
+          placeholder="아이디 입력"
           disabled={pending}
         />
       </label>

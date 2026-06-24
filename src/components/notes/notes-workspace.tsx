@@ -15,20 +15,30 @@ export function NotesWorkspace({ personal = false }: { personal?: boolean }) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const load = useCallback(async () => {
-    if (!personal && !activeTeam) return setNotes([])
+    await Promise.resolve()
+    if (!personal && teamLoading) return
+    if (!personal && !activeTeam) {
+      setNotes([])
+      setSelectedId(null)
+      return
+    }
     const params = new URLSearchParams()
     if (personal) params.set('personal', 'true')
     else if (activeTeam) params.set('teamId', activeTeam.id)
     const response = await fetch(`/api/notes?${params}`, { credentials: 'include' })
     const data = await response.json()
-    if (response.ok) setNotes(data.notes)
-  }, [activeTeam, personal])
+    if (response.ok) {
+      const nextNotes = Array.isArray(data.notes) ? data.notes : []
+      setNotes(nextNotes)
+      setSelectedId((current) => current ?? nextNotes[0]?.id ?? null)
+    }
+  }, [activeTeam, personal, teamLoading])
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
+    const timeout = window.setTimeout(() => {
       void load()
-    })
-    return () => window.cancelAnimationFrame(frame)
+    }, 0)
+    return () => window.clearTimeout(timeout)
   }, [load])
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current) }, [])
 

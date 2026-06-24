@@ -1,7 +1,6 @@
 "use client"
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import {
   ChatCircleDots,
@@ -16,17 +15,6 @@ import {
 
 import { LogoutButton } from '@/components/auth/logout-button'
 import { useActiveTeam } from '@/components/workspace-global/active-team-provider'
-
-function useIsAdmin() {
-  const [isAdmin, setIsAdmin] = useState(false)
-  useEffect(() => {
-    fetch('/api/auth/me', { credentials: 'include' })
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (data?.role === 'admin') setIsAdmin(true) })
-      .catch(() => undefined)
-  }, [])
-  return isAdmin
-}
 
 const groups = [
   {
@@ -57,7 +45,6 @@ const groups = [
 export function WorkspaceSidebar() {
   const pathname = usePathname()
   const { teams, activeTeam, setActiveTeamId } = useActiveTeam()
-  const isAdmin = useIsAdmin()
 
   return (
     <aside className="global-sidebar">
@@ -98,19 +85,12 @@ export function WorkspaceSidebar() {
           <Link className="global-nav-item" href={activeTeam ? `/teams/${activeTeam.id}` : '/teams/new'}>
             <UsersThree size={18} />멤버·팀 설정
           </Link>
+          <Link className="global-nav-item" href="/teams/new">
+            <Plus size={18} />새 팀 만들기
+          </Link>
           <Link className="global-nav-item" href="/profile">
             <UserCircle size={18} />프로필
           </Link>
-          {isAdmin && (
-            <a
-              className="global-nav-item"
-              href="/admin"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <UserCircle size={18} />관리자 화면 열기 ↗
-            </a>
-          )}
           <LogoutButton className="global-nav-item global-nav-button" />
         </section>
       </nav>
