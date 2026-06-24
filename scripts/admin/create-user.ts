@@ -25,6 +25,7 @@ async function main(): Promise<void> {
     user_id: data.user.id,
     username,
     internal_email: internalEmail,
+    display_name: username,
   });
 
   if (profileError) {

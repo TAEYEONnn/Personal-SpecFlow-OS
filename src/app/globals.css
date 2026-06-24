@@ -2968,6 +2968,13 @@ textarea:focus-visible {
   color: var(--ink);
   text-decoration: none;
 }
+.global-nav-button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
 .global-nav-item:hover,
 .global-nav-item--active {
   background: var(--surface-active);

@@ -14,6 +14,7 @@ import {
   UsersThree,
 } from '@phosphor-icons/react'
 
+import { LogoutButton } from '@/components/auth/logout-button'
 import { useActiveTeam } from '@/components/workspace-global/active-team-provider'
 
 function useIsAdmin() {
@@ -110,6 +111,7 @@ export function WorkspaceSidebar() {
               <UserCircle size={18} />관리자 화면 열기 ↗
             </a>
           )}
+          <LogoutButton className="global-nav-item global-nav-button" />
         </section>
       </nav>
     </aside>
