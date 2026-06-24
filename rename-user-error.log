@@ -1,0 +1,24 @@
+$ tsx scripts/admin/rename-user.ts --from bis08 --to xodusrla
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+Error: Transform failed with 3 errors:
+/Users/taeyeon/Downloads/개인앱/Personal-SpecFlow-OS/scripts/admin/rename-user.ts:25:47: ERROR: Top-level await is currently not supported with the "cjs" output format
+/Users/taeyeon/Downloads/개인앱/Personal-SpecFlow-OS/scripts/admin/rename-user.ts:32:28: ERROR: Top-level await is currently not supported with the "cjs" output format
+/Users/taeyeon/Downloads/개인앱/Personal-SpecFlow-OS/scripts/admin/rename-user.ts:42:31: ERROR: Top-level await is currently not supported with the "cjs" output format
+    at failureErrorWithLog (/Users/taeyeon/Downloads/개인앱/Personal-SpecFlow-OS/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1748:15)
+    at /Users/taeyeon/Downloads/개인앱/Personal-SpecFlow-OS/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/Users/taeyeon/Downloads/개인앱/Personal-SpecFlow-OS/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/Users/taeyeon/Downloads/개인앱/Personal-SpecFlow-OS/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/Users/taeyeon/Downloads/개인앱/Personal-SpecFlow-OS/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
+}
+
+Node.js v22.23.0
+[ELIFECYCLE] Command failed with exit code 1.

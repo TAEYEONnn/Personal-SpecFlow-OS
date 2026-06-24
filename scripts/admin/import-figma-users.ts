@@ -104,98 +104,153 @@ function tempPassword() {
   return `${randomBytes(18).toString("base64url")}Aa1!`;
 }
 
-const filePath = argValue("--file");
-if (!filePath) throw new Error("--file <figma-users.json> 경로를 입력해 주세요.");
+async function main() {
+  const filePath = argValue("--file");
 
-const apply = hasFlag("--apply");
-const credentialsPath = argValue("--write-credentials");
-const json = JSON.parse(await readFile(filePath, "utf8")) as unknown;
-const users = Array.from(
-  new Map(
-    collectRecords(json)
-      .map(normalizeImportUser)
-      .filter((user): user is ImportUser => Boolean(user))
-      .map((user) => [user.email, user]),
-  ).values(),
-);
-
-if (!apply) {
-  console.log(`${users.length}명을 가져올 수 있습니다. 실제 적용하려면 --apply를 추가하세요.`);
-  console.log("입력 형식: Payload accounts/profiles JSON 또는 email/username/displayName 필드가 있는 JSON 배열");
-  process.exit(0);
-}
-
-const admin = adminClient();
-const results: ImportResult[] = [];
-
-for (const user of users) {
-  const { data: existingProfile } = await admin
-    .from("profiles")
-    .select("user_id, username")
-    .eq("internal_email", user.email)
-    .maybeSingle();
-  if (existingProfile) {
-    results.push({
-      email: user.email,
-      username: existingProfile.username,
-      status: "skipped",
-      reason: "profile-exists",
-    });
-    continue;
+  if (!filePath) {
+    throw new Error("--file <figma-users.json> 경로를 입력해 주세요.");
   }
 
-  const existingAuthUserId = await findAuthUserIdByEmail(user.email);
-  const username = await uniqueUsername(user.username);
+  const apply = hasFlag("--apply");
+  const credentialsPath = argValue("--write-credentials");
 
-  if (existingAuthUserId) {
-    const { error } = await admin.from("profiles").insert({
-      user_id: existingAuthUserId,
+  const json = JSON.parse(await readFile(filePath, "utf8")) as unknown;
+
+  const users = Array.from(
+    new Map(
+      collectRecords(json)
+        .map(normalizeImportUser)
+        .filter((user): user is ImportUser => Boolean(user))
+        .map((user) => [user.email, user]),
+    ).values(),
+  );
+
+  if (!apply) {
+    console.log(
+      `${users.length}명을 가져올 수 있습니다. 실제 적용하려면 --apply를 추가하세요.`,
+    );
+    console.log(
+      "입력 형식: Payload accounts/profiles JSON 또는 email/username/displayName 필드가 있는 JSON 배열",
+    );
+    return;
+  }
+
+  const admin = adminClient();
+  const results: ImportResult[] = [];
+
+  for (const user of users) {
+    const { data: existingProfile, error: existingProfileError } = await admin
+      .from("profiles")
+      .select("user_id, username")
+      .eq("internal_email", user.email)
+      .maybeSingle();
+
+    if (existingProfileError) {
+      throw existingProfileError;
+    }
+
+    if (existingProfile) {
+      results.push({
+        email: user.email,
+        username: existingProfile.username,
+        status: "skipped",
+        reason: "profile-exists",
+      });
+      continue;
+    }
+
+    const existingAuthUserId = await findAuthUserIdByEmail(user.email);
+    const username = await uniqueUsername(user.username);
+
+    if (existingAuthUserId) {
+      const { error } = await admin.from("profiles").insert({
+        user_id: existingAuthUserId,
+        username,
+        internal_email: user.email,
+        display_name: user.displayName ?? username,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      results.push({
+        email: user.email,
+        username,
+        status: "profile-created",
+      });
+
+      continue;
+    }
+
+    const password = tempPassword();
+
+    const { data: created, error: createError } =
+      await admin.auth.admin.createUser({
+        email: user.email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          migratedFrom: "figmaspecflow",
+        },
+      });
+
+    if (createError || !created.user) {
+      throw createError ?? new Error("사용자 생성 실패");
+    }
+
+    const { error: profileError } = await admin.from("profiles").insert({
+      user_id: created.user.id,
       username,
       internal_email: user.email,
       display_name: user.displayName ?? username,
     });
-    if (error) throw error;
-    results.push({ email: user.email, username, status: "profile-created" });
-    continue;
+
+    if (profileError) {
+      await admin.auth.admin.deleteUser(created.user.id);
+      throw profileError;
+    }
+
+    results.push({
+      email: user.email,
+      username,
+      status: "created",
+      ...(credentialsPath ? { tempPassword: password } : {}),
+    });
   }
 
-  const password = tempPassword();
-  const { data: created, error: createError } = await admin.auth.admin.createUser({
-    email: user.email,
-    password,
-    email_confirm: true,
-    user_metadata: { migratedFrom: "figmaspecflow" },
-  });
-  if (createError || !created.user) throw createError ?? new Error("사용자 생성 실패");
+  if (credentialsPath) {
+    await mkdir(path.dirname(credentialsPath), {
+      recursive: true,
+    });
 
-  const { error: profileError } = await admin.from("profiles").insert({
-    user_id: created.user.id,
-    username,
-    internal_email: user.email,
-    display_name: user.displayName ?? username,
-  });
-  if (profileError) {
-    await admin.auth.admin.deleteUser(created.user.id);
-    throw profileError;
+    await writeFile(
+      credentialsPath,
+      JSON.stringify(results, null, 2),
+    );
+
+    console.log(
+      `임시 비밀번호 포함 결과를 ${credentialsPath}에 저장했습니다. 이 파일은 커밋하지 마세요.`,
+    );
   }
 
-  results.push({
-    email: user.email,
-    username,
-    status: "created",
-    ...(credentialsPath ? { tempPassword: password } : {}),
-  });
+  const summary = results.reduce<Record<string, number>>(
+    (acc, result) => {
+      acc[result.status] = (acc[result.status] ?? 0) + 1;
+      return acc;
+    },
+    {},
+  );
+
+  console.log("Figma 사용자 가져오기 완료:", summary);
 }
 
-if (credentialsPath) {
-  await mkdir(path.dirname(credentialsPath), { recursive: true });
-  await writeFile(credentialsPath, JSON.stringify(results, null, 2));
-  console.log(`임시 비밀번호 포함 결과를 ${credentialsPath}에 저장했습니다. 이 파일은 커밋하지 마세요.`);
-}
+main().catch((error: unknown) => {
+  console.error(
+    error instanceof Error
+      ? error.message
+      : "Figma 사용자 가져오기 중 알 수 없는 오류가 발생했습니다.",
+  );
 
-const summary = results.reduce<Record<string, number>>((acc, result) => {
-  acc[result.status] = (acc[result.status] ?? 0) + 1;
-  return acc;
-}, {});
-
-console.log("Figma 사용자 가져오기 완료:", summary);
+  process.exitCode = 1;
+});
