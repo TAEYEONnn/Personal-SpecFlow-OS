@@ -1,4 +1,5 @@
 export const ACTIVE_TEAM_STORAGE_KEY = "specflow:lastTeamId";
+export const ACTIVE_TEAM_COOKIE_KEY = "specflow_atid";
 
 export type TeamSummary = { id: string; name: string };
 

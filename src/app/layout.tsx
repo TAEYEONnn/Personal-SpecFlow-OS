@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { GlobalWorkspaceShell } from "@/components/workspace-global/workspace-shell";
+import { getAuthContext } from "@/lib/auth/context";
+import { listMyTeams } from "@/lib/teams/service";
+import type { TeamSummary } from "@/lib/workspace/active-team";
 
 export const metadata: Metadata = {
   title: "SpecFlow OS — 회의록이 화면 설계서가 됩니다",
@@ -22,15 +25,30 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Fetch teams server-side so ActiveTeamProvider can skip the client-side
+  // /api/teams fetch entirely — sidebar renders without a loading flash.
+  let initialTeams: TeamSummary[] = [];
+  try {
+    const auth = await getAuthContext();
+    if (auth) {
+      const teams = await listMyTeams();
+      initialTeams = teams.map((t) => ({ id: t.id, name: t.name }));
+    }
+  } catch {
+    // Public pages (login, signup) or unauthenticated — no teams needed
+  }
+
   return (
     <html lang="ko">
       <body>
-        <GlobalWorkspaceShell>{children}</GlobalWorkspaceShell>
+        <GlobalWorkspaceShell initialTeams={initialTeams}>
+          {children}
+        </GlobalWorkspaceShell>
       </body>
     </html>
   );

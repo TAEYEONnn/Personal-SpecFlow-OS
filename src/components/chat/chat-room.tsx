@@ -46,12 +46,22 @@ function authorLabel(name: string, email: string): string {
 
 // --- Main Component ---
 
-export function ChatRoom() {
+export function ChatRoom({
+  myUserId: serverUserId,
+  initialMessages = [],
+  initialAnnouncements = [],
+  initialTeamId = null,
+}: {
+  myUserId?: string
+  initialMessages?: ChatMessageView[]
+  initialAnnouncements?: ChatAnnouncement[]
+  initialTeamId?: string | null
+}) {
   const { activeTeam, loading: teamLoading } = useActiveTeam()
 
-  // Messages state
-  const [messages, setMessages] = useState<ChatMessageView[]>([])
-  const [announcements, setAnnouncements] = useState<ChatAnnouncement[]>([])
+  // Messages state — seeded from server props when available
+  const [messages, setMessages] = useState<ChatMessageView[]>(initialMessages)
+  const [announcements, setAnnouncements] = useState<ChatAnnouncement[]>(initialAnnouncements)
   const [announcementsOpen, setAnnouncementsOpen] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -65,8 +75,11 @@ export function ChatRoom() {
   const [menuFor, setMenuFor] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
-  const [announcedIds, setAnnouncedIds] = useState<Set<string>>(new Set())
-  const [myUserId, setMyUserId] = useState<string | null>(null)
+  const [announcedIds, setAnnouncedIds] = useState<Set<string>>(
+    () => new Set(initialMessages.filter((m) => m.isAnnouncement).map((m) => m.id))
+  )
+  // myUserId from server prop (no /api/auth/me fetch needed)
+  const [myUserId, setMyUserId] = useState<string | null>(serverUserId ?? null)
   const [myRole, setMyRole] = useState<'owner' | 'admin' | 'member' | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
@@ -89,19 +102,25 @@ export function ChatRoom() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const editTextareaRef = useRef<HTMLTextAreaElement>(null)
 
+  // Track which team's data is currently loaded — skip fetch when it matches
+  const loadedTeamRef = useRef<string | null>(
+    initialMessages.length > 0 ? initialTeamId : null
+  )
+
   // --- Toast helper ---
   function showToast(message: string, type: 'success' | 'error') {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3000)
   }
 
-  // --- Fetch my user ID ---
+  // --- Fetch user ID (only when not provided by server) ---
   useEffect(() => {
+    if (serverUserId) return
     fetch('/api/auth/me', { credentials: 'include' })
       .then((r) => r.ok ? r.json() : null)
       .then((data) => { if (data?.id) setMyUserId(data.id) })
       .catch(() => undefined)
-  }, [])
+  }, [serverUserId])
 
   // --- Fetch team members and role ---
   useEffect(() => {
@@ -151,21 +170,26 @@ export function ChatRoom() {
   // --- Load on team change ---
   useEffect(() => {
     if (!activeTeam) {
-      const timer = window.setTimeout(() => {
+      // Only clear if we actually had a team before (not on initial null state)
+      if (loadedTeamRef.current !== null) {
+        loadedTeamRef.current = null
         setMessages([])
         setAnnouncements([])
         setAnnouncedIds(new Set())
         setError('')
-      }, 0)
-      return () => window.clearTimeout(timer)
+      }
+      return
     }
-    const timer = window.setTimeout(() => {
-      setMessages([])
-      setAnnouncements([])
-      setAnnouncedIds(new Set())
-      setError('')
-      loadMessages(activeTeam.id)
-    }, 0)
+
+    // Same team as server-preloaded data — no fetch needed
+    if (loadedTeamRef.current === activeTeam.id) return
+
+    loadedTeamRef.current = activeTeam.id
+    setMessages([])
+    setAnnouncements([])
+    setAnnouncedIds(new Set())
+    setError('')
+    const timer = window.setTimeout(() => loadMessages(activeTeam.id), 0)
     return () => window.clearTimeout(timer)
   }, [activeTeam, loadMessages])
 
@@ -177,7 +201,6 @@ export function ChatRoom() {
 
     const channel = supabase
       .channel(`chat:${activeTeam.id}`)
-      // chat_messages: new messages and soft deletes / edits
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'chat_messages', filter: `team_id=eq.${activeTeam.id}` },
@@ -213,7 +236,6 @@ export function ChatRoom() {
           }
         }
       )
-      // chat_message_reactions: live reaction updates from other users
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'chat_message_reactions', filter: `team_id=eq.${activeTeam.id}` },
@@ -253,9 +275,7 @@ export function ChatRoom() {
       )
       .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    return () => { supabase.removeChannel(channel) }
   }, [activeTeam])
 
   // --- Scroll helpers ---
@@ -633,7 +653,7 @@ export function ChatRoom() {
                 {message.updatedAt !== message.createdAt && !message.isDeleted && (
                   <span className="chat-message-edited">(수정됨)</span>
                 )}
-                {/* ··· Menu — always shown for non-deleted messages */}
+                {/* ··· Menu */}
                 {!message.isDeleted && (
                   <div className="chat-message-menu-wrap">
                     <button
