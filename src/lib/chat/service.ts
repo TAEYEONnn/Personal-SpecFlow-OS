@@ -63,7 +63,7 @@ async function enrichAuthors(
   for (const p of profiles ?? []) {
     map.set(p.user_id, {
       email: p.internal_email ?? "",
-      name: p.display_name ?? p.username ?? "",
+      name: p.display_name ?? p.username ?? p.internal_email ?? "알 수 없는 사용자",
     });
   }
   return map;

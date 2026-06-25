@@ -10,7 +10,7 @@ import type { ChatMessageView, ChatAnnouncement, Mention } from '@/lib/chat/serv
 
 function MessageText({ content, mentions }: { content: string; mentions: Mention[] }) {
   if (!content) return null
-  const parts = content.split(/(https?:\/\/[^\s]+|@\w+)/g)
+  const parts = content.split(/(https?:\/\/[^\s]+|@\S+)/g)
   return (
     <p>
       {parts.map((part, i) => {
@@ -36,6 +36,14 @@ type MentionCandidate = { userId: string; username: string; displayName: string 
 
 const QUICK_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🎉']
 
+function authorInitial(name: string, email: string): string {
+  return (name || email || '?').slice(0, 1).toUpperCase()
+}
+
+function authorLabel(name: string, email: string): string {
+  return name || email || '알 수 없는 사용자'
+}
+
 // --- Main Component ---
 
 export function ChatRoom() {
@@ -44,6 +52,7 @@ export function ChatRoom() {
   // Messages state
   const [messages, setMessages] = useState<ChatMessageView[]>([])
   const [announcements, setAnnouncements] = useState<ChatAnnouncement[]>([])
+  const [announcementsOpen, setAnnouncementsOpen] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -61,6 +70,11 @@ export function ChatRoom() {
   const [myRole, setMyRole] = useState<'owner' | 'admin' | 'member' | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
+  // Edit state
+  const [editTarget, setEditTarget] = useState<string | null>(null)
+  const [editContent, setEditContent] = useState('')
+  const [editPending, setEditPending] = useState(false)
+
   // Mention state
   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
   const [mentionCandidates, setMentionCandidates] = useState<MentionCandidate[]>([])
@@ -73,6 +87,7 @@ export function ChatRoom() {
   const [atBottom, setAtBottom] = useState(true)
   const [newCount, setNewCount] = useState(0)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const editTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   // --- Toast helper ---
   function showToast(message: string, type: 'success' | 'error') {
@@ -307,6 +322,53 @@ export function ChatRoom() {
     }
   }
 
+  // --- Edit ---
+  function startEdit(message: ChatMessageView) {
+    setMenuFor(null)
+    setEditTarget(message.id)
+    setEditContent(message.content)
+    setTimeout(() => {
+      editTextareaRef.current?.focus()
+      editTextareaRef.current?.select()
+    }, 30)
+  }
+
+  async function submitEdit() {
+    if (!editTarget || !editContent.trim() || editPending) return
+    setEditPending(true)
+    try {
+      const response = await fetch(`/api/chat/${editTarget}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ content: editContent }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error ?? '수정하지 못했어요.')
+      setMessages((current) => current.map((m) => m.id === editTarget ? data.message : m))
+      setEditTarget(null)
+      setEditContent('')
+      showToast('메시지를 수정했어요.', 'success')
+    } catch (reason) {
+      showToast(reason instanceof Error ? reason.message : '수정하지 못했어요.', 'error')
+    } finally {
+      setEditPending(false)
+    }
+  }
+
+  function cancelEdit() {
+    setEditTarget(null)
+    setEditContent('')
+  }
+
+  // --- Copy link ---
+  function copyLink(messageId: string) {
+    const url = `${window.location.origin}/chat#msg-${messageId}`
+    navigator.clipboard.writeText(url).catch(() => undefined)
+    showToast('링크를 복사했어요.', 'success')
+    setMenuFor(null)
+  }
+
   // --- Keyboard handler for textarea ---
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (mentionQuery !== null && mentionCandidates.length > 0) {
@@ -452,6 +514,11 @@ export function ChatRoom() {
     }
   }
 
+  function canEdit(message: ChatMessageView): boolean {
+    if (message.isDeleted) return false
+    return message.authorId === myUserId
+  }
+
   function canDelete(message: ChatMessageView): boolean {
     if (message.isDeleted) return false
     return message.authorId === myUserId || myRole === 'owner' || myRole === 'admin'
@@ -459,6 +526,10 @@ export function ChatRoom() {
 
   function canAnnounce(): boolean {
     return myRole === 'owner' || myRole === 'admin'
+  }
+
+  function isMine(reaction: { emoji: string; userIds: string[] }): boolean {
+    return myUserId !== null && reaction.userIds.includes(myUserId)
   }
 
   function scrollToMessage(messageId: string) {
@@ -474,7 +545,7 @@ export function ChatRoom() {
     <div className="chat-room" onClick={() => { setEmojiPickerFor(null); setMenuFor(null) }}>
       {/* Toast */}
       {toast && (
-        <div className={`chat-toast chat-toast--${toast.type}`} role="status">
+        <div className={`chat-toast chat-toast--${toast.type}`} role="status" aria-live="polite">
           {toast.message}
         </div>
       )}
@@ -482,30 +553,40 @@ export function ChatRoom() {
       {/* Announcements banner */}
       {announcements.length > 0 && (
         <div className="chat-announcements">
-          <div className="chat-announcements-header">
+          <button
+            className="chat-announcements-header"
+            onClick={() => setAnnouncementsOpen((o) => !o)}
+            aria-expanded={announcementsOpen}
+          >
             <span>📌 공지 {announcements.length}개</span>
-          </div>
-          <ul className="chat-announcements-list">
-            {announcements.map((ann) => (
-              <li key={ann.id} className="chat-announcement-item">
-                <button
-                  className="chat-announcement-link"
-                  onClick={() => scrollToMessage(ann.messageId)}
-                  title="메시지 위치로 이동"
-                >
-                  <span className="chat-announcement-author">{ann.message.authorName}</span>
-                  <span className="chat-announcement-content">{ann.message.content.slice(0, 80)}{ann.message.content.length > 80 ? '...' : ''}</span>
-                </button>
-                {canAnnounce() && (
+            <span className="chat-ann-toggle">{announcementsOpen ? '▲' : '▼'}</span>
+          </button>
+          {announcementsOpen && (
+            <ul className="chat-announcements-list">
+              {announcements.map((ann) => (
+                <li key={ann.id} className="chat-announcement-item">
                   <button
-                    className="chat-announcement-remove"
-                    onClick={() => toggleAnnounce(ann.messageId)}
-                    aria-label="공지 해제"
-                  >x</button>
-                )}
-              </li>
-            ))}
-          </ul>
+                    className="chat-announcement-link"
+                    onClick={() => scrollToMessage(ann.messageId)}
+                    title="메시지 위치로 이동"
+                  >
+                    <span className="chat-announcement-author">{authorLabel(ann.message.authorName, ann.message.authorEmail)}</span>
+                    <span className="chat-announcement-content">
+                      {ann.message.content.slice(0, 80)}{ann.message.content.length > 80 ? '…' : ''}
+                    </span>
+                  </button>
+                  {canAnnounce() && (
+                    <button
+                      className="chat-announcement-remove"
+                      onClick={() => toggleAnnounce(ann.messageId)}
+                      aria-label="공지 해제"
+                      title="공지 해제"
+                    >✕</button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
@@ -518,43 +599,94 @@ export function ChatRoom() {
       >
         {loading && <div className="chat-loading">대화를 불러오는 중이에요...</div>}
         {!loading && messages.length === 0 && (
-          <div className="workspace-empty">팀에 아직 올라온 이야기가 없어요.<br />먼저 한마디 남겨보세요.</div>
+          <div className="workspace-empty">
+            팀에 아직 올라온 이야기가 없어요.<br />먼저 한마디 남겨보세요.
+          </div>
         )}
         {messages.map((message) => (
           <article
             id={`msg-${message.id}`}
-            className={`chat-message${announcedIds.has(message.id) ? ' chat-message--announced' : ''}${message.isDeleted ? ' chat-message--deleted' : ''}`}
+            className={[
+              'chat-message',
+              announcedIds.has(message.id) ? 'chat-message--announced' : '',
+              message.isDeleted ? 'chat-message--deleted' : '',
+            ].filter(Boolean).join(' ')}
             key={message.id}
             onClick={() => { setEmojiPickerFor(null); setMenuFor(null) }}
           >
-            <div className="chat-avatar">{(message.authorName || message.authorEmail).slice(0, 1).toUpperCase()}</div>
+            {/* Avatar */}
+            <div className="chat-avatar" aria-hidden="true">
+              {authorInitial(message.authorName, message.authorEmail)}
+            </div>
+
+            {/* Body */}
             <div className="chat-message-body">
               <header>
-                <strong>{message.authorName || message.authorEmail}</strong>
-                {announcedIds.has(message.id) && <span className="chat-pin-badge">📌</span>}
-                <time>{new Date(message.createdAt).toLocaleString('ko-KR')}</time>
-                {!message.isDeleted && (canDelete(message) || canAnnounce()) && (
+                <strong>{authorLabel(message.authorName, message.authorEmail)}</strong>
+                {announcedIds.has(message.id) && <span className="chat-pin-badge" aria-label="공지">📌</span>}
+                <time dateTime={message.createdAt}>
+                  {new Date(message.createdAt).toLocaleString('ko-KR', {
+                    month: 'numeric', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit',
+                  })}
+                </time>
+                {message.updatedAt !== message.createdAt && !message.isDeleted && (
+                  <span className="chat-message-edited">(수정됨)</span>
+                )}
+                {/* ··· Menu — always shown for non-deleted messages */}
+                {!message.isDeleted && (
                   <div className="chat-message-menu-wrap">
                     <button
                       className="chat-message-menu-btn"
-                      aria-label="메시지 메뉴"
-                      onClick={(e) => { e.stopPropagation(); setMenuFor((prev) => prev === message.id ? null : message.id) }}
-                    >...</button>
+                      aria-label="메시지 메뉴 열기"
+                      title="메시지 메뉴"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setMenuFor((prev) => prev === message.id ? null : message.id)
+                      }}
+                    >⋯</button>
                     {menuFor === message.id && (
-                      <ul className="chat-message-menu" onClick={(e) => e.stopPropagation()}>
+                      <ul
+                        className="chat-message-menu"
+                        role="menu"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <li role="none">
+                          <button
+                            role="menuitem"
+                            onClick={() => { scrollToMessage(message.id); textareaRef.current?.focus(); setMenuFor(null) }}
+                          >
+                            ↩ 답글
+                          </button>
+                        </li>
+                        <li role="none">
+                          <button role="menuitem" onClick={() => copyLink(message.id)}>
+                            🔗 링크 복사
+                          </button>
+                        </li>
+                        {canEdit(message) && (
+                          <li role="none">
+                            <button role="menuitem" onClick={() => startEdit(message)}>
+                              ✏️ 수정
+                            </button>
+                          </li>
+                        )}
                         {canAnnounce() && (
-                          <li>
-                            <button onClick={() => toggleAnnounce(message.id)}>
+                          <li role="none">
+                            <button role="menuitem" onClick={() => toggleAnnounce(message.id)}>
                               {announcedIds.has(message.id) ? '📌 공지 해제' : '📌 공지 등록'}
                             </button>
                           </li>
                         )}
                         {canDelete(message) && (
-                          <li>
+                          <li role="none">
                             <button
+                              role="menuitem"
                               className="chat-menu-delete"
                               onClick={() => { setMenuFor(null); setDeleteTarget(message.id) }}
-                            >삭제</button>
+                            >
+                              🗑 삭제
+                            </button>
                           </li>
                         )}
                       </ul>
@@ -562,28 +694,76 @@ export function ChatRoom() {
                   </div>
                 )}
               </header>
+
+              {/* Content / edit mode */}
               {message.isDeleted ? (
                 <p className="chat-deleted-notice">삭제된 메시지예요.</p>
+              ) : editTarget === message.id ? (
+                <div className="chat-message-edit-wrap">
+                  <textarea
+                    ref={editTextareaRef}
+                    className="field"
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitEdit() }
+                      if (e.key === 'Escape') { e.preventDefault(); cancelEdit() }
+                    }}
+                    rows={2}
+                    disabled={editPending}
+                  />
+                  <div className="chat-message-edit-actions">
+                    <button
+                      className="button button-primary"
+                      onClick={submitEdit}
+                      disabled={editPending || !editContent.trim()}
+                    >
+                      {editPending ? '저장 중...' : '저장'}
+                    </button>
+                    <button className="button" onClick={cancelEdit} disabled={editPending}>
+                      취소
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <MessageText content={message.content} mentions={message.mentions} />
               )}
-              {!message.isDeleted && (
+
+              {/* Reactions */}
+              {!message.isDeleted && editTarget !== message.id && (
                 <div className="reaction-row">
                   {message.reactions.map((reaction) => (
-                    <button key={reaction.emoji} className="reaction-btn" onClick={() => react(message.id, reaction.emoji)}>
-                      {reaction.emoji} {reaction.userIds.length}
+                    <button
+                      key={reaction.emoji}
+                      className={`reaction-btn${isMine(reaction) ? ' reaction-btn--mine' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); react(message.id, reaction.emoji) }}
+                      title={`${reaction.userIds.length}명이 반응했어요`}
+                    >
+                      {reaction.emoji}
+                      <span>{reaction.userIds.length}</span>
                     </button>
                   ))}
                   <div className="emoji-picker-wrap">
                     <button
                       className="reaction-add-btn"
-                      onClick={(e) => { e.stopPropagation(); setEmojiPickerFor((prev) => prev === message.id ? null : message.id) }}
                       aria-label="반응 추가"
-                    >+</button>
+                      title="반응 추가"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEmojiPickerFor((prev) => prev === message.id ? null : message.id)
+                      }}
+                    >🙂</button>
                     {emojiPickerFor === message.id && (
-                      <div className="emoji-picker">
+                      <div className="emoji-picker" onClick={(e) => e.stopPropagation()}>
                         {QUICK_EMOJIS.map((emoji) => (
-                          <button key={emoji} className="emoji-option" onClick={() => react(message.id, emoji)}>{emoji}</button>
+                          <button
+                            key={emoji}
+                            className="emoji-option"
+                            onClick={() => react(message.id, emoji)}
+                            title={emoji}
+                          >
+                            {emoji}
+                          </button>
                         ))}
                       </div>
                     )}
@@ -597,8 +777,11 @@ export function ChatRoom() {
 
       {/* New message badge */}
       {!atBottom && newCount > 0 && (
-        <button className="chat-new-badge" onClick={() => { scrollToBottom(); setAtBottom(true) }}>
-          새 메시지 {newCount}개
+        <button
+          className="chat-new-badge"
+          onClick={() => { scrollToBottom(); setAtBottom(true) }}
+        >
+          새 메시지 {newCount}개 ↓
         </button>
       )}
 
@@ -606,9 +789,9 @@ export function ChatRoom() {
       <form className="chat-composer" onSubmit={send}>
         {/* Mention dropdown */}
         {mentionQuery !== null && mentionCandidates.length > 0 && (
-          <ul className="mention-dropdown">
+          <ul className="mention-dropdown" role="listbox">
             {mentionCandidates.map((candidate, i) => (
-              <li key={candidate.userId}>
+              <li key={candidate.userId} role="option" aria-selected={i === mentionIndex}>
                 <button
                   type="button"
                   className={`mention-option${i === mentionIndex ? ' mention-option--active' : ''}`}
@@ -636,7 +819,7 @@ export function ChatRoom() {
         />
         {error && <p className="form-error" role="alert">{error}</p>}
         <div className="chat-composer-actions">
-          <span className="chat-composer-hint">Enter 전송 / Shift+Enter 줄바꿈</span>
+          <span className="chat-composer-hint">Enter 전송 · Shift+Enter 줄바꿈</span>
           <button className="button button-primary" disabled={pending || !content.trim()}>
             {pending ? '전송 중...' : '보내기'}
           </button>
