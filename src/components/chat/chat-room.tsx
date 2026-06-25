@@ -162,6 +162,7 @@ export function ChatRoom() {
 
     const channel = supabase
       .channel(`chat:${activeTeam.id}`)
+      // chat_messages: new messages and soft deletes / edits
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'chat_messages', filter: `team_id=eq.${activeTeam.id}` },
@@ -190,12 +191,49 @@ export function ChatRoom() {
                   content: payload.new.deleted_at ? '' : (payload.new.content ?? m.content),
                   isDeleted: Boolean(payload.new.deleted_at),
                   deletedAt: payload.new.deleted_at ?? null,
-                  reactions: payload.new.reactions ?? m.reactions,
                   updatedAt: payload.new.updated_at ?? m.updatedAt,
                 }
               })
             )
           }
+        }
+      )
+      // chat_message_reactions: live reaction updates from other users
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'chat_message_reactions', filter: `team_id=eq.${activeTeam.id}` },
+        (payload) => {
+          const row = payload.eventType === 'DELETE' ? payload.old : payload.new
+          const messageId = row.message_id as string
+          const emoji = row.emoji as string
+          const userId = row.user_id as string
+          if (!messageId || !emoji || !userId) return
+
+          setMessages((current) =>
+            current.map((m) => {
+              if (m.id !== messageId) return m
+              let reactions = [...m.reactions]
+              if (payload.eventType === 'INSERT') {
+                const idx = reactions.findIndex((r) => r.emoji === emoji)
+                if (idx >= 0) {
+                  if (!reactions[idx].userIds.includes(userId)) {
+                    reactions[idx] = { ...reactions[idx], userIds: [...reactions[idx].userIds, userId] }
+                  }
+                } else {
+                  reactions = [...reactions, { emoji, userIds: [userId] }]
+                }
+              } else if (payload.eventType === 'DELETE') {
+                const idx = reactions.findIndex((r) => r.emoji === emoji)
+                if (idx >= 0) {
+                  const newUserIds = reactions[idx].userIds.filter((uid) => uid !== userId)
+                  reactions = newUserIds.length === 0
+                    ? reactions.filter((_, i) => i !== idx)
+                    : reactions.map((r, i) => i === idx ? { ...r, userIds: newUserIds } : r)
+                }
+              }
+              return { ...m, reactions }
+            })
+          )
         }
       )
       .subscribe()

@@ -33,8 +33,6 @@ export type ChatAnnouncement = {
   announcedAt: string;
 };
 
-type ReactionEntry = { emoji: string; userIds: string[] };
-
 const getMyTeamIdsCached = cache(getMyTeamIds);
 
 async function assertTeamMember(teamId: string): Promise<void> {
@@ -71,36 +69,6 @@ async function enrichAuthors(
   return map;
 }
 
-function mapRow(
-  row: Record<string, unknown>,
-  authorMap: Map<string, { email: string; name: string }>,
-  mentionMap: Map<string, Mention[]>,
-  announcedIds: Set<string>,
-): ChatMessageView {
-  const authorId = row.author_id as string;
-  const author = authorMap.get(authorId);
-  const reactions = Array.isArray(row.reactions)
-    ? (row.reactions as ReactionEntry[])
-    : [];
-  const isDeleted = Boolean(row.deleted_at);
-  return {
-    id: row.id as string,
-    teamId: row.team_id as string,
-    content: isDeleted ? "" : (row.content as string),
-    authorId,
-    authorEmail: author?.email ?? "",
-    authorName: author?.name ?? "",
-    parentMessageId: (row.parent_message_id as string | null) ?? null,
-    reactions: isDeleted ? [] : reactions,
-    mentions: mentionMap.get(row.id as string) ?? [],
-    isDeleted,
-    deletedAt: (row.deleted_at as string | null) ?? null,
-    isAnnouncement: announcedIds.has(row.id as string),
-    createdAt: row.created_at as string,
-    updatedAt: row.updated_at as string,
-  };
-}
-
 async function getMentionsForMessages(
   messageIds: string[],
 ): Promise<Map<string, Mention[]>> {
@@ -113,17 +81,17 @@ async function getMentionsForMessages(
 
   if (!data || data.length === 0) return new Map();
 
-  // Batch-fetch profiles for mentioned users
   const mentionedUserIds = [...new Set(data.map((r) => r.mentioned_user_id))];
   const { data: profiles } = await supabase
     .from("profiles")
     .select("user_id, username, display_name")
     .in("user_id", mentionedUserIds);
 
-  const profileMap = new Map<string, { username?: string; display_name?: string }>();
-  for (const p of profiles ?? []) {
-    profileMap.set(p.user_id, p);
-  }
+  const profileMap = new Map<
+    string,
+    { username?: string; display_name?: string }
+  >();
+  for (const p of profiles ?? []) profileMap.set(p.user_id, p);
 
   const map = new Map<string, Mention[]>();
   for (const row of data) {
@@ -140,6 +108,71 @@ async function getMentionsForMessages(
   return map;
 }
 
+async function getReactionsForMessages(
+  messageIds: string[],
+): Promise<Map<string, { emoji: string; userIds: string[] }[]>> {
+  if (messageIds.length === 0) return new Map();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("chat_message_reactions")
+    .select("message_id, emoji, user_id")
+    .in("message_id", messageIds);
+
+  if (!data || data.length === 0) return new Map();
+
+  // Group by message_id → emoji → userIds[]
+  const interim = new Map<string, Map<string, string[]>>();
+  for (const row of data) {
+    if (!interim.has(row.message_id)) interim.set(row.message_id, new Map());
+    const emojiMap = interim.get(row.message_id)!;
+    if (!emojiMap.has(row.emoji)) emojiMap.set(row.emoji, []);
+    emojiMap.get(row.emoji)!.push(row.user_id);
+  }
+
+  const result = new Map<string, { emoji: string; userIds: string[] }[]>();
+  for (const [msgId, emojiMap] of interim) {
+    result.set(
+      msgId,
+      Array.from(emojiMap.entries()).map(([emoji, userIds]) => ({
+        emoji,
+        userIds,
+      })),
+    );
+  }
+  return result;
+}
+
+function mapRow(
+  row: Record<string, unknown>,
+  authorMap: Map<string, { email: string; name: string }>,
+  mentionMap: Map<string, Mention[]>,
+  reactionsMap: Map<string, { emoji: string; userIds: string[] }[]>,
+  announcedIds: Set<string>,
+): ChatMessageView {
+  const authorId = row.author_id as string;
+  const author = authorMap.get(authorId);
+  const isDeleted = Boolean(row.deleted_at);
+  return {
+    id: row.id as string,
+    teamId: row.team_id as string,
+    content: isDeleted ? "" : (row.content as string),
+    authorId,
+    authorEmail: author?.email ?? "",
+    authorName: author?.name ?? "",
+    parentMessageId: (row.parent_message_id as string | null) ?? null,
+    reactions: isDeleted ? [] : (reactionsMap.get(row.id as string) ?? []),
+    mentions: mentionMap.get(row.id as string) ?? [],
+    isDeleted,
+    deletedAt: (row.deleted_at as string | null) ?? null,
+    isAnnouncement: announcedIds.has(row.id as string),
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+const MSG_COLUMNS =
+  "id, team_id, content, author_id, parent_message_id, deleted_at, deleted_by, created_at, updated_at";
+
 export async function listMessages(
   teamId: string,
   options: { limit?: number; before?: string; after?: string } = {},
@@ -150,16 +183,12 @@ export async function listMessages(
 
   let query = supabase
     .from("chat_messages")
-    .select("*")
+    .select(MSG_COLUMNS)
     .eq("team_id", teamId)
     .limit(limit);
 
-  if (options.before) {
-    query = query.lt("id", options.before);
-  }
-  if (options.after) {
-    query = query.gt("id", options.after);
-  }
+  if (options.before) query = query.lt("id", options.before);
+  if (options.after) query = query.gt("id", options.after);
 
   query = options.after
     ? query.order("created_at", { ascending: true })
@@ -180,13 +209,20 @@ export async function listMessages(
   );
   const messageIds = rows.map((r) => r.id);
 
-  const [authorMap, mentionMap] = await Promise.all([
+  const [authorMap, mentionMap, reactionsMap] = await Promise.all([
     enrichAuthors(rows),
     getMentionsForMessages(messageIds),
+    getReactionsForMessages(messageIds),
   ]);
 
   return rows.map((r) =>
-    mapRow(r as Record<string, unknown>, authorMap, mentionMap, announcedIds),
+    mapRow(
+      r as Record<string, unknown>,
+      authorMap,
+      mentionMap,
+      reactionsMap,
+      announcedIds,
+    ),
   );
 }
 
@@ -197,43 +233,45 @@ export async function createMessage(
     parentMessageId?: string;
     mentionedUserIds?: string[];
   },
-  userId: string,
+  _userId: string,
 ): Promise<ChatMessageView> {
-  await assertTeamMember(data.teamId);
   const supabase = await createClient();
 
-  const { data: row, error } = await supabase
-    .from("chat_messages")
-    .insert({
-      team_id: data.teamId,
-      content: data.content,
-      author_id: userId,
-      parent_message_id: data.parentMessageId ?? null,
-      reactions: [],
-    })
-    .select()
-    .single();
-  if (error || !row) throw new Error("메시지를 보내지 못했어요.");
-
-  // Insert mentions (ignore duplicates)
-  const mentionedUserIds = (data.mentionedUserIds ?? []).filter(
-    (id) => id !== userId,
+  // Atomic: insert message + mentions via security definer RPC
+  const { data: newMsgId, error } = await supabase.rpc(
+    "send_message_with_mentions",
+    {
+      p_team_id: data.teamId,
+      p_content: data.content,
+      p_parent_message_id: data.parentMessageId ?? null,
+      p_mention_user_ids: data.mentionedUserIds ?? [],
+    },
   );
-  if (mentionedUserIds.length > 0) {
-    await supabase.from("chat_message_mentions").insert(
-      mentionedUserIds.map((uid) => ({
-        message_id: row.id,
-        mentioned_user_id: uid,
-        team_id: data.teamId,
-      })),
-    );
+  if (error) {
+    if (error.message.includes("FORBIDDEN"))
+      throw new Error("팀 멤버만 메시지를 보낼 수 있어요.");
+    throw new Error("메시지를 보내지 못했어요.");
   }
+  if (!newMsgId) throw new Error("메시지를 보내지 못했어요.");
+
+  const { data: row } = await supabase
+    .from("chat_messages")
+    .select(MSG_COLUMNS)
+    .eq("id", newMsgId)
+    .single();
+  if (!row) throw new Error("메시지를 보내지 못했어요.");
 
   const [authorMap, mentionMap] = await Promise.all([
     enrichAuthors([row]),
     getMentionsForMessages([row.id]),
   ]);
-  return mapRow(row as Record<string, unknown>, authorMap, mentionMap, new Set());
+  return mapRow(
+    row as Record<string, unknown>,
+    authorMap,
+    mentionMap,
+    new Map(),
+    new Set(),
+  );
 }
 
 export async function updateMessage(
@@ -257,44 +295,39 @@ export async function updateMessage(
     .from("chat_messages")
     .update({ content })
     .eq("id", messageId)
-    .select()
+    .select(MSG_COLUMNS)
     .single();
   if (error || !row) throw new Error("메시지를 수정하지 못했어요.");
 
-  const [authorMap, mentionMap] = await Promise.all([
+  const [authorMap, mentionMap, reactionsMap] = await Promise.all([
     enrichAuthors([row]),
     getMentionsForMessages([row.id]),
+    getReactionsForMessages([row.id]),
   ]);
-  return mapRow(row as Record<string, unknown>, authorMap, mentionMap, new Set());
+  return mapRow(
+    row as Record<string, unknown>,
+    authorMap,
+    mentionMap,
+    reactionsMap,
+    new Set(),
+  );
 }
 
 export async function deleteMessage(
   messageId: string,
-  userId: string,
+  _userId: string,
 ): Promise<void> {
   const supabase = await createClient();
-
-  const { data: existing } = await supabase
-    .from("chat_messages")
-    .select("author_id, team_id, deleted_at")
-    .eq("id", messageId)
-    .single();
-  if (!existing) throw new Error("메시지를 찾을 수 없어요.");
-  if (existing.deleted_at) return;
-
-  const isAuthor = existing.author_id === userId;
-  if (!isAuthor) {
-    const role = await getMyRole(existing.team_id);
-    if (!role || !["owner", "admin"].includes(role)) {
+  const { error } = await supabase.rpc("soft_delete_chat_message", {
+    p_message_id: messageId,
+  });
+  if (error) {
+    if (error.message.includes("MESSAGE_NOT_FOUND"))
+      throw new Error("메시지를 찾을 수 없어요.");
+    if (error.message.includes("FORBIDDEN"))
       throw new Error("삭제할 권한이 없어요.");
-    }
+    throw new Error("메시지를 삭제하지 못했어요.");
   }
-
-  const { error } = await supabase
-    .from("chat_messages")
-    .update({ deleted_at: new Date().toISOString(), deleted_by: userId })
-    .eq("id", messageId);
-  if (error) throw new Error("메시지를 삭제하지 못했어요.");
 }
 
 export async function addReaction(
@@ -304,44 +337,68 @@ export async function addReaction(
 ): Promise<ChatMessageView> {
   const supabase = await createClient();
 
-  const { data: existing } = await supabase
+  // Verify message exists, not deleted, caller is team member
+  const { data: msg } = await supabase
     .from("chat_messages")
-    .select("*")
+    .select("id, team_id, deleted_at")
     .eq("id", messageId)
     .single();
-  if (!existing) throw new Error("메시지를 찾을 수 없어요.");
-  if (existing.deleted_at) throw new Error("삭제된 메시지에는 반응할 수 없어요.");
-  await assertTeamMember(existing.team_id);
+  if (!msg) throw new Error("메시지를 찾을 수 없어요.");
+  if (msg.deleted_at) throw new Error("삭제된 메시지에는 반응할 수 없어요.");
+  await assertTeamMember(msg.team_id);
 
-  const reactions: ReactionEntry[] = Array.isArray(existing.reactions)
-    ? (existing.reactions as ReactionEntry[])
-    : [];
+  // Toggle: delete if exists, insert if not
+  const { data: existing } = await supabase
+    .from("chat_message_reactions")
+    .select("id")
+    .eq("message_id", messageId)
+    .eq("user_id", userId)
+    .eq("emoji", emoji)
+    .maybeSingle();
 
-  const idx = reactions.findIndex((r) => r.emoji === emoji);
-  if (idx >= 0) {
-    const userIds = reactions[idx].userIds;
-    const next = userIds.includes(userId)
-      ? userIds.filter((uid) => uid !== userId)
-      : [...userIds, userId];
-    if (next.length === 0) reactions.splice(idx, 1);
-    else reactions[idx] = { emoji, userIds: next };
+  if (existing) {
+    await supabase
+      .from("chat_message_reactions")
+      .delete()
+      .eq("id", existing.id);
   } else {
-    reactions.push({ emoji, userIds: [userId] });
+    const { error } = await supabase.from("chat_message_reactions").insert({
+      message_id: messageId,
+      user_id: userId,
+      team_id: msg.team_id,
+      emoji,
+    });
+    if (error) throw new Error("리액션을 추가하지 못했어요.");
   }
 
-  const { data: row, error } = await supabase
+  // Fetch updated message view
+  const { data: row } = await supabase
     .from("chat_messages")
-    .update({ reactions })
+    .select(MSG_COLUMNS)
     .eq("id", messageId)
-    .select()
     .single();
-  if (error || !row) throw new Error("리액션을 추가하지 못했어요.");
+  if (!row) throw new Error("메시지를 찾을 수 없어요.");
 
-  const [authorMap, mentionMap] = await Promise.all([
+  const announcedIds = await supabase
+    .from("chat_announcements")
+    .select("message_id")
+    .eq("team_id", msg.team_id)
+    .eq("message_id", messageId)
+    .maybeSingle()
+    .then(({ data }) => new Set(data ? [data.message_id] : []));
+
+  const [authorMap, mentionMap, reactionsMap] = await Promise.all([
     enrichAuthors([row]),
     getMentionsForMessages([row.id]),
+    getReactionsForMessages([row.id]),
   ]);
-  return mapRow(row as Record<string, unknown>, authorMap, mentionMap, new Set());
+  return mapRow(
+    row as Record<string, unknown>,
+    authorMap,
+    mentionMap,
+    reactionsMap,
+    announcedIds,
+  );
 }
 
 export async function listAnnouncements(
@@ -357,11 +414,10 @@ export async function listAnnouncements(
 
   if (!data || data.length === 0) return [];
 
-  // Fetch linked messages
   const messageIds = data.map((r) => r.message_id);
   const { data: msgRows } = await supabase
     .from("chat_messages")
-    .select("*")
+    .select(MSG_COLUMNS)
     .in("id", messageIds);
 
   if (!msgRows) return [];
@@ -370,16 +426,23 @@ export async function listAnnouncements(
   const validMsgs = msgRows.filter((m) => !m.deleted_at);
   const validMsgIds = new Set(validMsgs.map((m) => m.id));
 
-  const [authorMap, mentionMap] = await Promise.all([
+  const [authorMap, mentionMap, reactionsMap] = await Promise.all([
     enrichAuthors(validMsgs),
     getMentionsForMessages(validMsgs.map((m) => m.id)),
+    getReactionsForMessages(validMsgs.map((m) => m.id)),
   ]);
 
   const msgMap = new Map<string, ChatMessageView>();
   for (const m of validMsgs) {
     msgMap.set(
       m.id,
-      mapRow(m as Record<string, unknown>, authorMap, mentionMap, announcedIds),
+      mapRow(
+        m as Record<string, unknown>,
+        authorMap,
+        mentionMap,
+        reactionsMap,
+        announcedIds,
+      ),
     );
   }
 
@@ -421,7 +484,7 @@ export async function toggleAnnouncement(
     .select("id")
     .eq("team_id", teamId)
     .eq("message_id", messageId)
-    .single();
+    .maybeSingle();
 
   if (existing) {
     await supabase.from("chat_announcements").delete().eq("id", existing.id);
@@ -465,9 +528,7 @@ export async function getTeamMembersForMention(
     string,
     { username?: string; display_name?: string }
   >();
-  for (const p of profiles ?? []) {
-    profileMap.set(p.user_id, p);
-  }
+  for (const p of profiles ?? []) profileMap.set(p.user_id, p);
 
   return data.map((row) => {
     const profile = profileMap.get(row.user_id);
