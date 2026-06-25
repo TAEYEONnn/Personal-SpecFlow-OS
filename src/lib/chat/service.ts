@@ -47,12 +47,8 @@ async function getMyRole(
   teamId: string,
 ): Promise<"owner" | "admin" | "member" | null> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("team_members")
-    .select("role")
-    .eq("team_id", teamId)
-    .single();
-  return (data?.role as "owner" | "admin" | "member") ?? null;
+  const { data } = await supabase.rpc("get_team_role", { p_team_id: teamId });
+  return (data as "owner" | "admin" | "member") ?? null;
 }
 
 async function enrichAuthors(
