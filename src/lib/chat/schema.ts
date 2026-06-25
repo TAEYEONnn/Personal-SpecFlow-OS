@@ -3,6 +3,7 @@ import { z } from "zod";
 export const createMessageSchema = z.object({
   teamId: z.string().min(1),
   content: z.string().trim().min(1).max(10_000),
+  mentionedUserIds: z.array(z.string().uuid()).max(50).optional(),
 });
 
 export const updateMessageSchema = z.object({

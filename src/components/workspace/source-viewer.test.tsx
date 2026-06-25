@@ -123,7 +123,7 @@ describe("SourceViewer", () => {
     await user.click(screen.getByRole("button", { name: "텍스트 붙여넣기" }));
     await user.type(screen.getByPlaceholderText("원문 이름 (선택)"), "새 원문");
     await user.type(
-      screen.getByPlaceholderText("원문 내용을 붙여넣거나 직접 입력하세요."),
+      screen.getByPlaceholderText("원문 내용을 붙여넣거나 직접 입력해요."),
       "새 내용",
     );
     await user.click(screen.getByRole("button", { name: "추가" }));

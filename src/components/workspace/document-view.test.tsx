@@ -89,7 +89,7 @@ describe("DocumentView", () => {
     empty.brief.title = "";
     render(<DocumentView document={empty} />);
     expect(
-      screen.getByText("아직 정리된 내용이 없어요. 원문을 확인한 뒤 다시 정리해 주세요."),
+      screen.getByText("아직 정리된 내용이 없어요. 원문을 확인하고 다시 정리해봐요."),
     ).toBeInTheDocument();
   });
 

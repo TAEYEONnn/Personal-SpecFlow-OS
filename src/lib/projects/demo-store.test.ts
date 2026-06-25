@@ -29,7 +29,7 @@ describe("demo project store", () => {
     saveDemoDocument(project.id, 0, demoSpecDocument);
 
     expect(() => saveDemoDocument(project.id, 0, demoSpecDocument)).toThrow(
-      "다른 곳에서 문서가 수정되었습니다.",
+      "다른 곳에서 문서가 수정됐어요. 새로고침하고 다시 시도해요.",
     );
   });
 });

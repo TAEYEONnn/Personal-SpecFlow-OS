@@ -14,7 +14,7 @@ describe("source input validation", () => {
 
   it("rejects empty input", () => {
     expect(() => validateSourceInput({ text: " \n " })).toThrow(
-      "업무 내용을 입력해 주세요.",
+      "업무 내용을 입력해요.",
     );
   });
 

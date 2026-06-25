@@ -7,18 +7,19 @@ import { listMessages, createMessage } from "@/lib/chat/service";
 
 export async function GET(request: Request) {
   try {
+    await requireAuthContext();
     const url = new URL(request.url);
     const teamId = url.searchParams.get("teamId");
     if (!teamId) {
-      return NextResponse.json({ error: "teamId가 필요해요." }, { status: 422 });
+      return NextResponse.json(
+        { error: "teamId가 필요해요." },
+        { status: 422 },
+      );
     }
-    const limit = url.searchParams.get("limit")
-      ? Number(url.searchParams.get("limit"))
-      : undefined;
     const before = url.searchParams.get("before") ?? undefined;
     const after = url.searchParams.get("after") ?? undefined;
 
-    const messages = await listMessages(teamId, { limit, before, after });
+    const messages = await listMessages(teamId, { before, after });
     return NextResponse.json({ messages });
   } catch (error) {
     return apiError(error);
@@ -28,12 +29,23 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const auth = await requireAuthContext();
-    const body = createMessageSchema.parse(await request.json());
-    const message = await createMessage(body, auth.userId);
+    const body = await request.json();
+    const parsed = createMessageSchema.parse(body);
+    const message = await createMessage(
+      {
+        teamId: parsed.teamId,
+        content: parsed.content,
+        mentionedUserIds: parsed.mentionedUserIds,
+      },
+      auth.userId,
+    );
     return NextResponse.json({ message }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "메시지 내용을 확인해요." }, { status: 422 });
+      return NextResponse.json(
+        { error: "메시지 내용을 확인해요." },
+        { status: 422 },
+      );
     }
     return apiError(error);
   }
