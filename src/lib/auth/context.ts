@@ -1,3 +1,4 @@
+import { cache } from "react";
 import {
   getSupabaseEnvState,
   isDevelopmentDemo,
@@ -12,7 +13,7 @@ export type AuthContext = {
   demo: boolean;
 };
 
-export async function getAuthContext(): Promise<AuthContext | null> {
+export const getAuthContext = cache(async (): Promise<AuthContext | null> => {
   const envState = getSupabaseEnvState();
   if (envState === "partial" || (envState === "none" && !isDevelopmentDemo)) {
     throw supabaseConfigurationError();
@@ -46,7 +47,7 @@ export async function getAuthContext(): Promise<AuthContext | null> {
     displayName: profile?.display_name ?? username,
     demo: false,
   };
-}
+});
 
 export async function requireAuthContext() {
   const context = await getAuthContext();
