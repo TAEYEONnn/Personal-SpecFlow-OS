@@ -17,7 +17,7 @@ export async function POST(
     return NextResponse.json(result);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "전환 대상을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "전환 대상을 확인해요." }, { status: 422 });
     }
     return apiError(error);
   }

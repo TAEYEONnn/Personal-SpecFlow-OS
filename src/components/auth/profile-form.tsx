@@ -34,7 +34,7 @@ export function ProfileForm({ initialDisplayName, email }: { initialDisplayName:
       setNameSuccess(true);
       router.refresh();
     } catch {
-      setNameError("네트워크 연결을 확인해 주세요.");
+      setNameError("네트워크 연결을 확인해요.");
     } finally {
       setNamePending(false);
     }
@@ -61,7 +61,7 @@ export function ProfileForm({ initialDisplayName, email }: { initialDisplayName:
       setNewPassword("");
       setConfirmPassword("");
     } catch {
-      setPwError("네트워크 연결을 확인해 주세요.");
+      setPwError("네트워크 연결을 확인해요.");
     } finally {
       setPwPending(false);
     }
@@ -84,7 +84,7 @@ export function ProfileForm({ initialDisplayName, email }: { initialDisplayName:
               maxLength={50}
               onChange={(e) => { setDisplayName(e.target.value); setNameSuccess(false); }}
               disabled={namePending}
-              placeholder="이름을 입력해 주세요"
+              placeholder="이름을 입력해요"
             />
           </label>
           {nameError && <p className="form-error">{nameError}</p>}

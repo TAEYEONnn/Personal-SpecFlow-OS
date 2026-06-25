@@ -10,7 +10,7 @@ export async function GET(
     const { projectId, runId } = await params;
     const run = await getCompilationRun(projectId, runId);
     if (!run) {
-      return NextResponse.json({ error: "정리 기록을 찾을 수 없습니다." }, { status: 404 });
+      return NextResponse.json({ error: "정리 기록을 찾을 수 없어요." }, { status: 404 });
     }
     return NextResponse.json({ run });
   } catch (error) {

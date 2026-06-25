@@ -21,7 +21,7 @@ export async function POST(
   try {
     const project = await getProject(projectId);
     if (!project) {
-      return NextResponse.json({ error: "프로젝트를 찾을 수 없습니다." }, { status: 404 });
+      return NextResponse.json({ error: "프로젝트를 찾을 수 없어요." }, { status: 404 });
     }
     const combined = project.sources
       .map((s) => s.content)
@@ -29,7 +29,7 @@ export async function POST(
       .join("\n\n---\n\n");
     if (!combined.trim()) {
       return NextResponse.json(
-        { error: "원문을 먼저 올려 주세요." },
+        { error: "원문을 먼저 올려요." },
         { status: 422 },
       );
     }
@@ -69,7 +69,7 @@ export async function POST(
     const response = apiError(error);
     return response.status === 500
       ? NextResponse.json(
-          { error: error instanceof Error ? error.message : "정리하지 못했습니다." },
+          { error: error instanceof Error ? error.message : "정리하지 못했어요." },
           { status: 502 },
         )
       : response;

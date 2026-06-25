@@ -11,7 +11,7 @@ export async function GET(
     const { projectId } = await params;
     const project = await getProject(projectId);
     if (!project) {
-      return NextResponse.json({ error: "프로젝트를 찾을 수 없습니다." }, { status: 404 });
+      return NextResponse.json({ error: "프로젝트를 찾을 수 없어요." }, { status: 404 });
     }
     return NextResponse.json({ project });
   } catch (error) {
@@ -23,7 +23,7 @@ const renameSchema = z.object({
   name: z.string().min(1).max(120).optional(),
   teamId: z.string().uuid().nullable().optional(),
 }).refine((value) => value.name !== undefined || "teamId" in value, {
-  message: "변경할 내용을 입력해 주세요.",
+  message: "변경할 내용을 입력해요.",
 });
 
 export async function PATCH(
@@ -37,7 +37,7 @@ export async function PATCH(
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "프로젝트 이름을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "프로젝트 이름을 확인해요." }, { status: 422 });
     }
     return apiError(error);
   }

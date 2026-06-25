@@ -122,7 +122,7 @@ export function SourceViewer({
   }
 
   async function handleAddPaste() {
-    if (!addText.trim()) { setAddError("내용을 입력해 주세요."); return; }
+    if (!addText.trim()) { setAddError("내용을 입력해요."); return; }
     setAdding(true);
     onBusyChange?.(true);
     setAddError("");
@@ -249,7 +249,7 @@ export function SourceViewer({
           />
           <textarea
             className="source-add-textarea"
-            placeholder="원문 내용을 붙여넣거나 직접 입력하세요."
+            placeholder="원문 내용을 붙여넣거나 직접 입력해요."
             value={addText}
             onChange={(e) => setAddText(e.target.value)}
             autoFocus

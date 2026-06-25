@@ -29,7 +29,7 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
             <span className="help-step-num">1</span>
             <div>
               <strong>원문 업로드</strong>
-              <p>회의록, 요청 메모, 기획 문서를 올려 주세요. TXT, Markdown, PDF를 지원해요.</p>
+              <p>회의록, 요청 메모, 기획 문서를 올려요. TXT, Markdown, PDF를 지원해요.</p>
             </div>
           </div>
           <div className="help-step">

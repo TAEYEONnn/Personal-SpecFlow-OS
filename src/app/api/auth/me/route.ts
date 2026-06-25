@@ -12,7 +12,7 @@ export async function GET() {
   try {
     const auth = await getAuthContext();
     if (!auth) {
-      return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
+      return NextResponse.json({ error: "로그인이 필요해요." }, { status: 401 });
     }
 
     const supabase = await createClient();
@@ -52,13 +52,13 @@ export async function PATCH(request: Request) {
         table: "profiles",
         operation: "update",
       });
-      throw new Error("프로필 업데이트에 실패했습니다.");
+      throw new Error("프로필 업데이트에 실패했어요.");
     }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "이름을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "이름을 확인해요." }, { status: 422 });
     }
     return apiError(error);
   }

@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ task }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "할 일 내용을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "할 일 내용을 확인해요." }, { status: 422 });
     }
     return apiError(error);
   }

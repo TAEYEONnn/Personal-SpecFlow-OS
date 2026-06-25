@@ -20,7 +20,7 @@ export async function PATCH(
     return NextResponse.json({ revision, document: body.document });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "문서 형식을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "문서 형식을 확인해요." }, { status: 422 });
     }
     return apiError(error);
   }

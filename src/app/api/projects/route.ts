@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "프로젝트 이름을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "프로젝트 이름을 확인해요." }, { status: 422 });
     }
     return apiError(error);
   }

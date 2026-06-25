@@ -99,7 +99,7 @@ export function TaskBoard({ personal = false }: { personal?: boolean }) {
           className="field"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          placeholder={personal ? '내 할 일을 빠르게 추가하세요' : '팀 할 일을 빠르게 추가하세요'}
+          placeholder={personal ? '내 할 일을 추가해요' : '팀 할 일을 추가해요'}
           aria-label="새 할 일"
         />
         <button className="button button-primary" disabled={pending || !title.trim()}>추가</button>

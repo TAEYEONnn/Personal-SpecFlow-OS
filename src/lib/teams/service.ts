@@ -57,7 +57,7 @@ async function assertManager(teamId: string, msg: string): Promise<void> {
 async function assertOwner(teamId: string): Promise<void> {
   const auth = await requireAuthContext();
   const role = await getMyRole(teamId, auth.userId);
-  if (role !== "owner") throw new Error("팀 소유자만 이 작업을 수행할 수 있습니다.");
+  if (role !== "owner") throw new Error("팀 소유자만 이 작업을 할 수 있어요.");
 }
 
 export async function createTeam(name: string): Promise<TeamView> {
@@ -86,13 +86,13 @@ export async function createTeam(name: string): Promise<TeamView> {
 }
 
 export async function renameTeam(teamId: string, name: string): Promise<void> {
-  await assertManager(teamId, "팀 소유자 또는 관리자만 이름을 변경할 수 있습니다.");
+  await assertManager(teamId, "팀 소유자 또는 관리자만 이름을 바꿀 수 있어요.");
   const supabase = await createClient();
   const { error } = await supabase
     .from("teams")
     .update({ name })
     .eq("id", teamId);
-  if (error) throw new Error("팀 이름 변경에 실패했습니다.");
+  if (error) throw new Error("팀 이름을 바꾸지 못했어요.");
 }
 
 export async function deleteTeam(teamId: string): Promise<void> {
@@ -104,7 +104,7 @@ export async function deleteTeam(teamId: string): Promise<void> {
 
   // Cascading deletes handle team_members, team_invitations, chat_messages via FK
   const { error } = await supabase.from("teams").delete().eq("id", teamId);
-  if (error) throw new Error("팀 삭제에 실패했습니다.");
+  if (error) throw new Error("팀을 삭제하지 못했어요.");
 }
 
 export async function leaveTeam(teamId: string): Promise<void> {
@@ -112,7 +112,7 @@ export async function leaveTeam(teamId: string): Promise<void> {
   const role = await getMyRole(teamId, auth.userId);
   if (role === null) throw new Error("팀에 속해 있지 않아요.");
   if (role === "owner")
-    throw new Error("소유자는 바로 팀을 나갈 수 없어요. 먼저 소유권을 이전해 주세요.");
+    throw new Error("소유자는 바로 팀을 나갈 수 없어요. 먼저 소유권을 이전해요.");
 
   const supabase = await createClient();
   await supabase
@@ -234,7 +234,7 @@ export async function getTeam(
     .select("id, name, owner_id")
     .eq("id", teamId)
     .single();
-  if (!team) throw new Error("팀을 찾을 수 없습니다.");
+  if (!team) throw new Error("팀을 찾을 수 없어요.");
 
   const { data: members } = await supabase
     .from("team_members")
@@ -243,7 +243,7 @@ export async function getTeam(
     .limit(100);
 
   const isMember = (members ?? []).some((m) => m.user_id === auth.userId);
-  if (!isMember) throw new Error("접근 권한이 없습니다.");
+  if (!isMember) throw new Error("접근 권한이 없어요.");
 
   // Get member profile labels
   const userIds = (members ?? []).map((m) => m.user_id);
@@ -279,7 +279,7 @@ export async function inviteMember(
   username: string,
   role: "admin" | "member" = "member",
 ): Promise<{ token: string; email: string | null; username: string | null; expiresAt: string; id: string }> {
-  await assertManager(teamId, "팀 소유자 또는 관리자만 초대할 수 있습니다.");
+  await assertManager(teamId, "팀 소유자 또는 관리자만 초대할 수 있어요.");
   const auth = await requireAuthContext();
   const admin = createAdminClient();
   const targetUsername = username.trim().toLowerCase() || null;
@@ -340,7 +340,7 @@ export async function inviteMember(
     })
     .select()
     .single();
-  if (error || !inv) throw new Error("초대 생성에 실패했습니다.");
+  if (error || !inv) throw new Error("초대를 보내지 못했어요.");
 
   return {
     token,
@@ -358,9 +358,9 @@ export async function cancelInvitation(invitationId: string): Promise<void> {
     .select("team_id")
     .eq("id", invitationId)
     .single();
-  if (!inv) throw new Error("초대를 찾을 수 없습니다.");
+  if (!inv) throw new Error("초대를 찾을 수 없어요.");
 
-  await assertManager(inv.team_id, "팀 소유자 또는 관리자만 초대를 취소할 수 있습니다.");
+  await assertManager(inv.team_id, "팀 소유자 또는 관리자만 초대를 취소할 수 있어요.");
   await supabase.from("team_invitations").delete().eq("id", invitationId);
 }
 
@@ -371,7 +371,7 @@ export async function getInvitation(token: string): Promise<InvitationView> {
     .select("id, token, email, target_username, role, status, expires_at, team_id, teams(name)")
     .eq("token", token)
     .single();
-  if (!inv) throw new Error("초대를 찾을 수 없습니다.");
+  if (!inv) throw new Error("초대를 찾을 수 없어요.");
 
   const { data: profile } = inv.email
     ? await admin
@@ -411,10 +411,10 @@ export async function acceptInvitation(
     .maybeSingle();
 
   if (inv.email && profile?.internal_email?.toLowerCase() !== inv.email.toLowerCase()) {
-    throw new Error("초대받은 아이디로 로그인해 주세요.");
+    throw new Error("초대받은 아이디로 로그인해요.");
   }
   if (!inv.email && inv.username && profile?.username?.toLowerCase() !== inv.username.toLowerCase()) {
-    throw new Error("초대받은 아이디로 로그인해 주세요.");
+    throw new Error("초대받은 아이디로 로그인해요.");
   }
 
   await admin
@@ -453,10 +453,10 @@ export async function rejectInvitation(token: string): Promise<void> {
     .maybeSingle();
 
   if (inv.email && profile?.internal_email?.toLowerCase() !== inv.email.toLowerCase()) {
-    throw new Error("초대받은 아이디로 로그인해 주세요.");
+    throw new Error("초대받은 아이디로 로그인해요.");
   }
   if (!inv.email && inv.username && profile?.username?.toLowerCase() !== inv.username.toLowerCase()) {
-    throw new Error("초대받은 아이디로 로그인해 주세요.");
+    throw new Error("초대받은 아이디로 로그인해요.");
   }
 
   await admin
@@ -470,14 +470,14 @@ export async function removeMember(
   userId: string,
 ): Promise<void> {
   const auth = await requireAuthContext();
-  await assertManager(teamId, "팀 소유자 또는 관리자만 멤버를 제거할 수 있습니다.");
-  if (userId === auth.userId) throw new Error("자기 자신은 제거할 수 없습니다.");
+  await assertManager(teamId, "팀 소유자 또는 관리자만 멤버를 제거할 수 있어요.");
+  if (userId === auth.userId) throw new Error("자기 자신은 제거할 수 없어요.");
 
   const myRole = await getMyRole(teamId, auth.userId);
   if (myRole === "admin") {
     const targetRole = await getMyRole(teamId, userId);
     if (targetRole === "owner")
-      throw new Error("관리자는 소유자를 제거할 수 없습니다.");
+      throw new Error("관리자는 소유자를 제거할 수 없어요.");
   }
 
   const supabase = await createClient();
@@ -487,7 +487,7 @@ export async function removeMember(
     .eq("team_id", teamId)
     .eq("user_id", userId)
     .maybeSingle();
-  if (!data) throw new Error("멤버를 찾을 수 없습니다.");
+  if (!data) throw new Error("멤버를 찾을 수 없어요.");
 
   await supabase.from("team_members").delete().eq("id", data.id);
 }

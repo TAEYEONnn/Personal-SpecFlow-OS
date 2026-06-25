@@ -20,7 +20,7 @@ type ReactionEntry = { emoji: string; userIds: string[] };
 async function assertTeamMember(teamId: string): Promise<void> {
   const teamIds = await getMyTeamIds();
   if (!teamIds.includes(teamId))
-    throw new Error("팀 멤버만 이 작업을 수행할 수 있습니다.");
+    throw new Error("팀 멤버만 이 작업을 할 수 있어요.");
 }
 
 async function enrichAuthors(
@@ -96,7 +96,7 @@ export async function listMessages(
       .single();
     if (ref) {
       if (ref.team_id !== teamId)
-        throw new Error("다른 팀 메시지를 기준으로 조회할 수 없습니다.");
+        throw new Error("다른 팀 메시지를 기준으로 조회할 수 없어요.");
       query = query.gt("created_at", ref.created_at);
     }
   }
@@ -130,7 +130,7 @@ export async function createMessage(
     })
     .select()
     .single();
-  if (error || !row) throw new Error("메시지 생성에 실패했습니다.");
+  if (error || !row) throw new Error("메시지를 보내지 못했어요.");
 
   const authorMap = await enrichAuthors([row]);
   return mapRow(row, authorMap);
@@ -148,9 +148,9 @@ export async function updateMessage(
     .select("author_id, team_id")
     .eq("id", messageId)
     .single();
-  if (!existing) throw new Error("메시지를 찾을 수 없습니다.");
+  if (!existing) throw new Error("메시지를 찾을 수 없어요.");
   if (existing.author_id !== userId)
-    throw new Error("자신이 작성한 메시지만 수정할 수 있습니다.");
+    throw new Error("자신이 작성한 메시지만 수정할 수 있어요.");
 
   const { data: row, error } = await supabase
     .from("chat_messages")
@@ -158,7 +158,7 @@ export async function updateMessage(
     .eq("id", messageId)
     .select()
     .single();
-  if (error || !row) throw new Error("메시지 수정에 실패했습니다.");
+  if (error || !row) throw new Error("메시지를 수정하지 못했어요.");
 
   const authorMap = await enrichAuthors([row]);
   return mapRow(row, authorMap);
@@ -175,9 +175,9 @@ export async function deleteMessage(
     .select("author_id")
     .eq("id", messageId)
     .single();
-  if (!existing) throw new Error("메시지를 찾을 수 없습니다.");
+  if (!existing) throw new Error("메시지를 찾을 수 없어요.");
   if (existing.author_id !== userId)
-    throw new Error("자신이 작성한 메시지만 삭제할 수 있습니다.");
+    throw new Error("자신이 작성한 메시지만 삭제할 수 있어요.");
 
   await supabase.from("chat_messages").delete().eq("id", messageId);
 }
@@ -194,7 +194,7 @@ export async function addReaction(
     .select("*")
     .eq("id", messageId)
     .single();
-  if (!existing) throw new Error("메시지를 찾을 수 없습니다.");
+  if (!existing) throw new Error("메시지를 찾을 수 없어요.");
   await assertTeamMember(existing.team_id);
 
   const reactions: ReactionEntry[] = Array.isArray(existing.reactions)
@@ -224,7 +224,7 @@ export async function addReaction(
     .eq("id", messageId)
     .select()
     .single();
-  if (error || !row) throw new Error("리액션 추가에 실패했습니다.");
+  if (error || !row) throw new Error("리액션을 추가하지 못했어요.");
 
   const authorMap = await enrichAuthors([row]);
   return mapRow(row, authorMap);

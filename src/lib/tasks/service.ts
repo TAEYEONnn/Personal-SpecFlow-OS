@@ -55,7 +55,7 @@ export async function listTasks(
   const teamIds = await getMyTeamIds();
 
   if (options.teamId && !teamIds.includes(options.teamId)) {
-    throw new Error("팀 할 일에 접근할 수 없습니다.");
+    throw new Error("팀 할 일에 접근할 수 없어요.");
   }
 
   let query = supabase
@@ -84,7 +84,7 @@ export async function createTask(
   if (teamId) {
     const teamIds = await getMyTeamIds();
     if (!teamIds.includes(teamId))
-      throw new Error("팀 멤버만 팀 할 일을 생성할 수 있습니다.");
+      throw new Error("팀 멤버만 팀 할 일을 만들 수 있어요.");
   }
 
   const supabase = await createClient();
@@ -104,7 +104,7 @@ export async function createTask(
     })
     .select()
     .single();
-  if (error || !row) throw new Error("할 일 생성에 실패했습니다.");
+  if (error || !row) throw new Error("할 일을 만들지 못했어요.");
   return mapTask(row);
 }
 
@@ -122,7 +122,7 @@ export async function updateTask(
     .select("*")
     .eq("id", taskId)
     .single();
-  if (!current) throw new Error("할 일을 찾을 수 없습니다.");
+  if (!current) throw new Error("할 일을 찾을 수 없어요.");
 
   const { projectId, assigneeId, ...fields } = patch;
   const { data: row, error } = await supabase
@@ -136,7 +136,7 @@ export async function updateTask(
     .eq("id", taskId)
     .select()
     .single();
-  if (error || !row) throw new Error("할 일 수정에 실패했습니다.");
+  if (error || !row) throw new Error("할 일을 수정하지 못했어요.");
   return mapTask(row);
 }
 
@@ -151,7 +151,7 @@ export async function deleteTask(
     .select("id")
     .eq("id", taskId)
     .single();
-  if (!data) throw new Error("할 일을 찾을 수 없습니다.");
+  if (!data) throw new Error("할 일을 찾을 수 없어요.");
 
   await supabase.from("tasks").delete().eq("id", taskId);
 }

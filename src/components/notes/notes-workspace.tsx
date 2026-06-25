@@ -153,7 +153,7 @@ export function NotesWorkspace({ personal = false }: { personal?: boolean }) {
           {notes.map((note) => (
             <button className="note-row" key={note.id} onClick={() => setSelectedId(note.id)}>
               <strong>{note.title || '빠른 메모'}</strong>
-              <span>{note.content.slice(0, 70) || '내용을 입력하세요.'}</span>
+              <span>{note.content.slice(0, 70) || '내용을 입력해요.'}</span>
             </button>
           ))}
           {notes.length === 0 && <div className="workspace-empty">생각난 걸 바로 적어두세요.</div>}
@@ -180,7 +180,7 @@ export function NotesWorkspace({ personal = false }: { personal?: boolean }) {
               placeholder="내용을 적어보세요."
             />
           </>
-        ) : <div className="workspace-empty">왼쪽에서 메모를 선택하세요.</div>}
+        ) : <div className="workspace-empty">왼쪽에서 메모를 골라요.</div>}
       </section>
     </div>
   )

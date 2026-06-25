@@ -66,7 +66,7 @@ export function FigmaView({ projectId, document, mapping, onMappingChange }: Pro
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "분석에 실패했습니다.");
+      if (!response.ok) throw new Error(data.error ?? "분석하지 못했어요.");
       await onMappingChange({
         fileUrl: nextFileUrl,
         fileKey,
@@ -78,7 +78,7 @@ export function FigmaView({ projectId, document, mapping, onMappingChange }: Pro
       });
       setSaveStatus("success");
     } catch (reason) {
-      const message = reason instanceof Error ? reason.message : "분석에 실패했습니다.";
+      const message = reason instanceof Error ? reason.message : "분석하지 못했어요.";
       setError(message);
       await onMappingChange({
         ...mapping,
@@ -113,8 +113,8 @@ export function FigmaView({ projectId, document, mapping, onMappingChange }: Pro
       <div className="figma-header">
         <h2 className="figma-title">Figma 디자인 시스템 매핑</h2>
         <p className="figma-desc">
-          Figma 라이브러리 파일 키를 입력하면 각 화면 요소와 기존 컴포넌트의 연결을 분석합니다.
-          Figma 파일을 자동으로 수정하지 않고, 추천과 근거만 생성합니다.
+          Figma 라이브러리 파일 키를 입력하면 각 화면 요소와 기존 컴포넌트의 연결을 분석해요.
+          Figma 파일은 직접 수정하지 않고 추천과 근거만 만들어요.
         </p>
         <div className="figma-input-row">
           <input
@@ -141,7 +141,7 @@ export function FigmaView({ projectId, document, mapping, onMappingChange }: Pro
         {pending && (
           <div className="figma-analyzing-banner" role="status" aria-live="polite">
             <span className="compile-spinner" aria-hidden="true" />
-            <span>Figma 컴포넌트를 분석하고 있어요. 잠시만 기다려 주세요.</span>
+            <span>Figma 컴포넌트를 분석하고 있어요. 잠시만 기다려요.</span>
           </div>
         )}
 

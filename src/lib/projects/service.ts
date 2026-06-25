@@ -68,7 +68,7 @@ export async function listProjects() {
 async function assertTeamAccess(teamId: string) {
   const teamIds = await getMyTeamIds();
   if (!teamIds.includes(teamId)) {
-    throw new Error("팀 프로젝트를 만들 권한이 없습니다.");
+    throw new Error("팀 프로젝트를 만들 권한이 없어요.");
   }
 }
 

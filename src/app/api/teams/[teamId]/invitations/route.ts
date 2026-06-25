@@ -31,7 +31,7 @@ export async function POST(
     return NextResponse.json({ invitation }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "아이디를 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "아이디를 확인해요." }, { status: 422 });
     }
     return apiError(error);
   }

@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const teamId = url.searchParams.get("teamId");
     if (!teamId) {
-      return NextResponse.json({ error: "teamId가 필요합니다." }, { status: 422 });
+      return NextResponse.json({ error: "teamId가 필요해요." }, { status: 422 });
     }
     const limit = url.searchParams.get("limit")
       ? Number(url.searchParams.get("limit"))
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "메시지 내용을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "메시지 내용을 확인해요." }, { status: 422 });
     }
     return apiError(error);
   }

@@ -109,7 +109,7 @@ export function TeamSettings({
       const data = await res.json();
       if (!res.ok) { setRenameError(data.error ?? "이름을 바꾸지 못했어요."); return; }
       setTeamName(trimmed); setIsRenaming(false); router.refresh();
-    } catch { setRenameError("네트워크 연결을 확인해 주세요."); }
+    } catch { setRenameError("네트워크 연결을 확인해요."); }
     finally { setRenamePending(false); }
   }
 
@@ -133,7 +133,7 @@ export function TeamSettings({
         username: data.invitation.username ?? (inviteUsername.trim() || null),
         role: inviteRole, token, expiresAt: data.invitation.expiresAt ?? "",
       }]);
-    } catch { setInviteError("네트워크 연결을 확인해 주세요."); }
+    } catch { setInviteError("네트워크 연결을 확인해요."); }
     finally { setInvitePending(false); }
   }
 
@@ -169,8 +169,8 @@ export function TeamSettings({
     const target = members.find((m) =>
       m.username === transferTo.trim() || m.userId === transferTo.trim()
     );
-    if (!target) { setTransferError("현재 팀 멤버의 아이디를 입력해 주세요."); return; }
-    if (!confirm(`"${target.displayName || target.username}"에게 소유권을 이전할까요? 이전 후에는 되돌리기 어렵습니다.`)) return;
+    if (!target) { setTransferError("현재 팀 멤버의 아이디를 입력해요."); return; }
+    if (!confirm(`"${target.displayName || target.username}"에게 소유권을 이전할까요? 이전 후에는 되돌리기 어려워요.`)) return;
     setTransferPending(true); setTransferError("");
     try {
       const res = await fetch(`/api/teams/${teamId}/transfer-ownership`, {
@@ -180,7 +180,7 @@ export function TeamSettings({
       const data = await res.json();
       if (!res.ok) { setTransferError(data.error ?? "소유권을 이전하지 못했어요."); return; }
       setShowTransfer(false); router.refresh();
-    } catch { setTransferError("네트워크 연결을 확인해 주세요."); }
+    } catch { setTransferError("네트워크 연결을 확인해요."); }
     finally { setTransferPending(false); }
   }
 
@@ -191,7 +191,7 @@ export function TeamSettings({
       const data = await res.json();
       if (!res.ok) { setLeaveError(data.error ?? "팀을 나가지 못했어요."); return; }
       router.push("/projects");
-    } catch { setLeaveError("네트워크 연결을 확인해 주세요."); }
+    } catch { setLeaveError("네트워크 연결을 확인해요."); }
     finally { setLeavePending(false); }
   }
 
@@ -203,7 +203,7 @@ export function TeamSettings({
       const data = await res.json();
       if (!res.ok) { setDeleteError(data.error ?? "팀을 삭제하지 못했어요."); return; }
       router.push("/projects");
-    } catch { setDeleteError("네트워크 연결을 확인해 주세요."); }
+    } catch { setDeleteError("네트워크 연결을 확인해요."); }
     finally { setDeletePending(false); }
   }
 
@@ -309,7 +309,7 @@ export function TeamSettings({
           {inviteError && <p className="form-error">{inviteError}</p>}
           {inviteLink && (
             <div className="invite-link-box">
-              <p>초대 링크가 생성됐어요. 복사해서 전달해 주세요.</p>
+              <p>초대 링크가 생성됐어요. 복사해서 전달해요.</p>
               <div className="invite-link-row">
                 <input className="field" readOnly value={inviteLink}
                   onClick={(e) => (e.target as HTMLInputElement).select()} />
@@ -346,7 +346,7 @@ export function TeamSettings({
         <div className="modal-backdrop">
           <div className="modal-box">
             <h2>소유권 이전</h2>
-            <p>소유권을 이전할 멤버의 아이디를 입력하세요.</p>
+            <p>소유권을 이전할 멤버의 아이디를 입력해요.</p>
             <form onSubmit={handleTransfer} style={{ marginTop: 16 }}>
               <input className="field" list="member-usernames" value={transferTo}
                 onChange={(e) => setTransferTo(e.target.value)} placeholder="아이디 입력" required />
@@ -444,7 +444,7 @@ export function TeamSettings({
               <strong> 이 작업은 되돌릴 수 없어요.</strong>
             </p>
             <p style={{ marginTop: 16 }}>
-              계속하려면 팀 이름 <strong>&ldquo;{teamName}&rdquo;</strong>을 입력해 주세요.
+              계속하려면 팀 이름 <strong>&ldquo;{teamName}&rdquo;</strong>을 입력해요.
             </p>
             <input className="field" style={{ marginTop: 8 }} value={deleteConfirm}
               onChange={(e) => setDeleteConfirm(e.target.value)}

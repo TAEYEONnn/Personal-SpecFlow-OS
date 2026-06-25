@@ -12,13 +12,13 @@ export function validateSourceInput(input: SourceInput) {
   const text = input.text.trim();
 
   if (!text) {
-    throw new Error("업무 내용을 입력해 주세요.");
+    throw new Error("업무 내용을 입력해요.");
   }
   if (text.length > MAX_SOURCE_CHARS) {
-    throw new Error("업무 내용은 100,000자 이하여야 합니다.");
+    throw new Error("업무 내용은 100,000자 이하여야 해요.");
   }
   if (input.fileSize && input.fileSize > MAX_FILE_BYTES) {
-    throw new Error("파일 크기는 10MB 이하여야 합니다.");
+    throw new Error("파일 크기는 10MB 이하여야 해요.");
   }
   if (
     input.fileName &&
@@ -26,7 +26,7 @@ export function validateSourceInput(input: SourceInput) {
       input.fileName?.toLowerCase().endsWith(extension),
     )
   ) {
-    throw new Error("TXT, MD 또는 PDF 파일만 업로드할 수 있습니다.");
+    throw new Error("TXT, MD 또는 PDF 파일만 업로드할 수 있어요.");
   }
 
   return { text };

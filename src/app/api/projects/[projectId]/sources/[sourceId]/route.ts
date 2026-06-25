@@ -26,7 +26,7 @@ export async function PATCH(
     return NextResponse.json({ source });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "입력 형식을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "입력 형식을 확인해요." }, { status: 422 });
     }
     if (error instanceof Error && /입력|100,000|10MB|TXT|PDF/.test(error.message)) {
       return NextResponse.json({ error: error.message }, { status: 422 });

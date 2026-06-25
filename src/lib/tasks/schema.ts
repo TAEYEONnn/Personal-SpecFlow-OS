@@ -19,7 +19,7 @@ export const createTaskSchema = z
       context.addIssue({
         code: "custom",
         path: ["teamId"],
-        message: "팀 할 일에는 팀이 필요합니다.",
+        message: "팀 할 일에는 팀이 필요해요.",
       });
     }
   });

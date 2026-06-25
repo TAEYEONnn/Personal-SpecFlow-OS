@@ -190,7 +190,7 @@ function createFlowNodes(
     id: screen.id,
     position: positionOverrides[screen.id] ?? screen.position,
     className: `screen-node ${selectedScreenId === screen.id ? "selected" : ""}`,
-    ariaLabel: `${screen.name} 화면. 방향 버튼으로 위치를 이동할 수 있습니다.`,
+    ariaLabel: `${screen.name} 화면. 방향 버튼으로 위치를 이동할 수 있어요.`,
     data: {
       screenId: screen.id,
       nodeType: "screen",
@@ -232,7 +232,7 @@ function createFlowNodes(
         state.position ??
         statePosition(state, siblingIndex, document.screens),
       className: `state-node ${isPrimarySelectedState ? "selected" : ""}`,
-      ariaLabel: `${state.name} 상태. 방향 버튼으로 위치를 이동할 수 있습니다.`,
+      ariaLabel: `${state.name} 상태. 방향 버튼으로 위치를 이동할 수 있어요.`,
       data: {
         screenId: state.screenId,
         nodeType: "state",

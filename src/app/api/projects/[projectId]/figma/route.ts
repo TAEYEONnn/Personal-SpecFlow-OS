@@ -40,7 +40,7 @@ export async function POST(
     const { projectId } = await params;
     const project = await getProject(projectId);
     if (!project?.document) {
-      return NextResponse.json({ error: "정리된 문서가 없습니다." }, { status: 404 });
+      return NextResponse.json({ error: "정리된 문서가 없어요." }, { status: 404 });
     }
 
     const body = bodySchema.parse(await request.json());
@@ -60,7 +60,7 @@ export async function POST(
     return NextResponse.json({ recommendations, libraryName: library.fileName });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "입력 형식을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "입력 형식을 확인해요." }, { status: 422 });
     }
     return apiError(error);
   }

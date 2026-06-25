@@ -292,7 +292,7 @@ function QuestionCard({
                 {answerStatus === "success"
                   ? "저장했어요"
                   : answerStatus === "error"
-                    ? "저장하지 못했어요. 다시 시도해 주세요."
+                    ? "저장하지 못했어요. 다시 시도해봐요."
                     : ""}
               </span>
             </div>
@@ -399,7 +399,7 @@ function TaskRow({
             설명
             <textarea
               className="field task-detail-textarea"
-              placeholder="필요한 내용을 적어 주세요."
+              placeholder="필요한 내용을 적어요."
               defaultValue={task.description ?? ""}
               onBlur={(event) => onUpdate(task.id, { description: event.target.value })}
             />
@@ -418,7 +418,7 @@ function TaskRow({
               막힌 이유
               <input
                 className="field"
-                placeholder="진행을 막고 있는 내용을 적어 주세요."
+                placeholder="진행을 막고 있는 내용을 적어요."
                 defaultValue={task.blockerReason ?? ""}
                 onBlur={(event) =>
                   onUpdate(task.id, { blockerReason: event.target.value || null })
@@ -564,7 +564,7 @@ export function DocumentView({
     return (
       <div className="document-view">
         <div className="document-empty">
-          <p>아직 정리된 내용이 없어요. 원문을 확인한 뒤 다시 정리해 주세요.</p>
+          <p>아직 정리된 내용이 없어요. 원문을 확인하고 다시 정리해봐요.</p>
         </div>
       </div>
     );

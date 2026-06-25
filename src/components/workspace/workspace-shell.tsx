@@ -488,7 +488,7 @@ export function WorkspaceShell({
       return;
     }
     if (sourcePending) {
-      setError("원문 저장이 끝난 뒤 다시 정리해 주세요.");
+      setError("원문 저장이 끝나면 다시 정리해요.");
       return;
     }
     if (!window.confirm("원문 변경사항을 반영해서 다시 정리할까요? 직접 수정한 답변과 작업은 유지해요.")) return;
@@ -518,7 +518,7 @@ export function WorkspaceShell({
         setCompileStep("merging");
         const data = await response.json();
         if (!response.ok) {
-          throw new Error(data.error ?? "정리하지 못했습니다.");
+          throw new Error(data.error ?? "정리하지 못했어요.");
         }
         capturedMerge = data.merge;
         return {
@@ -542,7 +542,7 @@ export function WorkspaceShell({
     } catch (error) {
       setCompileStep("failed");
       setError(
-        error instanceof Error ? error.message : "정리하지 못했습니다.",
+        error instanceof Error ? error.message : "정리하지 못했어요.",
         recompile,
       );
     } finally {
@@ -574,7 +574,7 @@ export function WorkspaceShell({
     if (!notionPageId.trim()) return;
     const cleaned = notionPageId.replace(/-/g, "").trim();
     if (!/^[a-f0-9]{32}$/i.test(cleaned)) {
-      setNote("유효한 Notion 페이지 ID를 입력해 주세요 (32자리 hex).");
+      setNote("유효한 Notion 페이지 ID를 입력해요 (32자리 hex).");
       setNotionDialog(false);
       return;
     }

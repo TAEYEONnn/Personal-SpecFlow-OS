@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   const parsed = signupSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "아이디와 8자 이상 비밀번호를 확인해 주세요." },
+      { error: "아이디와 8자 이상 비밀번호를 확인해요." },
       { status: 422 },
     );
   }

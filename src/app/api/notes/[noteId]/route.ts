@@ -31,7 +31,7 @@ export async function PATCH(
     return NextResponse.json({ note });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "메모 내용을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "메모 내용을 확인해요." }, { status: 422 });
     }
     return apiError(error);
   }

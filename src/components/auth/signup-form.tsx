@@ -49,7 +49,7 @@ export function SignupForm({ next }: { next?: string }) {
       }
       router.push(redirectTo);
     } catch {
-      setError("네트워크 연결을 확인해 주세요.");
+      setError("네트워크 연결을 확인해요.");
     } finally {
       setPending(false);
     }

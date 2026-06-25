@@ -69,7 +69,7 @@ export function LoginForm({
       }
       router.push(redirectTo);
     } catch {
-      setError("네트워크 연결을 확인해 주세요.");
+      setError("네트워크 연결을 확인해요.");
     } finally {
       if (slowTimerRef.current) {
         clearTimeout(slowTimerRef.current);
@@ -112,7 +112,7 @@ export function LoginForm({
         <>
           <p className="form-error" role="alert">{error}</p>
           <p className="login-setup-hint">
-            계정이 없다면 회원가입 후 다시 시도해 주세요.
+            계정이 없다면 회원가입하고 다시 시도해요.
           </p>
         </>
       ) : null}

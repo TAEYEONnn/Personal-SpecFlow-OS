@@ -35,12 +35,12 @@ export function apiError(error: unknown): NextResponse<{ error: string }> {
   const message = error instanceof Error ? error.message : "알 수 없는 오류";
   // Legacy string-code compatibility for service layer errors not yet migrated
   if (message === "UNAUTHORIZED") {
-    return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
+    return NextResponse.json({ error: "로그인이 필요해요." }, { status: 401 });
   }
   if (message.includes("revision_conflict") || message.includes("다른 곳에서")) {
     return NextResponse.json({ error: message }, { status: 409 });
   }
-  if (message.includes("찾을 수 없습니다")) {
+  if (message.includes("찾을 수 없어요")) {
     return NextResponse.json({ error: message }, { status: 404 });
   }
   return NextResponse.json({ error: message }, { status: 500 });

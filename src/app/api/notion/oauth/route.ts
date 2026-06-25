@@ -4,7 +4,7 @@ export async function GET(request: Request) {
   const clientId = process.env.NOTION_CLIENT_ID;
   if (!clientId) {
     return NextResponse.json(
-      { error: "Notion OAuth가 설정되지 않았습니다. NOTION_CLIENT_ID 환경변수를 추가해 주세요." },
+      { error: "Notion OAuth가 설정되지 않았어요. NOTION_CLIENT_ID 환경변수를 추가해요." },
       { status: 501 },
     );
   }

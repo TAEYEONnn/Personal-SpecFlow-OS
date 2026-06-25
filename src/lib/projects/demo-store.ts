@@ -119,7 +119,7 @@ export function addDemoSource(
   source: Omit<DemoSource, "id" | "createdAt" | "updatedAt">,
 ) {
   const project = store().get(projectId);
-  if (!project) throw new Error("프로젝트를 찾을 수 없습니다.");
+  if (!project) throw new Error("프로젝트를 찾을 수 없어요.");
   const now = new Date().toISOString();
   const next: DemoSource = {
     ...source,
@@ -135,7 +135,7 @@ export function addDemoSource(
 
 export function createDemoRun(projectId: string) {
   const project = store().get(projectId);
-  if (!project) throw new Error("프로젝트를 찾을 수 없습니다.");
+  if (!project) throw new Error("프로젝트를 찾을 수 없어요.");
   const run: DemoRun = {
     id: randomUUID(),
     status: "running",
@@ -154,29 +154,29 @@ export function finishDemoRun(
 ) {
   const project = store().get(projectId);
   const run = project?.runs.find((candidate) => candidate.id === runId);
-  if (!project || !run) throw new Error("정리 기록을 찾을 수 없습니다.");
+  if (!project || !run) throw new Error("정리 기록을 찾을 수 없어요.");
   Object.assign(run, update, { finishedAt: new Date().toISOString() });
   return structuredClone(run);
 }
 
 export function renameDemoProject(projectId: string, name: string) {
   const project = store().get(projectId);
-  if (!project) throw new Error("프로젝트를 찾을 수 없습니다.");
+  if (!project) throw new Error("프로젝트를 찾을 수 없어요.");
   project.name = name;
   project.updatedAt = new Date().toISOString();
 }
 
 export function deleteDemoProject(projectId: string) {
-  if (!store().has(projectId)) throw new Error("프로젝트를 찾을 수 없습니다.");
+  if (!store().has(projectId)) throw new Error("프로젝트를 찾을 수 없어요.");
   store().delete(projectId);
 }
 
 export function deleteDemoSource(projectId: string, sourceId: string) {
   const project = store().get(projectId);
-  if (!project) throw new Error("프로젝트를 찾을 수 없습니다.");
+  if (!project) throw new Error("프로젝트를 찾을 수 없어요.");
   const before = project.sources.length;
   project.sources = project.sources.filter((s) => s.id !== sourceId);
-  if (project.sources.length === before) throw new Error("소스를 찾을 수 없습니다.");
+  if (project.sources.length === before) throw new Error("소스를 찾을 수 없어요.");
   project.needsRecompile = true;
   project.updatedAt = new Date().toISOString();
 }
@@ -187,9 +187,9 @@ export function updateDemoSource(
   patch: { name?: string; content?: string },
 ) {
   const project = store().get(projectId);
-  if (!project) throw new Error("프로젝트를 찾을 수 없습니다.");
+  if (!project) throw new Error("프로젝트를 찾을 수 없어요.");
   const source = project.sources.find((s) => s.id === sourceId);
-  if (!source) throw new Error("소스를 찾을 수 없습니다.");
+  if (!source) throw new Error("소스를 찾을 수 없어요.");
   if (patch.name !== undefined) source.name = patch.name;
   if (patch.content !== undefined) {
     source.content = patch.content;
@@ -207,7 +207,7 @@ export function saveDemoDocument(
   clearRecompile = false,
 ) {
   const project = store().get(projectId);
-  if (!project) throw new Error("프로젝트를 찾을 수 없습니다.");
+  if (!project) throw new Error("프로젝트를 찾을 수 없어요.");
   assertRevision(expectedRevision, project.revision);
   project.revision += 1;
   project.document = structuredClone(document);

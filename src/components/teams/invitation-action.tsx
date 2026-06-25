@@ -54,7 +54,7 @@ export function InvitationAction({
     return (
       <>
         <h2>만료된 초대예요</h2>
-        <p>초대 링크의 유효기간이 지났어요. 팀 관리자에게 다시 요청해 주세요.</p>
+        <p>초대 링크의 유효기간이 지났어요. 팀 관리자에게 다시 요청해요.</p>
       </>
     );
   }
@@ -90,7 +90,7 @@ export function InvitationAction({
           ) : (
             <>초대 링크로 초대가 왔어요.</>
           )}
-          수락하려면 먼저 로그인해 주세요.
+          수락하려면 먼저 로그인해요.
         </p>
         <Link
           className="button button-primary"
@@ -119,7 +119,7 @@ export function InvitationAction({
       if (!res.ok) { setError(data.error ?? "수락하지 못했어요."); setStatus("idle"); return; }
       setStatus("done-accept");
     } catch {
-      setError("네트워크 연결을 확인해 주세요.");
+      setError("네트워크 연결을 확인해요.");
       setStatus("idle");
     }
   }
@@ -133,7 +133,7 @@ export function InvitationAction({
       if (!res.ok) { setError(data.error ?? "처리하지 못했어요."); setStatus("idle"); return; }
       setStatus("done-reject");
     } catch {
-      setError("네트워크 연결을 확인해 주세요.");
+      setError("네트워크 연결을 확인해요.");
       setStatus("idle");
     }
   }

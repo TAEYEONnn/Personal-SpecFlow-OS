@@ -27,10 +27,10 @@ export function ProjectOnboarding({
     try {
       const res = await fetch(`/api/projects/${project.id}/compile`, { method: "POST" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "정리하지 못했습니다.");
+      if (!res.ok) throw new Error(data.error ?? "정리하지 못했어요.");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "정리하지 못했습니다.");
+      setError(e instanceof Error ? e.message : "정리하지 못했어요.");
       setCompileStep("failed");
     }
   }

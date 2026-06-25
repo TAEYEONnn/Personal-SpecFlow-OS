@@ -25,7 +25,7 @@ export function CreateTeamForm() {
       window.localStorage.setItem("specflow-active-team-id", data.team.id);
       router.push(`/teams/${data.team.id}`);
     } catch {
-      setError("네트워크 연결을 확인해 주세요.");
+      setError("네트워크 연결을 확인해요.");
     } finally {
       setPending(false);
     }

@@ -43,7 +43,7 @@ export async function GET(
 
     if (!project?.document) {
       return NextResponse.json(
-        { error: "내보낼 문서가 없습니다." },
+        { error: "내보낼 문서가 없어요." },
         { status: 404 },
       );
     }

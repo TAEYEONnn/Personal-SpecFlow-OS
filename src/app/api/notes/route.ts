@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ note }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "메모 내용을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "메모 내용을 확인해요." }, { status: 422 });
     }
     return apiError(error);
   }

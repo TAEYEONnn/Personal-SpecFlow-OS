@@ -28,7 +28,7 @@ export async function POST(
       text = pdfResultToSourceText(result);
       if (!text.trim()) {
         return NextResponse.json(
-          { error: "PDF에서 텍스트를 추출할 수 없습니다. 텍스트 기반 PDF인지 확인해 주세요." },
+          { error: "PDF에서 텍스트를 추출할 수 없어요. 텍스트 기반 PDF인지 확인해요." },
           { status: 422 },
         );
       }
@@ -47,7 +47,7 @@ export async function POST(
     return NextResponse.json({ source }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "입력 형식을 확인해 주세요." }, { status: 422 });
+      return NextResponse.json({ error: "입력 형식을 확인해요." }, { status: 422 });
     }
     if (error instanceof Error && /입력|100,000|10MB|TXT|PDF/.test(error.message)) {
       return NextResponse.json({ error: error.message }, { status: 422 });

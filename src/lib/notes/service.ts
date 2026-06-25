@@ -53,7 +53,7 @@ export async function listNotes(
   const teamIds = await getMyTeamIds();
 
   if (options.teamId && !teamIds.includes(options.teamId)) {
-    throw new Error("팀 메모에 접근할 수 없습니다.");
+    throw new Error("팀 메모에 접근할 수 없어요.");
   }
 
   let query = supabase
@@ -93,7 +93,7 @@ export async function getNote(
     .select("*")
     .eq("id", noteId)
     .single();
-  if (!data) throw new Error("메모를 찾을 수 없습니다.");
+  if (!data) throw new Error("메모를 찾을 수 없어요.");
   return mapNote(data);
 }
 
@@ -107,7 +107,7 @@ export async function createNote(
   if (teamId) {
     const teamIds = await getMyTeamIds();
     if (!teamIds.includes(teamId))
-      throw new Error("팀 멤버만 팀 메모를 생성할 수 있습니다.");
+      throw new Error("팀 멤버만 팀 메모를 만들 수 있어요.");
   }
 
   const supabase = await createClient();
@@ -126,7 +126,7 @@ export async function createNote(
     })
     .select()
     .single();
-  if (error || !row) throw new Error("메모 생성에 실패했습니다.");
+  if (error || !row) throw new Error("메모를 만들지 못했어요.");
   return mapNote(row);
 }
 
@@ -143,7 +143,7 @@ export async function updateNote(
     .select("*")
     .eq("id", noteId)
     .single();
-  if (!current) throw new Error("메모를 찾을 수 없습니다.");
+  if (!current) throw new Error("메모를 찾을 수 없어요.");
 
   const visibility = patch.visibility ?? current.visibility;
   const teamId =
@@ -154,12 +154,12 @@ export async function updateNote(
       : null;
 
   if (visibility === "team" && !teamId) {
-    throw new Error("공유 메모에는 팀이 필요합니다.");
+    throw new Error("공유 메모에는 팀이 필요해요.");
   }
   if (teamId) {
     const teamIds = await getMyTeamIds();
     if (!teamIds.includes(teamId))
-      throw new Error("팀 멤버만 팀 메모를 수정할 수 있습니다.");
+      throw new Error("팀 멤버만 팀 메모를 수정할 수 있어요.");
   }
 
   const { projectId } = patch;
@@ -181,7 +181,7 @@ export async function updateNote(
     .eq("id", noteId)
     .select()
     .single();
-  if (error || !row) throw new Error("메모 수정에 실패했습니다.");
+  if (error || !row) throw new Error("메모를 수정하지 못했어요.");
   return mapNote(row);
 }
 
@@ -196,7 +196,7 @@ export async function deleteNote(
     .select("id")
     .eq("id", noteId)
     .single();
-  if (!data) throw new Error("메모를 찾을 수 없습니다.");
+  if (!data) throw new Error("메모를 찾을 수 없어요.");
 
   await supabase.from("notes").delete().eq("id", noteId);
 }
@@ -212,9 +212,9 @@ export async function convertScratch(
     .select("*")
     .eq("id", noteId)
     .single();
-  if (!current) throw new Error("메모를 찾을 수 없습니다.");
+  if (!current) throw new Error("메모를 찾을 수 없어요.");
   if (current.kind !== "scratch")
-    throw new Error("낙서만 전환할 수 있습니다.");
+    throw new Error("낙서만 전환할 수 있어요.");
 
   if (target === "note") {
     const { data: row, error } = await supabase
@@ -231,13 +231,13 @@ export async function convertScratch(
       .eq("id", noteId)
       .select()
       .single();
-    if (error || !row) throw new Error("전환에 실패했습니다.");
+    if (error || !row) throw new Error("전환하지 못했어요.");
     return { type: "note", note: mapNote(row) };
   }
 
   // Convert to task
   const content = (current.content ?? "").trim();
-  if (!content) throw new Error("빈 낙서는 할 일로 전환할 수 없습니다.");
+  if (!content) throw new Error("빈 낙서는 할 일로 전환할 수 없어요.");
 
   const task = await createTask(
     {

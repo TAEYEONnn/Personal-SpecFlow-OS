@@ -8,7 +8,7 @@ export function MatrixView({ document }: { document: SpecDocument }) {
       <h2>역할·권한 매트릭스</h2>
       {unconfirmed > 0 && (
         <p className="matrix-warning" role="status">
-          확인이 필요한 권한이 {unconfirmed}개 있어요. 노란 행을 봐주세요.
+          확인이 필요한 권한이 {unconfirmed}개 있어요. 노란 행을 확인해봐요.
         </p>
       )}
       <div className="matrix-table-wrap">
