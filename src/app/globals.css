@@ -3981,7 +3981,7 @@ textarea:focus-visible {
 .chat-pin-badge { font-size: 0.75rem; margin-left: 0.25rem; }
 
 .chat-message-menu-wrap { position: relative; margin-left: auto; }
-.chat-message-menu-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: 0 0.25rem; font-size: 1.25rem; line-height: 1; opacity: 0; transition: opacity 0.1s; }
+.chat-message-menu-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: 0 0.25rem; font-size: 1.25rem; line-height: 1; opacity: 0.3; transition: opacity 0.15s; }
 .chat-message:hover .chat-message-menu-btn { opacity: 1; }
 @media (hover: none) { .chat-message-menu-btn { opacity: 1; } }
 .chat-message-menu { position: absolute; right: 0; top: 100%; z-index: 100; background: var(--surface); border: 1px solid var(--line); border-radius: 0.5rem; min-width: 140px; list-style: none; padding: 0.25rem 0; margin: 0.25rem 0 0; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }

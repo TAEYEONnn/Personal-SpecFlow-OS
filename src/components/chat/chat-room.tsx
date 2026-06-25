@@ -84,7 +84,7 @@ export function ChatRoom() {
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'include' })
       .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (data?.user?.id) setMyUserId(data.user.id) })
+      .then((data) => { if (data?.id) setMyUserId(data.id) })
       .catch(() => undefined)
   }, [])
 
