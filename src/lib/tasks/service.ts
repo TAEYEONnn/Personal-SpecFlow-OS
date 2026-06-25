@@ -60,7 +60,7 @@ export async function listTasks(
 
   let query = supabase
     .from("tasks")
-    .select("*")
+    .select("id, title, description, status, priority, due_date, is_personal, team_id, project_id, assignee_id, created_by, created_at, updated_at")
     .order("updated_at", { ascending: false })
     .limit(200);
 
@@ -102,7 +102,7 @@ export async function createTask(
       assignee_id: data.isPersonal ? userId : (data.assigneeId ?? null),
       created_by: userId,
     })
-    .select()
+    .select("id, title, description, status, priority, due_date, is_personal, team_id, project_id, assignee_id, created_by, created_at, updated_at")
     .single();
   if (error || !row) throw new Error("할 일을 만들지 못했어요.");
   return mapTask(row);
@@ -119,7 +119,7 @@ export async function updateTask(
 
   const { data: current } = await supabase
     .from("tasks")
-    .select("*")
+    .select("id, title, description, status, priority, due_date, is_personal, team_id, project_id, assignee_id, created_by, created_at, updated_at")
     .eq("id", taskId)
     .single();
   if (!current) throw new Error("할 일을 찾을 수 없어요.");
@@ -134,7 +134,7 @@ export async function updateTask(
       updated_at: new Date().toISOString(),
     })
     .eq("id", taskId)
-    .select()
+    .select("id, title, description, status, priority, due_date, is_personal, team_id, project_id, assignee_id, created_by, created_at, updated_at")
     .single();
   if (error || !row) throw new Error("할 일을 수정하지 못했어요.");
   return mapTask(row);

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import type { TeamRole } from "@/lib/teams/service";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 type Member = {
   id: string;
@@ -74,6 +75,11 @@ export function TeamSettings({
   const [deletePending, setDeletePending] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
+  // Confirm dialogs for destructive member/invitation actions
+  const [removeTarget, setRemoveTarget] = useState<string | null>(null);
+  const [cancelInvTarget, setCancelInvTarget] = useState<string | null>(null);
+  const [confirmTransfer, setConfirmTransfer] = useState(false);
+
   const isOwner = myRole === "owner";
   const isManager = myRole === "owner" || myRole === "admin";
 
@@ -108,7 +114,7 @@ export function TeamSettings({
       });
       const data = await res.json();
       if (!res.ok) { setRenameError(data.error ?? "이름을 바꾸지 못했어요."); return; }
-      setTeamName(trimmed); setIsRenaming(false); router.refresh();
+      setTeamName(trimmed); setIsRenaming(false);
     } catch { setRenameError("네트워크 연결을 확인해요."); }
     finally { setRenamePending(false); }
   }
@@ -138,9 +144,9 @@ export function TeamSettings({
   }
 
   async function handleRemove(userId: string) {
-    if (!confirm("이 멤버를 팀에서 제거할까요?")) return;
     const res = await fetch(`/api/teams/${teamId}/members/${userId}`, { method: "DELETE" });
-    if (res.ok) { setMembers((prev) => prev.filter((m) => m.userId !== userId)); router.refresh(); }
+    if (res.ok) { setMembers((prev) => prev.filter((m) => m.userId !== userId)); }
+    setRemoveTarget(null);
   }
 
   async function handleRoleChange(userId: string, newRole: "admin" | "member") {
@@ -152,25 +158,32 @@ export function TeamSettings({
       });
       if (res.ok) {
         setMembers((prev) => prev.map((m) => m.userId === userId ? { ...m, role: newRole } : m));
-        router.refresh();
       }
     } finally { setRoleChangePending(null); }
   }
 
   async function handleCancelInvitation(invitationId: string) {
-    if (!confirm("이 초대를 취소할까요?")) return;
     const res = await fetch(`/api/teams/${teamId}/invitations/${invitationId}`, { method: "DELETE" });
     if (res.ok) setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
+    setCancelInvTarget(null);
   }
 
-  async function handleTransfer(event: FormEvent) {
+  function requestTransfer(event: FormEvent) {
     event.preventDefault();
     if (!transferTo.trim()) return;
     const target = members.find((m) =>
       m.username === transferTo.trim() || m.userId === transferTo.trim()
     );
     if (!target) { setTransferError("현재 팀 멤버의 아이디를 입력해요."); return; }
-    if (!confirm(`"${target.displayName || target.username}"에게 소유권을 이전할까요? 이전 후에는 되돌리기 어려워요.`)) return;
+    setConfirmTransfer(true);
+  }
+
+  async function handleTransfer() {
+    const target = members.find((m) =>
+      m.username === transferTo.trim() || m.userId === transferTo.trim()
+    );
+    if (!target) return;
+    setConfirmTransfer(false);
     setTransferPending(true); setTransferError("");
     try {
       const res = await fetch(`/api/teams/${teamId}/transfer-ownership`, {
@@ -273,7 +286,7 @@ export function TeamSettings({
                 <span className={`member-role member-role--${m.role}`}>{roleLabel[m.role]}</span>
               )}
               {isManager && m.userId !== myUserId && m.role !== "owner" && (
-                <button className="button button-ghost button-sm" onClick={() => handleRemove(m.userId)}>
+                <button className="button button-ghost button-sm" onClick={() => setRemoveTarget(m.userId)}>
                   제거
                 </button>
               )}
@@ -333,7 +346,7 @@ export function TeamSettings({
                 <span className={`member-role member-role--${inv.role}`}>{roleLabel[inv.role]}</span>
                 {isManager && (
                   <button className="button button-ghost button-sm"
-                    onClick={() => handleCancelInvitation(inv.id)}>취소</button>
+                    onClick={() => setCancelInvTarget(inv.id)}>취소</button>
                 )}
               </li>
             ))}
@@ -347,7 +360,7 @@ export function TeamSettings({
           <div className="modal-box">
             <h2>소유권 이전</h2>
             <p>소유권을 이전할 멤버의 아이디를 입력해요.</p>
-            <form onSubmit={handleTransfer} style={{ marginTop: 16 }}>
+            <form onSubmit={requestTransfer} style={{ marginTop: 16 }}>
               <input className="field" list="member-usernames" value={transferTo}
                 onChange={(e) => setTransferTo(e.target.value)} placeholder="아이디 입력" required />
               <datalist id="member-usernames">
@@ -432,6 +445,41 @@ export function TeamSettings({
           </div>
         </div>
       )}
+
+      {/* Remove member confirm */}
+      <ConfirmDialog
+        open={Boolean(removeTarget)}
+        title="이 멤버를 팀에서 제거할까요?"
+        confirmLabel="제거"
+        cancelLabel="취소"
+        danger
+        onConfirm={() => { if (removeTarget) handleRemove(removeTarget); }}
+        onCancel={() => setRemoveTarget(null)}
+      />
+
+      {/* Cancel invitation confirm */}
+      <ConfirmDialog
+        open={Boolean(cancelInvTarget)}
+        title="이 초대를 취소할까요?"
+        confirmLabel="취소하기"
+        cancelLabel="돌아가기"
+        danger
+        onConfirm={() => { if (cancelInvTarget) handleCancelInvitation(cancelInvTarget); }}
+        onCancel={() => setCancelInvTarget(null)}
+      />
+
+      {/* Transfer ownership confirm */}
+      <ConfirmDialog
+        open={confirmTransfer}
+        title="소유권을 이전할까요?"
+        description="이전 후에는 되돌리기 어려워요."
+        confirmLabel="소유권 이전"
+        cancelLabel="취소"
+        danger
+        loading={transferPending}
+        onConfirm={handleTransfer}
+        onCancel={() => setConfirmTransfer(false)}
+      />
 
       {/* Delete Confirm Dialog */}
       {showDelete && (

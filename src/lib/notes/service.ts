@@ -58,7 +58,7 @@ export async function listNotes(
 
   let query = supabase
     .from("notes")
-    .select("*")
+    .select("id, title, content, kind, visibility, team_id, project_id, pinned, created_by, updated_by, created_at, updated_at")
     .order("updated_at", { ascending: false })
     .limit(200);
 
@@ -90,7 +90,7 @@ export async function getNote(
   const supabase = await createClient();
   const { data } = await supabase
     .from("notes")
-    .select("*")
+    .select("id, title, content, kind, visibility, team_id, project_id, pinned, created_by, updated_by, created_at, updated_at")
     .eq("id", noteId)
     .single();
   if (!data) throw new Error("메모를 찾을 수 없어요.");
@@ -124,7 +124,7 @@ export async function createNote(
       created_by: userId,
       updated_by: userId,
     })
-    .select()
+    .select("id, title, content, kind, visibility, team_id, project_id, pinned, created_by, updated_by, created_at, updated_at")
     .single();
   if (error || !row) throw new Error("메모를 만들지 못했어요.");
   return mapNote(row);
@@ -140,7 +140,7 @@ export async function updateNote(
 
   const { data: current } = await supabase
     .from("notes")
-    .select("*")
+    .select("id, title, content, kind, visibility, team_id, project_id, pinned, created_by, updated_by, created_at, updated_at")
     .eq("id", noteId)
     .single();
   if (!current) throw new Error("메모를 찾을 수 없어요.");
@@ -179,7 +179,7 @@ export async function updateNote(
       updated_at: new Date().toISOString(),
     })
     .eq("id", noteId)
-    .select()
+    .select("id, title, content, kind, visibility, team_id, project_id, pinned, created_by, updated_by, created_at, updated_at")
     .single();
   if (error || !row) throw new Error("메모를 수정하지 못했어요.");
   return mapNote(row);
@@ -209,7 +209,7 @@ export async function convertScratch(
   const supabase = await createClient();
   const { data: current } = await supabase
     .from("notes")
-    .select("*")
+    .select("id, title, content, kind, visibility, team_id, project_id, pinned, created_by, updated_by, created_at, updated_at")
     .eq("id", noteId)
     .single();
   if (!current) throw new Error("메모를 찾을 수 없어요.");

@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 
 import { ActiveTeamProvider } from '@/components/workspace-global/active-team-provider'
 import { WorkspaceSidebar } from '@/components/workspace-global/workspace-sidebar'
+import { Toaster } from '@/components/ui/toast'
 
 const publicPaths = ['/login', '/signup', '/invitations']
 
@@ -19,6 +20,7 @@ export function GlobalWorkspaceShell({ children }: { children: React.ReactNode }
         <WorkspaceSidebar />
         <div className="global-workspace-main">{children}</div>
       </div>
+      <Toaster />
     </ActiveTeamProvider>
   )
 }

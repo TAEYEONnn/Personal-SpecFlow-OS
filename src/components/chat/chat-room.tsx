@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { createClient } from '@/lib/supabase/client'
 import { useActiveTeam } from '@/components/workspace-global/active-team-provider'
 import type { ChatMessageView, ChatAnnouncement, Mention } from '@/lib/chat/service'
@@ -605,20 +606,17 @@ export function ChatRoom() {
       </form>
 
       {/* Delete confirmation dialog */}
-      {deleteTarget && (
-        <div className="chat-dialog-overlay" onClick={() => setDeleteTarget(null)}>
-          <div className="chat-dialog" onClick={(e) => e.stopPropagation()}>
-            <h3>메시지를 삭제할까요?</h3>
-            <p>삭제하면 복구할 수 없어요.</p>
-            <div className="chat-dialog-actions">
-              <button className="button" onClick={() => setDeleteTarget(null)} disabled={deleteLoading}>취소</button>
-              <button className="button button-danger" onClick={confirmDelete} disabled={deleteLoading}>
-                {deleteLoading ? '삭제 중...' : '삭제'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="메시지를 삭제할까요?"
+        description="삭제하면 복구할 수 없어요."
+        confirmLabel="삭제"
+        cancelLabel="취소"
+        danger
+        loading={deleteLoading}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }
