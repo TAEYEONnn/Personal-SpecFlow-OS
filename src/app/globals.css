@@ -3890,22 +3890,42 @@ textarea:focus-visible {
     position: static;
     width: 100%;
     height: auto;
-    padding: 12px;
+    padding: 10px 12px;
     border-right: 0;
     border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow-x: auto;
   }
-  .global-sidebar nav {
+  .global-brand { margin: 0; font-size: 15px; white-space: nowrap; flex-shrink: 0; }
+  .global-team-label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .global-team-label-text { display: none; }
+  .global-team-select { min-height: 36px; font-size: 13px; }
+  .global-sidebar > nav {
     display: flex;
     overflow-x: auto;
-    gap: 8px;
+    gap: 4px;
+    flex: 1;
   }
   .global-nav-group {
     display: flex;
     margin: 0;
   }
-  .global-nav-group > p,
-  .global-team-label { display: none; }
-  .global-nav-item { white-space: nowrap; }
+  .global-nav-group > p { display: none; }
+  .global-nav-item {
+    white-space: nowrap;
+    min-height: 36px;
+    font-size: 13px;
+    padding: 6px 10px;
+  }
 }
 @media (max-width: 760px) {
   .workspace-page {
@@ -3936,13 +3956,13 @@ textarea:focus-visible {
   font-size: 0.875rem;
   animation: chat-fade-in 0.2s ease;
 }
-.chat-toast--success { background: #1a3d2e; color: #5dcaa5; border: 1px solid #085041; }
-.chat-toast--error { background: #3d1a1a; color: #f0907b; border: 1px solid #7a2c1a; }
+.chat-toast--success { background: #eaf8f8; color: var(--accent-dark); border: 1px solid var(--accent); }
+.chat-toast--error { background: #fff5f5; color: #a13f3f; border: 1px solid var(--danger); }
 
 .chat-announcements {
   border-bottom: 1px solid var(--line);
   padding: 0.5rem 1rem;
-  background: color-mix(in srgb, var(--surface) 80%, #7f77dd 20%);
+  background: var(--surface-soft);
 }
 .chat-announcements-header { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.25rem; }
 .chat-announcements-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; }
@@ -3955,7 +3975,7 @@ textarea:focus-visible {
 .chat-announcement-remove:hover { color: var(--ink); }
 
 .chat-loading { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.875rem; }
-.chat-message--announced { border-left: 2px solid #7f77dd; padding-left: 0.5rem; }
+.chat-message--announced { border-left: 2px solid var(--accent); padding-left: 0.5rem; }
 .chat-message--deleted { opacity: 0.5; }
 .chat-deleted-notice { font-size: 0.8125rem; color: var(--muted); font-style: italic; }
 .chat-pin-badge { font-size: 0.75rem; margin-left: 0.25rem; }
@@ -3963,6 +3983,7 @@ textarea:focus-visible {
 .chat-message-menu-wrap { position: relative; margin-left: auto; }
 .chat-message-menu-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: 0 0.25rem; font-size: 1.25rem; line-height: 1; opacity: 0; transition: opacity 0.1s; }
 .chat-message:hover .chat-message-menu-btn { opacity: 1; }
+@media (hover: none) { .chat-message-menu-btn { opacity: 1; } }
 .chat-message-menu { position: absolute; right: 0; top: 100%; z-index: 100; background: var(--surface); border: 1px solid var(--line); border-radius: 0.5rem; min-width: 140px; list-style: none; padding: 0.25rem 0; margin: 0.25rem 0 0; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
 .chat-message-menu li button { width: 100%; text-align: left; background: none; border: none; padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.875rem; color: var(--ink); }
 .chat-message-menu li button:hover { background: var(--surface-soft); }
@@ -3990,3 +4011,27 @@ textarea:focus-visible {
 .button-danger:hover { background: #b53e3e !important; }
 
 @keyframes chat-fade-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Skeleton loading states */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.skeleton-list { display: flex; flex-direction: column; gap: 10px; }
+.skeleton-row {
+  height: 52px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+.skeleton-msg {
+  height: 64px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+.skeleton-block {
+  border-radius: 8px;
+  background: var(--surface-2);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}

@@ -50,7 +50,7 @@ export function WorkspaceSidebar() {
     <aside className="global-sidebar">
       <Link className="global-brand" href="/">SpecFlow OS</Link>
       <label className="global-team-label">
-        작업 팀
+        <span className="global-team-label-text">작업 팀</span>
         <select
           className="global-team-select"
           value={activeTeam?.id ?? ''}
@@ -82,11 +82,13 @@ export function WorkspaceSidebar() {
         ))}
         <section className="global-nav-group">
           <p>팀</p>
-          <Link className="global-nav-item" href={activeTeam ? `/teams/${activeTeam.id}` : '/teams/new'}>
-            <UsersThree size={18} />멤버·팀 설정
-          </Link>
+          {activeTeam && (
+            <Link className="global-nav-item" href={`/teams/${activeTeam.id}`}>
+              <UsersThree size={18} />멤버·팀 설정
+            </Link>
+          )}
           <Link className="global-nav-item" href="/teams/new">
-            <Plus size={18} />새 팀 만들기
+            <Plus size={18} />{activeTeam ? '새 팀' : '팀 만들기'}
           </Link>
           <Link className="global-nav-item" href="/profile">
             <UserCircle size={18} />프로필
