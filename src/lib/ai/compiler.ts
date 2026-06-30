@@ -1,8 +1,9 @@
-import OpenAI from "openai";
-import { zodTextFormat } from "openai/helpers/zod";
 import { demoSpecDocument } from "@/lib/spec/demo-document";
 import { splitIntoChunks } from "@/lib/ai/cost-estimate";
-import { specDocumentSchema, type SpecDocument } from "@/lib/spec/schema";
+import { type SpecDocument } from "@/lib/spec/schema";
+import { type AiProvider, normalizeToSpecDocument } from "@/lib/ai/provider";
+import { createOpenAIProvider } from "@/lib/ai/providers/openai";
+import { createNvidiaProvider } from "@/lib/ai/providers/nvidia";
 
 export const COMPILER_PROMPT_VERSION = "2026-06-21.v2";
 export type CompilerMode = "demo" | "live";
@@ -134,60 +135,86 @@ evidence.rationale은 다음 기준으로 생성합니다.
 ${source}`;
 }
 
+const COMPILER_SYSTEM_PROMPT = [
+  "당신은 정확성과 추적 가능성을 최우선으로 하는 프로덕트 디자인 업무 컴파일러입니다.",
+  "제공된 spec_document 스키마를 엄격히 따르고 모든 필드를 반환하세요.",
+  "원문에 없는 사실을 확정하지 마세요.",
+  "AI가 최초 생성한 항목을 confirmed로 표시하지 마세요.",
+  "정보가 없는 nullable 필드는 null, 항목이 없는 배열은 []로 반환하세요.",
+].join(" ");
+
+function getActiveProviderName(): "nvidia" | "openai" {
+  const provider = process.env.AI_PROVIDER;
+  if (provider === "nvidia") return "nvidia";
+  return "openai";
+}
+
+function createProvider(): AiProvider {
+  const providerName = getActiveProviderName();
+  if (providerName === "nvidia") {
+    return createNvidiaProvider();
+  }
+  return createOpenAIProvider();
+}
+
+function resolveImplicitMode(): CompilerMode {
+  if (process.env.NODE_ENV === "production") return "live";
+  const providerName = getActiveProviderName();
+  if (providerName === "nvidia") {
+    return process.env.NVIDIA_API_KEY?.trim() ? "live" : "demo";
+  }
+  return process.env.OPENAI_API_KEY?.trim() ? "live" : "demo";
+}
+
+export async function runWithConcurrency<T, R>(
+  items: T[],
+  fn: (item: T) => Promise<R>,
+  concurrency: number,
+): Promise<R[]> {
+  if (concurrency <= 0 || concurrency >= items.length) {
+    return Promise.all(items.map(fn));
+  }
+  const results: R[] = [];
+  for (let i = 0; i < items.length; i += concurrency) {
+    const batch = items.slice(i, i + concurrency);
+    const batchResults = await Promise.all(batch.map(fn));
+    results.push(...batchResults);
+  }
+  return results;
+}
+
+async function compileChunk(source: string, provider: AiProvider): Promise<SpecDocument> {
+  const result = await provider.generateStructured({
+    systemPrompt: COMPILER_SYSTEM_PROMPT,
+    userPrompt: buildCompilerPrompt(source),
+  });
+  return normalizeToSpecDocument(result);
+}
+
 export async function compileSpecDocument(
   source: string,
   options: CompileSpecDocumentOptions = {},
 ): Promise<SpecDocument> {
-  const mode =
-    options.mode ??
-    (process.env.OPENAI_API_KEY || process.env.NODE_ENV === "production"
-      ? "live"
-      : "demo");
+  const mode = options.mode ?? resolveImplicitMode();
 
   if (mode === "demo") {
     return structuredClone(demoSpecDocument);
   }
 
-  if (!process.env.OPENAI_API_KEY?.trim()) {
-    throw new Error("OPENAI_API_KEY 환경변수가 필요합니다.");
-  }
-
+  const provider = createProvider();
   const chunks = splitIntoChunks(source);
+
   if (chunks.length === 1) {
-    return compileSingleChunk(chunks[0]);
+    return compileChunk(chunks[0], provider);
   }
 
-  // Multi-chunk: compile each chunk, then merge results
-  const docs = await Promise.all(chunks.map((chunk) => compileSingleChunk(chunk)));
+  const concurrency = parseInt(process.env.AI_COMPILE_CONCURRENCY ?? "1", 10);
+  const docs = await runWithConcurrency(
+    chunks,
+    (chunk) => compileChunk(chunk, provider),
+    concurrency,
+  );
   return mergeSpecDocuments(docs);
-}
-
-async function compileSingleChunk(source: string): Promise<SpecDocument> {
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const response = await client.responses.parse({
-    model: process.env.OPENAI_MODEL ?? "gpt-5.4",
-    input: [
-      {
-        role: "system",
-        content: [
-          "당신은 정확성과 추적 가능성을 최우선으로 하는 프로덕트 디자인 업무 컴파일러입니다.",
-          "제공된 spec_document 스키마를 엄격히 따르고 모든 필드를 반환하세요.",
-          "원문에 없는 사실을 확정하지 마세요.",
-          "AI가 최초 생성한 항목을 confirmed로 표시하지 마세요.",
-          "정보가 없는 nullable 필드는 null, 항목이 없는 배열은 []로 반환하세요.",
-        ].join(" "),
-      },
-      { role: "user", content: buildCompilerPrompt(source) },
-    ],
-    text: {
-      format: zodTextFormat(specDocumentSchema, "spec_document"),
-    },
-  });
-
-  if (!response.output_parsed) {
-    throw new Error("AI가 구조화된 명세를 반환하지 않았습니다.");
-  }
-  return specDocumentSchema.parse(response.output_parsed);
 }
 
 function dedupeById(arr: { id: string }[]): { id: string }[] {
@@ -202,8 +229,8 @@ function mergeSpecDocuments(docs: SpecDocument[]): SpecDocument {
     dedupeById(
       rest.reduce(
         (acc, d) => acc.concat(d[key] as { id: string }[]),
-        base[key] as { id: string }[]
-      )
+        base[key] as { id: string }[],
+      ),
     );
   return {
     brief: base.brief,
